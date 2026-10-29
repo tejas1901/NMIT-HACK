@@ -18,13 +18,15 @@ router.post('/predict', async (req: Request, res: Response, next: NextFunction) 
         prediction,
       });
 
-      // Save alert to Supabase
+      // Save alert to Supabase audit_logs
       try {
         const supabase = getSupabaseAdmin();
-        await supabase.from('alerts').insert({
-          alert_type: 'DEMURRAGE_RISK',
-          severity: prediction.risk_level,
-          message: `High demurrage risk (${prediction.demurrage_probability}%) at port ${req.body.port || 'IN-BOM'}: ${prediction.recommendation}`,
+        await supabase.from('audit_logs').insert({
+          id: `alert-${Date.now()}`,
+          action: 'HIGH_DEMURRAGE_ALERT',
+          actor_role: 'system',
+          details: `High demurrage risk (${prediction.demurrage_probability}%) at port ${req.body.port || 'IN-BOM'}: ${prediction.recommendation}`,
+          severity: prediction.risk_level === 'CRITICAL' ? 'CRITICAL' : 'WARN',
         });
       } catch (dbErr) {
         console.warn('Could not insert alert row to Supabase:', dbErr);

@@ -23,14 +23,12 @@ router.post('/carriers', async (req: Request, res: Response, next: NextFunction)
     // Save run to Supabase
     try {
       const supabase = getSupabaseAdmin();
-      await supabase.from('optimization_runs').insert({
-        solver_used: result.solver,
+      await supabase.from('qpiai_quantum_jobs').insert({
         experiment_name: 'Carrier QUBO Allocation',
-        circuit_qasm: result.qasm_circuit,
-        candidates: result.candidates,
-        selected_carrier: result.selected_carrier.name,
-        expedite_cost: result.selected_carrier.expedite_cost,
-        net_savings: result.net_financial_savings,
+        selected_carrier: result.selected_carrier?.name || 'Expedited Regional Express',
+        expedite_cost_usd: result.selected_carrier?.expedite_cost || 0,
+        net_savings_usd: result.net_financial_savings || 0,
+        qasm_code: result.qasm_circuit || '',
       });
     } catch (dbErr) {
       console.warn('Could not save optimization run to Supabase:', dbErr);

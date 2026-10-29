@@ -25,13 +25,12 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     const role = (req.query.role as string) || 'all';
 
     const { data, error } = await supabase
-      .from('shipments')
-      .select('*, containers(*), carriers(*), corridors(*)')
+      .from('cargo_bookings')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
 
     if (error || !data || data.length === 0) {
-      // Fallback: return mock shipments from database seed shape
       return res.json({
         success: true,
         source: 'local-manifest',
@@ -55,17 +54,19 @@ router.post('/', validate(NewShipmentSchema), async (req: Request, res: Response
     const supabase = getSupabaseAdmin();
     const trackingRef = `CRG-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    const { data, error } = await supabase.from('shipments').insert({
-      tracking_ref: trackingRef,
+    const { data, error } = await supabase.from('cargo_bookings').insert({
+      booking_ref: trackingRef,
       origin: req.body.origin,
       destination: req.body.destination,
-      cargo_description: req.body.cargo_description,
-      weight_kg: Math.round(req.body.weight_lbs * 0.453592),
-      declared_value: req.body.declared_value_inr || req.body.declared_value_usd || 10800000,
+      cargo_type: req.body.cargo_description,
+      weight_lbs: req.body.weight_lbs,
+      declared_value_usd: req.body.declared_value_usd || 85000,
+      shipping_mode: req.body.shipping_mode || 'Standard Class',
       status: 'CONFIRMED',
-      delay_risk_score: 18.5,
+      delay_risk_pct: 18.5,
       risk_tier: 'LOW',
-      demurrage_estimated: 0.0,
+      demurrage_penalty_usd: 0.0,
+      quantum_carrier_assigned: req.body.carrier_name || 'Expedited Regional Express',
     }).select().single();
 
     if (!error && data) {
