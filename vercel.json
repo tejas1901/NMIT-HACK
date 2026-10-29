@@ -9,6 +9,8 @@
     "backend-node": {
       "root": "backend-node",
       "framework": "express",
+      "entrypoint": "dist/server.js",
+      "buildCommand": "npm run build",
       "installCommand": "npm install --legacy-peer-deps",
       "bindings": [
         {
@@ -21,7 +23,8 @@
     },
     "backend-ml": {
       "root": "backend-ml",
-      "framework": "fastapi"
+      "framework": "fastapi",
+      "entrypoint": "main.py"
     }
   },
   "rewrites": [

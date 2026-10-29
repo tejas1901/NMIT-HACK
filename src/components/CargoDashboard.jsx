@@ -6,10 +6,10 @@ const supabase = createClient(
   'sb_publishable__uivHUYOrPe8_2yzD7hBhg_x6O9m85a'
 )
 
-// Dynamic API Base: seamlessly supports Vite dev proxy on :3000 and FastAPI on :8000
-const API_BASE = (typeof window !== 'undefined' && window.location.port === '3000') 
+// Dynamic API Base: seamlessly supports Vite dev proxy on :3000, production Vercel gateway, and local test
+const API_BASE = (typeof window !== 'undefined' && !window.location.origin.includes('8000')) 
   ? '' 
-  : (typeof window !== 'undefined' && window.location.origin.includes('8000') ? '' : 'http://127.0.0.1:8000')
+  : 'http://127.0.0.1:8000'
 
 export default function CargoDashboard({ user, onSignOut }) {
   const [activeTab, setActiveTab] = useState('bookings') // 'bookings', 'corridor', 'xgboost', 'qpiai', 'copilot'

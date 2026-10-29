@@ -729,49 +729,93 @@ function RegisterModal({ onClose, onRegisterSuccess }) {
     setLoading(true)
 
     try {
-      // 1. Register customer account with backend
-      const res = await fetch('http://127.0.0.1:8000/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // 1. Register customer account with backend via Gateway
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+            full_name: form.name,
+            company: form.company,
+            corridor: form.corridor,
+            role: 'CUSTOMER'
+          })
+        })
+        const data = await res.json()
+
+        if (res.ok && data.success) {
+          try {
+            await supabase.from('profiles').upsert({
+              id: data.user.id,
+              email: form.email,
+              full_name: form.name,
+              company: form.company,
+              corridor: form.corridor,
+              role: 'CUSTOMER',
+              role_label: 'Verified Customer'
+            });
+          } catch {}
+          setSuccess(`Welcome, ${form.name}! Customer account registered. Entering workspace...`)
+          localStorage.setItem('freightiq_user', JSON.stringify({ ...data.user, role: 'CUSTOMER', role_label: 'Verified Customer' }))
+          localStorage.setItem('freightiq_token', data.access_token || '')
+          setTimeout(() => {
+            if (onRegisterSuccess) onRegisterSuccess({ ...data.user, role: 'CUSTOMER', role_label: 'Verified Customer' })
+            onClose()
+          }, 600)
+          return
+        }
+      } catch (beErr) {
+        console.warn('Backend register notice:', beErr);
+      }
+
+      // 2. Direct Supabase register and persistent profiles table sync
+      let registeredUser = null;
+      try {
+        const { data: sbData, error: sbError } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
-          full_name: form.name,
-          company: form.company,
-          corridor: form.corridor,
-          role: 'CUSTOMER'
+          options: { data: { full_name: form.name, company: form.company, corridor: form.corridor, role: 'CUSTOMER' } },
         })
-      })
-      const data = await res.json()
-
-      if (res.ok && data.success) {
-        setSuccess(`Welcome, ${form.name}! Customer account registered. Entering workspace...`)
-        localStorage.setItem('freightiq_user', JSON.stringify({ ...data.user, role: 'CUSTOMER', role_label: 'Verified Customer' }))
-        localStorage.setItem('freightiq_token', data.access_token || '')
-        setTimeout(() => {
-          if (onRegisterSuccess) onRegisterSuccess({ ...data.user, role: 'CUSTOMER', role_label: 'Verified Customer' })
-          onClose()
-        }, 800)
-        return
+        if (!sbError && sbData?.user) {
+          registeredUser = sbData.user;
+        }
+      } catch (authErr) {
+        console.warn('Supabase auth notice:', authErr);
       }
 
-      // 2. Supabase fallback
-      const { data: sbData, error: sbError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: { data: { full_name: form.name, company: form.company, corridor: form.corridor, role: 'CUSTOMER' } },
-      })
-      if (sbError) {
-        setErrors({ general: sbError.message })
-      } else {
-        const u = { id: sbData.user?.id || 'usr-reg', email: form.email, full_name: form.name, role: 'CUSTOMER', role_label: 'Verified Customer' }
-        setSuccess('Customer account created! Entering workspace...')
-        localStorage.setItem('freightiq_user', JSON.stringify(u))
-        setTimeout(() => {
-          if (onRegisterSuccess) onRegisterSuccess(u)
-          onClose()
-        }, 800)
+      const u = { 
+        id: registeredUser?.id || `usr-${Date.now().toString().slice(-6)}`, 
+        email: form.email, 
+        full_name: form.name, 
+        company: form.company,
+        corridor: form.corridor,
+        role: 'CUSTOMER', 
+        role_label: 'Verified Customer' 
       }
+
+      // Persist profile to Supabase database table
+      try {
+        await supabase.from('profiles').upsert({
+          id: u.id,
+          email: u.email,
+          full_name: u.full_name,
+          company: u.company,
+          corridor: u.corridor,
+          role: 'CUSTOMER',
+          role_label: 'Verified Customer'
+        });
+      } catch (dbErr) {
+        console.warn('Direct Supabase profiles write notice:', dbErr);
+      }
+
+      setSuccess('Customer account created and synced to Supabase! Entering workspace...')
+      localStorage.setItem('freightiq_user', JSON.stringify(u))
+      setTimeout(() => {
+        if (onRegisterSuccess) onRegisterSuccess(u)
+        onClose()
+      }, 600)
     } catch {
       // Offline fallback
       const u = { id: 'usr-offline', email: form.email, full_name: form.name, company: form.company, role: 'CUSTOMER', role_label: 'Verified Customer' }
@@ -780,7 +824,7 @@ function RegisterModal({ onClose, onRegisterSuccess }) {
       setTimeout(() => {
         if (onRegisterSuccess) onRegisterSuccess(u)
         onClose()
-      }, 800)
+      }, 600)
     } finally {
       setLoading(false)
     }

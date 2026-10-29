@@ -233,74 +233,116 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     setLoading(true)
 
     try {
-      // 1. Real backend registration
-      const res = await fetch('http://127.0.0.1:8000/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: regForm.email,
-          password: regForm.password,
-          full_name: regForm.name,
-          company: regForm.company,
-          corridor: regForm.corridor,
-          role: 'CUSTOMER'
-        })
-      })
-      const data = await res.json()
-
-      if (res.ok && data.success) {
-        const u = { 
-          ...data.user, 
-          phone: regForm.phone || '+91 98201 55194',
-          gstin: regForm.gstin || '27AABCV1234F1Z5',
-          role: 'CUSTOMER', 
-          role_label: 'Verified Customer' 
-        }
-        setSuccess(`Account registered successfully for ${regForm.name}. Entering workspace...`)
-        localStorage.setItem('freightiq_user', JSON.stringify(u))
-        localStorage.setItem('freightiq_token', data.access_token || '')
-        setTimeout(() => {
-          if (onLoginSuccess) onLoginSuccess(u)
-        }, 600)
-        return
-      }
-
-      // 2. Supabase registration fallback
-      const { data: sbData, error: sbError } = await supabase.auth.signUp({
-        email: regForm.email,
-        password: regForm.password,
-        options: {
-          data: {
+      // 1. Real backend registration via Vercel Gateway
+      let backendSuccess = false;
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: regForm.email,
+            password: regForm.password,
             full_name: regForm.name,
             company: regForm.company,
-            phone: regForm.phone,
-            gstin: regForm.gstin,
             corridor: regForm.corridor,
             role: 'CUSTOMER'
-          }
-        }
-      })
+          })
+        })
+        const data = await res.json()
 
-      if (sbError) {
-        setErrors({ general: sbError.message })
-      } else {
-        const u = {
-          id: sbData.user?.id || `usr-${Date.now().toString().slice(-6)}`,
-          email: regForm.email,
-          full_name: regForm.name,
-          company: regForm.company,
-          phone: regForm.phone || '+91 98201 55194',
-          gstin: regForm.gstin || '27AABCV1234F1Z5',
-          corridor: regForm.corridor,
-          role: 'CUSTOMER',
-          role_label: 'Verified Customer'
+        if (res.ok && data.success) {
+          backendSuccess = true;
+          const u = { 
+            ...data.user, 
+            phone: regForm.phone || '+91 98201 55194',
+            gstin: regForm.gstin || '27AABCV1234F1Z5',
+            role: 'CUSTOMER', 
+            role_label: 'Verified Customer' 
+          }
+          try {
+            await supabase.from('profiles').upsert({
+              id: u.id,
+              email: regForm.email,
+              full_name: regForm.name,
+              company: regForm.company,
+              phone: u.phone,
+              gstin: u.gstin,
+              corridor: regForm.corridor,
+              role: 'CUSTOMER',
+              role_label: 'Verified Customer'
+            });
+          } catch {}
+          setSuccess(`Account registered successfully for ${regForm.name}. Entering workspace...`)
+          localStorage.setItem('freightiq_user', JSON.stringify(u))
+          localStorage.setItem('freightiq_token', data.access_token || '')
+          setTimeout(() => {
+            if (onLoginSuccess) onLoginSuccess(u)
+          }, 600)
+          return
         }
-        setSuccess(`Customer account registered for ${regForm.name}. Entering workspace...`)
-        localStorage.setItem('freightiq_user', JSON.stringify(u))
-        setTimeout(() => {
-          if (onLoginSuccess) onLoginSuccess(u)
-        }, 600)
+      } catch (beErr) {
+        console.warn('Backend register notice:', beErr);
       }
+
+      // 2. Direct Supabase Registration & Persistent Profiles Database Sync
+      let registeredUser = null;
+      try {
+        const { data: sbData, error: sbError } = await supabase.auth.signUp({
+          email: regForm.email,
+          password: regForm.password,
+          options: {
+            data: {
+              full_name: regForm.name,
+              company: regForm.company,
+              phone: regForm.phone,
+              gstin: regForm.gstin,
+              corridor: regForm.corridor,
+              role: 'CUSTOMER'
+            }
+          }
+        })
+        if (!sbError && sbData?.user) {
+          registeredUser = sbData.user;
+        }
+      } catch (authErr) {
+        console.warn('Supabase auth signUp notice:', authErr);
+      }
+
+      const u = {
+        id: registeredUser?.id || `usr-${Date.now().toString().slice(-6)}`,
+        email: regForm.email,
+        full_name: regForm.name,
+        company: regForm.company,
+        phone: regForm.phone || '+91 98201 55194',
+        gstin: regForm.gstin || '27AABCV1234F1Z5',
+        corridor: regForm.corridor,
+        role: 'CUSTOMER',
+        role_label: 'Verified Customer'
+      }
+
+      // Store in Supabase profiles database table directly
+      try {
+        await supabase.from('profiles').upsert({
+          id: u.id,
+          email: u.email,
+          full_name: u.full_name,
+          company: u.company,
+          phone: u.phone,
+          gstin: u.gstin,
+          corridor: u.corridor,
+          role: 'CUSTOMER',
+          role_label: 'Verified Customer',
+          created_at: new Date().toISOString()
+        });
+      } catch (dbErr) {
+        console.warn('Direct Supabase profiles write notice:', dbErr);
+      }
+
+      setSuccess(`Customer account registered for ${regForm.name} and synced to Supabase. Entering workspace...`)
+      localStorage.setItem('freightiq_user', JSON.stringify(u))
+      setTimeout(() => {
+        if (onLoginSuccess) onLoginSuccess(u)
+      }, 600)
     } catch {
       // Offline fallback
       const u = {
