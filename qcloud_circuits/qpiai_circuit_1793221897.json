@@ -1,0 +1,126 @@
+{
+  "name": "Carrier_QUBO_Optimizer",
+  "metadata": null,
+  "num_qubits": 3,
+  "num_clbits": 3,
+  "qregs": [
+    {
+      "name": "q",
+      "size": 3,
+      "type": "Quantum",
+      "bits": [
+        {
+          "index": 0,
+          "register": "q"
+        },
+        {
+          "index": 1,
+          "register": "q"
+        },
+        {
+          "index": 2,
+          "register": "q"
+        }
+      ]
+    }
+  ],
+  "cregs": [
+    {
+      "name": "c",
+      "size": 3,
+      "type": "Classical",
+      "bits": [
+        {
+          "index": 0,
+          "register": "c"
+        },
+        {
+          "index": 1,
+          "register": "c"
+        },
+        {
+          "index": 2,
+          "register": "c"
+        }
+      ]
+    }
+  ],
+  "evolve": [
+    {
+      "operation_type": "n_qubit_parametric",
+      "gate_name": "RY",
+      "qubits": [
+        0
+      ],
+      "params": [
+        1.01117658520785
+      ]
+    },
+    {
+      "operation_type": "n_qubit_parametric",
+      "gate_name": "RY",
+      "qubits": [
+        1
+      ],
+      "params": [
+        1.5090283079812603
+      ]
+    },
+    {
+      "operation_type": "n_qubit_parametric",
+      "gate_name": "RY",
+      "qubits": [
+        2
+      ],
+      "params": [
+        1.1511830967677088
+      ]
+    },
+    {
+      "operation_type": "n_qubit_non_parametric",
+      "gate_name": "CX",
+      "qubits": [
+        0,
+        1
+      ]
+    },
+    {
+      "operation_type": "n_qubit_non_parametric",
+      "gate_name": "CX",
+      "qubits": [
+        1,
+        2
+      ]
+    },
+    {
+      "operation_type": "measure",
+      "gate_name": "Measure",
+      "qubits": [
+        0
+      ],
+      "clbits": [
+        0
+      ]
+    },
+    {
+      "operation_type": "measure",
+      "gate_name": "Measure",
+      "qubits": [
+        1
+      ],
+      "clbits": [
+        1
+      ]
+    },
+    {
+      "operation_type": "measure",
+      "gate_name": "Measure",
+      "qubits": [
+        2
+      ],
+      "clbits": [
+        2
+      ]
+    }
+  ]
+}

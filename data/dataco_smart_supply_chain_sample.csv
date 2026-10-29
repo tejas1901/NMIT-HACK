@@ -1,0 +1,3 @@
+Type,Days_for_shipping_real,Days_for_shipment_scheduled,Benefit_per_order,Sales_per_customer,Delivery_Status,Late_delivery_risk,Category_Name,Customer_City,Customer_Country,Order_City,Order_Country,Order_Item_Discount,Order_Item_Product_Price,Order_Item_Quantity,Order_Status,Shipping_Mode
+PAYMENT,3,4,91.25,259.98,Advance shipping,0,Fitness Accessories,Caguas,Puerto Rico,Bekasi,Indonesia,13.0,327.75,1,COMPLETE,Standard Class
+TRANSFER,5,2,-249.0,311.9,Late delivery,1,Apparel,Caguas,Puerto Rico,Bikaner,India,18.0,329.9,1,PENDING,First Class

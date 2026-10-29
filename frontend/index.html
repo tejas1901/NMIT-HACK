@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FREIGHTIQ | Powered by Qπ AI - Autonomous Freight & Supply Chain Intelligence</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nature: {
+              bg: '#f0f5fa',
+              darkbg: '#0b192c',
+              ocean: '#0284c7',
+              deep: '#0f172a',
+              sky: '#38bdf8',
+              cyan: '#06b6d4',
+              ice: '#e0f2fe',
+              frost: 'rgba(255, 255, 255, 0.75)',
+              border: 'rgba(186, 230, 253, 0.45)',
+              slate: '#475569'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #f0f5fa;
+      color: #0f172a;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.08) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* Refined Nature Glassmorphism Effects */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .glass-panel-dark {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      box-shadow: 0 8px 25px rgba(2, 132, 199, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    }
+
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Blue Nature Gradient Text */
+    .text-nature-gradient {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0c4a6e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-sky-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #7dd3fc 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #38bdf8;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0284c7;
+    }
+
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    .pulse-badge {
+      animation: pulse-subtle 3s infinite ease-in-out;
+    }
+
+    /* View transition styles */
+    .view-container {
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+    .view-hidden {
+      display: none !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Active view tab indicator */
+    .view-tab-btn.active {
+      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- UNIFIED TOP NAVIGATION BAR -->
+  <header class="fixed top-0 left-0 right-0 z-50 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand Logo & Badge -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('landing')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 via-cyan-500 to-sky-600 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-sky-500/30">
+            F
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center space-x-2">
+              <span class="text-2xl font-black tracking-wider text-slate-900">FREIGHT<span class="text-sky-500">IQ</span></span>
+            </div>
+            <div class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-sky-50 border border-sky-200 text-[10px] font-mono text-sky-800 w-fit">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+              <span id="nav-badge-text">Autonomous Freight | <strong class="text-slate-900 font-semibold">Qπ AI</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integrated View Switcher Pill (One Frontend: Instant Toggle) -->
+        <div class="hidden lg:flex items-center p-1 bg-slate-200/70 border border-sky-200/80 rounded-2xl text-xs font-semibold text-slate-700 shadow-inner">
+          <button id="tab-btn-landing" onclick="switchView('landing')" class="view-tab-btn px-3.5 py-1.5 rounded-xl transition-all duration-200 hover:text-sky-700">
+            <i class="fa-solid fa-earth-americas mr-1.5"></i>Landing
+          </button>
+          <button id="tab-btn-login" onclick="switchView('login')" class="view-tab-btn px-3.5 py-1.5 rounded-xl transition-all duration-200 hover:text-sky-700">
+            <i class="fa-solid fa-lock mr-1.5"></i>Client Portal
+          </button>
+          <button id="tab-btn-dashboard" onclick="switchView('dashboard')" class="view-tab-btn px-3.5 py-1.5 rounded-xl transition-all duration-200 hover:text-sky-700">
+            <i class="fa-solid fa-gauge-high mr-1.5"></i>Enterprise Dashboard
+          </button>
+        </div>
+
+        <!-- Dynamic Context Navigation Links -->
+        <nav id="nav-landing-links" class="hidden md:flex items-center space-x-6 font-medium text-sm text-slate-600">
+          <a href="#solutions" class="hover:text-sky-600 transition-colors">Solutions</a>
+          <a href="#analytics" class="hover:text-sky-600 transition-colors">AI Analytics</a>
+          <a href="#telemetry" class="hover:text-sky-600 transition-colors">Live Tracking</a>
+          <a href="#enterprise" class="hover:text-sky-600 transition-colors">Enterprise</a>
+        </nav>
+
+        <nav id="nav-dashboard-links" class="hidden md:flex items-center space-x-6 font-medium text-sm text-slate-600">
+          <a href="#weather-section" class="hover:text-sky-600 transition-colors">Predictive Weather</a>
+          <a href="#backhaul-section" class="hover:text-sky-600 transition-colors">Backhaul Optimizer</a>
+          <a href="#exceptions-section" class="hover:text-sky-600 transition-colors">Exceptions</a>
+        </nav>
+
+        <!-- Right Header Action Buttons -->
+        <div class="flex items-center space-x-3">
+          <!-- AI Co-Pilot Slide-over Trigger Button -->
+          <button onclick="toggleCopilotDrawer()" class="relative flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold text-xs shadow-md shadow-sky-500/30 border border-sky-300/40 transition-all">
+            <div class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fa-solid fa-wand-magic-sparkles text-[11px] text-sky-100"></i>
+            </div>
+            <span class="hidden sm:inline">QpiAi Pilot</span>
+            <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white animate-pulse"></span>
+          </button>
+
+          <!-- Action Button: Adapts by View -->
+          <div id="nav-action-wrap">
+            <button id="nav-portal-btn" onclick="switchView('login')" class="text-sm font-semibold text-slate-800 hover:text-sky-600 px-4 py-2 rounded-xl border border-sky-300/80 hover:border-sky-500 transition-all bg-white/90 shadow-sm backdrop-blur-md">
+              <i class="fa-solid fa-lock text-xs mr-2 text-sky-600"></i>Client Portal
+            </button>
+          </div>
+
+          <button onclick="openDemoModal()" class="hidden sm:inline-block text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 px-4 py-2 rounded-xl border border-sky-300/40 shadow-md shadow-sky-500/25 transition-all hover:shadow-sky-500/40">
+            Request Demo
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+       VIEW 1: PUBLIC LANDING PAGE (With 3D WebGL Highway & Telemetry)
+       ════════════════════════════════════════════════════════════════════════════ -->
+  <main id="view-landing" class="view-container pt-20">
+    
+    <!-- 1. HERO SECTION WITH INTEGRATED 3D WEBGL ROADWAY CANVAS -->
+    <section class="relative min-h-[90vh] flex items-center overflow-hidden border-b border-sky-200/80">
+      
+      <!-- Uploaded Background Image Layer -->
+      <div class="absolute inset-0 z-0 bg-cover bg-center" style="background-image: url('/assets/freightiq-hero.jpg'); opacity: 0.35;"></div>
+
+      <!-- Interactive WebGL Canvas Container -->
+      <div class="absolute inset-0 z-0">
+        <canvas id="hero-webgl-canvas" class="w-full h-full block"></canvas>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-50/90 via-slate-50/65 to-transparent pointer-events-none md:w-3/5"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-transparent pointer-events-none h-40 bottom-0"></div>
+      </div>
+
+      <!-- Hero Content Overlay -->
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div class="lg:col-span-7 space-y-8">
+            
+            <!-- Strategic Positioning Tag -->
+            <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-white/90 border border-sky-300/80 text-xs font-mono text-slate-800 shadow-md backdrop-blur-md">
+              <i class="fa-solid fa-shield-halved text-sky-600"></i>
+              <span class="font-semibold">Qπ AI HIGHWAY CORRIDOR ENGINE v4.8</span>
+              <span class="text-slate-400">|</span>
+              <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>SYSTEM ONLINE</span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-950 tracking-tight leading-none drop-shadow-sm">
+              The Next Era of <br>
+              <span class="text-nature-gradient">Autonomous Road Freight</span> <br>
+              & Supply Chain Intelligence
+            </h1>
+
+            <!-- Subtext -->
+            <p class="text-lg text-slate-800 max-w-2xl font-medium leading-relaxed drop-shadow-sm">
+              Precision route optimization, real-time telemetry, and automated land-bridge logistics. Powered by Qπ AI neural models engineered specifically for enterprise carriers, freight forwarders, and terminal operations.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-5 pt-2">
+              <a href="#telemetry" class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold text-base border border-sky-300/50 shadow-xl shadow-sky-600/30 transition-all transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-route mr-3"></i>Explore Highway Network
+              </a>
+              <button onclick="switchView('dashboard')" class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white/95 hover:bg-white text-slate-900 font-bold text-base border-2 border-sky-400 shadow-lg shadow-sky-100 hover:border-sky-600 transition-all transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-gauge-high mr-3 text-sky-600"></i>Open Enterprise Dashboard
+              </button>
+            </div>
+
+            <!-- Live Telemetry Status Row -->
+            <div class="pt-4 flex flex-wrap items-center gap-6 text-xs font-mono text-slate-700">
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Active Network Nodes: <strong class="text-slate-900" id="stat-active-units">142 Semis</strong></span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-wind text-sky-600"></i>
+                <span>Crosswind Buffer: <strong class="text-slate-900">Optimal (14 MPH)</strong></span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-microchip text-sky-600"></i>
+                <span>Qπ Quantum Optimizer: <strong class="text-slate-900">Active</strong></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Interactive Hero Card -->
+          <div class="lg:col-span-5">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 shadow-2xl relative overflow-hidden border-2 border-sky-200">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="px-2.5 py-1 rounded-md bg-sky-100 border border-sky-300 text-sky-800 text-xs font-mono font-bold uppercase tracking-wider">
+                    Corridor Dispatch
+                  </span>
+                  <h3 class="text-xl font-extrabold text-slate-900 mt-2 font-mono">NH-44 National Freight Backbone</h3>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs text-slate-500 font-mono">Real-time Efficiency</div>
+                  <div class="text-2xl font-black text-emerald-600 font-mono">+18.4%</div>
+                </div>
+              </div>
+
+              <!-- Route Progress Simulation Bar -->
+              <div class="space-y-2">
+                <div class="flex justify-between text-xs font-mono text-slate-600">
+                  <span>Bengaluru Logistics Park</span>
+                  <span class="text-sky-600 font-bold">Transit: Hyderabad Hub</span>
+                  <span>Delhi-NCR Multimodal Hub</span>
+                </div>
+                <div class="w-full bg-slate-200/80 h-3 rounded-full overflow-hidden p-0.5 border border-sky-200">
+                  <div class="bg-gradient-to-r from-sky-500 via-cyan-400 to-sky-600 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: 62%;"></div>
+                </div>
+              </div>
+
+              <!-- Real-time metrics grid -->
+              <div class="grid grid-cols-2 gap-4 font-mono text-xs">
+                <div class="p-3 rounded-xl bg-white/80 border border-sky-200/80">
+                  <div class="text-slate-500">Autonomous Speed</div>
+                  <div class="text-base font-bold text-slate-900 mt-0.5">68.0 km/h</div>
+                </div>
+                <div class="p-3 rounded-xl bg-white/80 border border-sky-200/80">
+                  <div class="text-slate-500">Platoon Fuel Saved</div>
+                  <div class="text-base font-bold text-emerald-600 mt-0.5">18.4 L / 100km</div>
+                </div>
+                <div class="p-3 rounded-xl bg-white/80 border border-sky-200/80">
+                  <div class="text-slate-500">Weather Risk Score</div>
+                  <div class="text-base font-bold text-emerald-600 mt-0.5">Safe (Low 1.2)</div>
+                </div>
+                <div class="p-3 rounded-xl bg-white/80 border border-sky-200/80">
+                  <div class="text-slate-500">Next Demurrage Window</div>
+                  <div class="text-base font-bold text-slate-900 mt-0.5">38 hrs remain</div>
+                </div>
+              </div>
+
+              <button onclick="switchView('dashboard')" class="w-full py-3 rounded-xl bg-sky-900 hover:bg-sky-950 text-white font-mono text-xs font-bold transition-colors flex items-center justify-center space-x-2 shadow-md">
+                <span>View Full Enterprise Corridors</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. METRICS STRIP -->
+    <section class="bg-white/90 border-b border-sky-200 py-10 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center font-mono">
+          <div class="space-y-1">
+            <div class="text-3xl sm:text-4xl font-extrabold text-slate-950" id="stat-active-fleet">482 Units</div>
+            <div class="text-xs text-slate-600 font-medium">Monitored Indian Semis</div>
+          </div>
+          <div class="space-y-1">
+            <div class="text-3xl sm:text-4xl font-extrabold text-sky-600" id="stat-on-time">99.4%</div>
+            <div class="text-xs text-slate-600 font-medium">On-Time Terminal Arrival</div>
+          </div>
+          <div class="space-y-1">
+            <div class="text-3xl sm:text-4xl font-extrabold text-emerald-600" id="stat-total-savings">₹1.18 Cr</div>
+            <div class="text-xs text-slate-600 font-medium">Monthly Demurrage Saved</div>
+          </div>
+          <div class="space-y-1">
+            <div class="text-3xl sm:text-4xl font-extrabold text-slate-950">Qπ QUBO</div>
+            <div class="text-xs text-slate-600 font-medium">Quantum Carrier Optimization</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SOLUTIONS ARCHITECTURE GRID -->
+    <section id="solutions" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div class="text-center max-w-3xl mx-auto space-y-4">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-100 border border-sky-300 text-xs font-mono text-sky-800 font-bold">
+          <i class="fa-solid fa-layer-group text-sky-600"></i>
+          <span>PLATFORM CAPABILITIES</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">
+          Engineered for Heavy Commercial Freight
+        </h2>
+        <p class="text-slate-700 text-sm sm:text-base font-medium">
+          Comprehensive AI modules bridging cross-country road transport, intermodal yards, port terminals, and quantum dispatch planning.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Solution 1 -->
+        <div class="glass-card p-8 rounded-3xl space-y-4 hover:border-sky-500 transition-all hover:shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-950 font-mono">Dynamic Platoon Routing</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Neural grouping of semi-truck convoys to minimize wind drag coefficients, saving up to 12% in diesel consumption while harmonizing highway flow.
+          </p>
+          <div class="pt-2 text-xs font-mono text-sky-700 font-semibold flex items-center">
+            <span>Adaptive aerodynamics</span>
+            <i class="fa-solid fa-angle-right ml-2 text-[10px]"></i>
+          </div>
+        </div>
+
+        <!-- Solution 2 -->
+        <div class="glass-card p-8 rounded-3xl space-y-4 hover:border-sky-500 transition-all hover:shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl">
+            <i class="fa-solid fa-atom"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-950 font-mono">Quantum Carrier Allocation</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Powered by Qπ AI QUBO algorithms. Solves multi-drop NP-hard dispatch combinatorial problems in seconds, eliminating empty return miles.
+          </p>
+          <div class="pt-2 text-xs font-mono text-sky-700 font-semibold flex items-center">
+            <span>QpiAI quantum engine</span>
+            <i class="fa-solid fa-angle-right ml-2 text-[10px]"></i>
+          </div>
+        </div>
+
+        <!-- Solution 3 -->
+        <div class="glass-card p-8 rounded-3xl space-y-4 hover:border-sky-500 transition-all hover:shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-950 font-mono">Demurrage & Detention AI</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Predictive demurrage forecaster using gradient boosted models. Alerts dispatchers 48 hours prior to free-time expiration at railheads and seaports.
+          </p>
+          <div class="pt-2 text-xs font-mono text-sky-700 font-semibold flex items-center">
+            <span>XGBoost penalty prevention</span>
+            <i class="fa-solid fa-angle-right ml-2 text-[10px]"></i>
+          </div>
+        </div>
+
+        <!-- Solution 4 -->
+        <div class="glass-card p-8 rounded-3xl space-y-4 hover:border-sky-500 transition-all hover:shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl">
+            <i class="fa-solid fa-snowflake"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-950 font-mono">Cold-Chain Telemetry</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Continuous temperature, humidity, and door-seal telemetry for pharmaceutical and reefer cargo with automatic rerouting around thermal weather hazards.
+          </p>
+          <div class="pt-2 text-xs font-mono text-sky-700 font-semibold flex items-center">
+            <span>Sub-degree precision</span>
+            <i class="fa-solid fa-angle-right ml-2 text-[10px]"></i>
+          </div>
+        </div>
+
+        <!-- Solution 5 -->
+        <div class="glass-card p-8 rounded-3xl space-y-4 hover:border-sky-500 transition-all hover:shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl">
+            <i class="fa-solid fa-passport"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-950 font-mono">Cross-Border Customs Bridge</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Automated e-manifest validation and digital seal verification for streamlined land-port border clearance at US-Mexico and US-Canada checkpoints.
+          </p>
+          <div class="pt-2 text-xs font-mono text-sky-700 font-semibold flex items-center">
+            <span>Automated digital seals</span>
+            <i class="fa-solid fa-angle-right ml-2 text-[10px]"></i>
+          </div>
+        </div>
+
+        <!-- Solution 6 -->
+        <div class="glass-card p-8 rounded-3xl space-y-4 hover:border-sky-500 transition-all hover:shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl">
+            <i class="fa-solid fa-satellite-dish"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-950 font-mono">Autonomous Exception Engine</h3>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Real-time incident mitigation. Dispatches alternate routes, mobilizes nearest maintenance hubs, and notifies shippers before delays cascade.
+          </p>
+          <div class="pt-2 text-xs font-mono text-sky-700 font-semibold flex items-center">
+            <span>n8n workflow integration</span>
+            <i class="fa-solid fa-angle-right ml-2 text-[10px]"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. LIVE TELEMETRY & HIGHWAY CORRIDOR COCKPIT -->
+    <section id="telemetry" class="py-16 bg-slate-900 text-white relative overflow-hidden border-y border-sky-400/30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 relative z-10">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-800 pb-6">
+          <div>
+            <div class="inline-flex items-center space-x-2 text-sky-400 font-mono text-xs uppercase tracking-wider mb-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>LIVE FLEET TELEMETRY COCKPIT</span>
+            </div>
+            <h2 class="text-3xl font-extrabold tracking-tight font-mono">Active Corridors & Node Health</h2>
+          </div>
+          
+          <!-- Node Selector Tabs -->
+          <div class="flex flex-wrap gap-2 font-mono text-xs">
+            <button onclick="selectTruckNode('truck-1')" id="btn-node-truck-1" class="px-3.5 py-1.5 rounded-xl bg-sky-600 text-white font-bold transition-colors">
+              UNIT #4021 (Class 8)
+            </button>
+            <button onclick="selectTruckNode('truck-2')" id="btn-node-truck-2" class="px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">
+              UNIT #1094 (Reefer)
+            </button>
+            <button onclick="selectTruckNode('truck-3')" id="btn-node-truck-3" class="px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">
+              UNIT #8809 (Flatbed)
+            </button>
+            <button onclick="selectTruckNode('truck-4')" id="btn-node-truck-4" class="px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">
+              UNIT #3120 (Tanker)
+            </button>
+          </div>
+        </div>
+
+        <!-- Telemetry Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center font-mono">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div class="p-6 rounded-2xl bg-slate-800/80 border border-sky-500/30 space-y-4">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-400">VEHICLE IDENTIFIER</span>
+                <span class="text-emerald-400 font-bold" id="truck-status-badge">ONLINE &bull; CRUISE</span>
+              </div>
+              <div class="text-2xl font-black text-white" id="truck-title">UNIT #4021 - TELEMETRY COCKPIT</div>
+              <p class="text-xs text-slate-300 font-sans leading-relaxed" id="truck-sub">
+                Transmitting via Qπ AI Satellite Link | 100% Signal Strength
+              </p>
+
+              <div class="pt-4 border-t border-slate-700 space-y-3 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Current Velocity:</span>
+                  <span class="text-sky-300 font-bold" id="truck-speed">68 km/h</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Gross Weight:</span>
+                  <span class="text-sky-300 font-bold" id="truck-weight">38,500 KG</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Fuel Economy:</span>
+                  <span class="text-emerald-400 font-bold" id="truck-mpg">4.2 KM/L</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Tire Pressure PSI:</span>
+                  <span class="text-sky-300 font-bold">110 / 112 PSI Normal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Central Route & Weather Visualizer -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="p-6 rounded-2xl bg-slate-800/80 border border-sky-500/30 space-y-6">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs border-b border-slate-700 pb-3">
+                <span class="text-slate-400" id="truck-origin">Origin: Bengaluru Logistics Park</span>
+                <span class="text-sky-400 font-bold" id="truck-progress-text">64% Completed</span>
+                <span class="text-slate-400" id="truck-dest">Destination: Mumbai JNPT Intermodal</span>
+              </div>
+
+              <!-- Animated Progress Track -->
+              <div class="relative py-4">
+                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                  <div id="truck-progress-bar" class="bg-gradient-to-r from-sky-500 to-emerald-400 h-full rounded-full transition-all duration-700" style="width: 64%;"></div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-700 space-y-1 font-mono">
+                  <div class="text-sky-400 font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-sun-rain"></i>
+                    <span>Corridor Weather Model</span>
+                  </div>
+                  <p class="text-slate-300 font-sans text-xs">Clear skies across Deccan Plateau transit zone. Coastal monsoon fronts monitored near JNPT port within 3.5 hrs.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-700 space-y-1 font-mono">
+                  <div class="text-emerald-400 font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Qπ Neural Guidance</span>
+                  </div>
+                  <p class="text-slate-300 font-sans text-xs" id="truck-ai-note">Maintain speed at 68 km/h along NH-48. ETA reduced by 22 minutes with zero additional diesel burn.</p>
+                </div>
+              </div>
+
+              <div class="pt-2 flex justify-end">
+                <button onclick="switchView('dashboard')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-mono text-xs font-bold transition-all shadow-md">
+                  Inspect in Enterprise Command Center &rarr;
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. BENTO FLEET ROI CALCULATOR -->
+    <section id="analytics" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div class="text-center max-w-2xl mx-auto space-y-3">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-100 border border-sky-300 text-xs font-mono text-sky-800 font-bold">
+          <i class="fa-solid fa-calculator text-sky-600"></i>
+          <span>QUANTIFIABLE ROI (INR)</span>
+        </div>
+        <h2 class="text-3xl font-black text-slate-950 tracking-tight">Interactive Fleet Economics (₹ INR)</h2>
+        <p class="text-slate-600 text-sm">Slide to test the annual operational savings in Indian Rupees (₹) generated by Qπ AI route optimization.</p>
+      </div>
+
+      <div class="glass-panel p-8 rounded-3xl border-2 border-sky-200 shadow-xl max-w-4xl mx-auto space-y-8">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center font-mono text-sm">
+            <span class="font-bold text-slate-900">Semi-Truck Fleet Size:</span>
+            <span id="fleet-count-display" class="text-xl font-black text-sky-700">50 Semi-Trucks</span>
+          </div>
+          <input type="range" min="5" max="500" value="50" step="5" class="w-full accent-sky-600 cursor-pointer bg-slate-200 rounded-lg h-2" oninput="updateFleetCalc(this.value)">
+          <div class="flex justify-between text-[11px] font-mono text-slate-500">
+            <span>5 Units (Regional Carrier)</span>
+            <span>250 Units (Mid-Tier Freight)</span>
+            <span>500+ Units (Mega Fleet)</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-center pt-4 border-t border-sky-200">
+          <div class="p-4 rounded-2xl bg-white/90 border border-sky-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-500">ANNUAL DIESEL SAVINGS</div>
+            <div id="diesel-saved" class="text-2xl font-black text-emerald-600">₹16,08,000</div>
+            <div class="text-[10px] text-slate-600">via platoon drafting</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-white/90 border border-sky-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-500">DEMURRAGE PREVENTED</div>
+            <div id="demurrage-saved" class="text-2xl font-black text-sky-700">₹9,45,000</div>
+            <div class="text-[10px] text-slate-600">terminal gate pre-clearance</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-white/90 border border-sky-200 shadow-sm space-y-1">
+            <div class="text-xs text-slate-500">ESTIMATED CO2 OFFSET</div>
+            <div id="co2-saved" class="text-2xl font-black text-slate-900">412 Metric Tons</div>
+            <div class="text-[10px] text-slate-600">ESG compliance certified</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ENTERPRISE FOOTER -->
+    <footer class="bg-white border-t border-sky-200 py-12 text-slate-600 text-xs font-mono">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div class="space-y-3">
+            <div class="flex items-center space-x-2">
+              <span class="text-lg font-black text-slate-900">FREIGHT<span class="text-sky-500">IQ</span></span>
+            </div>
+            <p class="font-sans text-xs text-slate-500 leading-relaxed">
+              Autonomous Road Freight & Supply Chain Exception Intelligence powered by Qπ AI neural architectures.
+            </p>
+          </div>
+          <div>
+            <div class="text-slate-900 font-bold uppercase mb-3">Enterprise Systems</div>
+            <ul class="space-y-2">
+              <li><a href="#solutions" class="hover:text-sky-600 transition-colors">Platoon Routing</a></li>
+              <li><a href="#telemetry" class="hover:text-sky-600 transition-colors">Highway Telemetry</a></li>
+              <li><a href="javascript:void(0)" onclick="switchView('dashboard')" class="hover:text-sky-600 transition-colors">Enterprise Command</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-slate-900 font-bold uppercase mb-3">Security & Compliance</div>
+            <ul class="space-y-2">
+              <li>ISO 27001 Certified</li>
+              <li>SOC-2 Type II Verified</li>
+              <li>Qπ Cryptographic Tokens</li>
+            </ul>
+          </div>
+          <div class="space-y-3">
+            <div class="text-slate-900 font-bold uppercase mb-2">Freight Insights Newsletter</div>
+            <p class="font-sans text-xs text-slate-500">Subscribe for weekly corridor analytics.</p>
+            <div class="flex">
+              <input type="email" placeholder="dispatcher@fleet.com" class="px-3 py-2 border border-sky-300 rounded-l-xl text-xs w-full focus:outline-none">
+              <button class="px-4 py-2 bg-sky-600 text-white rounded-r-xl font-bold hover:bg-sky-500 transition-colors">Join</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-sky-100 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-slate-500">
+          <div>&copy; 2026 FREIGHTIQ Inc. Powered by Qπ AI. All rights reserved.</div>
+          <div class="flex space-x-4">
+            <a href="javascript:void(0)" onclick="switchView('landing')" class="hover:text-sky-600">Home</a>
+            <a href="javascript:void(0)" onclick="switchView('login')" class="hover:text-sky-600">Client Portal</a>
+            <a href="javascript:void(0)" onclick="switchView('dashboard')" class="hover:text-sky-600">Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+       VIEW 2: CLIENT PORTAL & LOGIN SCREEN (With 3D Topography Canvas)
+       ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="view-login" class="view-container view-hidden min-h-screen pt-20 flex items-center justify-center relative overflow-hidden text-white" style="background-image: linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.88)), url('/assets/freightiq-hero.jpg'); background-size: cover; background-position: center;">
+    
+    <!-- Background Topography 3D Canvas Box -->
+    <div class="absolute inset-0 z-0 opacity-40">
+      <canvas id="login-topography-canvas" class="w-full h-full block"></canvas>
+    </div>
+
+    <!-- Frosted Glass Login Layout Container -->
+    <div class="relative z-10 max-w-4xl w-full mx-4 my-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+      
+      <!-- Left Column: Strategic Access Info -->
+      <div class="md:col-span-5 space-y-6">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-950 border border-sky-400 text-xs font-mono text-sky-300">
+          <i class="fa-solid fa-key"></i>
+          <span>QUANTUM SECURITY TOKEN PORTAL</span>
+        </div>
+        <h2 class="text-3xl font-black tracking-tight leading-tight">
+          Commercial Fleet Telemetry Access
+        </h2>
+        <p class="text-slate-300 text-xs leading-relaxed font-sans">
+          Access real-time semi-truck telemetry, automated customs processing, and Qπ AI dispatch controls across all North American highway corridors.
+        </p>
+
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-sky-500/40 text-xs font-mono space-y-2">
+          <div class="text-sky-300 font-bold flex items-center space-x-2">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Demo Credentials Preloaded</span>
+          </div>
+          <div class="text-slate-400 text-[11px]">Email: <span class="text-white">dispatcher@freightiq.ai</span></div>
+          <div class="text-slate-400 text-[11px]">Pass: <span class="text-white">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span></div>
+        </div>
+
+        <button onclick="switchView('landing')" class="text-xs font-mono text-sky-400 hover:text-sky-300 transition-colors flex items-center space-x-2">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Return to Public Corridor Overview</span>
+        </button>
+      </div>
+
+      <!-- Right Column: Frosted Glass Form Card -->
+      <div class="md:col-span-7">
+        <div class="glass-panel-dark p-8 rounded-3xl border-2 border-sky-400/40 shadow-2xl space-y-6">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+              <h3 class="text-xl font-bold font-mono">Sign In to FREIGHTIQ</h3>
+              <p class="text-xs text-slate-400">Authenticated Enterprise Corridor Mesh</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center text-white font-extrabold text-xl shadow-md">
+              F
+            </div>
+          </div>
+
+          <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+            <div class="space-y-1.5 font-mono text-xs">
+              <label class="text-slate-300">ENTERPRISE EMAIL</label>
+              <input type="email" required value="dispatcher@freightiq.ai" class="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-sky-400/40 text-white text-xs focus:outline-none focus:border-sky-400 transition-all font-mono">
+            </div>
+
+            <div class="space-y-1.5 font-mono text-xs">
+              <div class="flex justify-between">
+                <label class="text-slate-300">SECURITY PASSWORD</label>
+                <a href="javascript:void(0)" onclick="openModal('Password Reset', 'Please contact your enterprise logistics administrator to re-issue Qπ cryptographic credentials.', 'fa-key')" class="text-sky-400 hover:underline text-[11px]">Forgot?</a>
+              </div>
+              <input type="password" required value="quantum2026" class="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-sky-400/40 text-white text-xs focus:outline-none focus:border-sky-400 transition-all font-mono">
+            </div>
+
+            <div class="pt-2 space-y-3">
+              <button type="submit" id="login-submit-btn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-mono font-bold text-xs shadow-lg shadow-sky-600/30 transition-all flex items-center justify-center space-x-2">
+                <span>Sign In to Telemetry Portal</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+
+              <button type="button" onclick="quickDemoAccess()" class="w-full py-3 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-mono font-bold text-xs border border-emerald-400/40 transition-all flex items-center justify-center space-x-2 shadow-sm">
+                <i class="fa-solid fa-bolt text-yellow-300"></i>
+                <span>Quick Demo Access (Skip Auth)</span>
+              </button>
+
+              <button type="button" onclick="handleSSOLogin()" class="w-full py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 font-mono text-xs border border-slate-700 transition-all flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-building-shield"></i>
+                <span>Corporate SAML 2.0 / SSO</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+       VIEW 3: ENTERPRISE DASHBOARD & COMMAND CENTER (Fully Integrated)
+       ════════════════════════════════════════════════════════════════════════════ -->
+  <main id="view-dashboard" class="view-container view-hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 space-y-10">
+
+    <!-- DASHBOARD WELCOME & KEY TELEMETRY HEADER -->
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-sky-300/80 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-xl">
+      <div class="space-y-2">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-100 border border-sky-300 text-xs font-mono text-sky-800 font-bold">
+          <i class="fa-solid fa-satellite-dish text-sky-600"></i>
+          <span>LIVE ENTERPRISE CORRIDOR MESH v4.8</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
+          Autonomous Freight Command & Simulation
+        </h1>
+        <p class="text-slate-700 text-sm font-medium">
+          Real-time AI telemetry, predictive weather risk corridors, backhaul matching, and exception resolution active.
+        </p>
+      </div>
+
+      <!-- Quick Metrics Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:w-auto font-mono text-xs">
+        <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm">
+          <div class="text-slate-600 font-semibold">ACTIVE SEMIS</div>
+          <div class="text-2xl font-black text-slate-950 mt-1" id="dash-active-semis">482 Units</div>
+          <div class="text-[10px] text-emerald-700 font-bold mt-1"><i class="fa-solid fa-arrow-up mr-1"></i>99.8% Online</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm">
+          <div class="text-slate-600 font-semibold">Qπ OPTIMIZATION</div>
+          <div class="text-2xl font-black text-sky-700 mt-1" id="dash-net-savings">₹1.18 Cr</div>
+          <div class="text-[10px] text-emerald-700 font-bold mt-1">Monthly Net Savings</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm">
+          <div class="text-slate-600 font-semibold">DATASETS TRAINED</div>
+          <div class="text-2xl font-black text-emerald-600 mt-1" id="dash-datasets-count">5 Sources</div>
+          <div class="text-[10px] text-sky-700 font-bold mt-1">58,905 Records &bull; XGBoost</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm">
+          <div class="text-slate-600 font-semibold">QPIAI PILOT</div>
+          <div class="text-2xl font-black text-emerald-600 mt-1">ACTIVE</div>
+          <div class="text-[10px] text-slate-500 font-bold mt-1">QpiAi / FastAPI</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRATED MULTI-SOURCE TRAINING DATASETS PANEL -->
+    <div class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-emerald-300/80 space-y-4 shadow-xl">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-sky-200 pb-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-600 font-black shadow-sm">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-950 font-mono">Multi-Source Training Datasets (Active & Integrated)</h2>
+            <p class="text-xs text-slate-600 font-mono">5 Unified Logistics Data Streams ingested into XGBoost 3.2.0 & LightGBM production models.</p>
+          </div>
+        </div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 font-mono text-xs font-bold">
+          <i class="fa-solid fa-circle-check text-emerald-600"></i>
+          <span>58,905 Total Records Standardized</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 font-mono text-xs pt-2">
+        <div class="p-4 rounded-2xl bg-white/90 border border-sky-200 shadow-sm space-y-2">
+          <div class="text-slate-500 text-[10px] font-bold uppercase">Base Dataset</div>
+          <div class="font-extrabold text-slate-950 text-sm">DataCo Supply Chain</div>
+          <div class="text-emerald-700 font-bold">58,894 Records</div>
+          <div class="text-[10px] text-slate-500">Global lead times & routes</div>
+          <span class="inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">TRAINED &bull; 100%</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/90 border border-emerald-200 shadow-sm space-y-2">
+          <div class="text-slate-500 text-[10px] font-bold uppercase">Extra Dataset 1</div>
+          <div class="font-extrabold text-slate-950 text-sm">Live Manifest Register</div>
+          <div class="text-emerald-700 font-bold">5 Records</div>
+          <div class="text-[10px] text-slate-500">Cold-chain & demurrage fees</div>
+          <span class="inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">TRAINED &bull; 100%</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/90 border border-emerald-200 shadow-sm space-y-2">
+          <div class="text-slate-500 text-[10px] font-bold uppercase">Extra Dataset 2</div>
+          <div class="font-extrabold text-slate-950 text-sm">DataCo Smart Orders</div>
+          <div class="text-emerald-700 font-bold">2 Records</div>
+          <div class="text-[10px] text-slate-500">Scheduled vs real days</div>
+          <span class="inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">TRAINED &bull; 100%</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/90 border border-emerald-200 shadow-sm space-y-2">
+          <div class="text-slate-500 text-[10px] font-bold uppercase">Extra Dataset 3</div>
+          <div class="font-extrabold text-slate-950 text-sm">Port Delay & Weather</div>
+          <div class="text-emerald-700 font-bold">2 Records</div>
+          <div class="text-[10px] text-slate-500">Port congestion & delay risks</div>
+          <span class="inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">TRAINED &bull; 100%</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white/90 border border-emerald-200 shadow-sm space-y-2">
+          <div class="text-slate-500 text-[10px] font-bold uppercase">Extra Dataset 4</div>
+          <div class="font-extrabold text-slate-950 text-sm">Corridor Disruption</div>
+          <div class="text-emerald-700 font-bold">2 Records</div>
+          <div class="text-[10px] text-slate-500">Maritime & rail incidents</div>
+          <span class="inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">TRAINED &bull; 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE 1: PREDICTIVE RISK ENGINE WITH SAFE WEATHER SIMULATION -->
+    <section id="weather-section" class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-sky-300/80 space-y-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-sky-200 pb-4 gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 shadow-sm">
+              <i class="fa-solid fa-cloud-bolt"></i>
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-950 font-mono">Predictive Risk Engine & Safe Weather Simulation</h2>
+          </div>
+          <p class="text-xs text-slate-600 font-mono font-medium mt-1">Adjust live simulation parameters to test corridor safety and autonomous rerouting logic.</p>
+        </div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs font-mono text-emerald-800 font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+          <span>Simulation Active: Corridors Stable</span>
+        </div>
+      </div>
+
+      <!-- Simulation Grid: Controls (Left) & Live Map/Metrics (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- Controls Column (5 Cols) -->
+        <div class="lg:col-span-5 space-y-5 font-mono text-xs">
+          
+          <!-- Slider 1: Weather Severity Index -->
+          <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm space-y-3">
+            <div class="flex justify-between items-center text-slate-800">
+              <span class="font-bold">Weather Severity Index</span>
+              <span id="val-severity" class="text-sky-700 font-black">Moderate (3.5 / 10)</span>
+            </div>
+            <input type="range" min="1" max="10" step="0.5" value="3.5" class="w-full accent-sky-600 cursor-pointer bg-slate-200 rounded-lg h-2" oninput="updateWeatherSimulation('severity', this.value)">
+            <p class="text-[11px] text-slate-600 font-sans">Simulates monsoon squalls, heavy fog, and severe thunderstorm fronts across NH-44 & Golden Quadrilateral corridors.</p>
+          </div>
+
+          <!-- Slider 2: Crosswind Velocity (km/h) -->
+          <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm space-y-3">
+            <div class="flex justify-between items-center text-slate-800">
+              <span class="font-bold">Crosswind Velocity</span>
+              <span id="val-wind" class="text-sky-700 font-black">22 km/h</span>
+            </div>
+            <input type="range" min="0" max="120" step="1" value="22" class="w-full accent-sky-600 cursor-pointer bg-slate-200 rounded-lg h-2" oninput="updateWeatherSimulation('wind', this.value)">
+            <p class="text-[11px] text-slate-600 font-sans">Ghat section side-winds trigger automated trailer stability adjustments and reduced speed limit guidelines.</p>
+          </div>
+
+          <!-- Slider 3: Precipitation / Road Waterlogging Factor -->
+          <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm space-y-3">
+            <div class="flex justify-between items-center text-slate-800">
+              <span class="font-bold">Monsoon Road Friction Factor</span>
+              <span id="val-precip" class="text-sky-700 font-black">15% (Light Rain)</span>
+            </div>
+            <input type="range" min="0" max="100" step="5" value="15" class="w-full accent-sky-600 cursor-pointer bg-slate-200 rounded-lg h-2" oninput="updateWeatherSimulation('precip', this.value)">
+            <p class="text-[11px] text-slate-600 font-sans">Measures moisture on highway asphalt and friction coefficients for Indian multi-axle ABS braking.</p>
+          </div>
+
+        </div>
+
+        <!-- Simulation Visualization & AI Action Output (7 Cols) -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <div class="p-6 rounded-2xl bg-slate-900 border-2 border-sky-400/40 text-white space-y-4 shadow-2xl relative overflow-hidden">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 font-mono text-xs">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-shield-halved text-sky-400"></i>
+                <span class="font-bold">Qπ NEURAL WEATHER RISK ASSESSMENT</span>
+              </div>
+              <span id="weather-risk-badge" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">LOW RISK CORRIDOR</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 font-mono text-xs">
+              <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                <div class="text-slate-400 text-[10px]">CORRIDOR SAFETY SCORE</div>
+                <div id="sim-safety-score" class="text-xl font-black text-emerald-400 mt-1">94.8 / 100</div>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                <div class="text-slate-400 text-[10px]">RECOMMENDED GOVERNOR SPEED</div>
+                <div id="sim-speed-rec" class="text-xl font-black text-sky-300 mt-1">68 km/h</div>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 col-span-2 sm:col-span-1">
+                <div class="text-slate-400 text-[10px]">AUTONOMOUS REROUTE STATUS</div>
+                <div id="sim-reroute-status" class="text-xl font-black text-cyan-300 mt-1">STANDARD NH-44</div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-sky-950/80 border border-sky-500/40 text-xs text-sky-200 font-mono space-y-1">
+              <div class="font-bold text-sky-300 flex items-center">
+                <i class="fa-solid fa-circle-info mr-2"></i>Live AI Mitigation Protocol:
+              </div>
+              <p id="sim-ai-protocol" class="font-sans text-white/90">Weather conditions are nominal. Platoon spacing maintained at standard 40-meter interval. No speed restrictions mandated by Qπ AI telemetry.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MODULE 2: BACKHAUL MATCHING & COST-EFFECTIVE ACTION OPTIMIZER -->
+    <section id="backhaul-section" class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-sky-300/80 space-y-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-sky-200 pb-4 gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 shadow-sm">
+              <i class="fa-solid fa-arrows-split-up-and-left"></i>
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-950 font-mono">Backhaul Matching & Cost-Effective Action Optimizer</h2>
+          </div>
+          <p class="text-xs text-slate-600 font-mono font-medium mt-1">Automatically pair returning empty semi-truck capacity with verified Indian importer/exporter cargo loads.</p>
+        </div>
+        <button onclick="runBackhaulMatchingEngine()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 text-white font-bold text-xs hover:from-sky-500 hover:to-cyan-500 transition-colors shadow-md border border-sky-300/40">
+          <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Run AI Backhaul Match
+        </button>
+      </div>
+
+      <!-- Matching & Optimizer Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Available Empty Fleets (6 Cols) -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="flex justify-between items-center font-mono text-xs">
+            <span class="font-bold text-slate-900 uppercase">Returning Empty Semi Capacity</span>
+            <span class="text-sky-700 font-black">18 Units Available Today</span>
+          </div>
+
+          <div class="space-y-3 font-mono text-xs">
+            
+            <div class="p-4 rounded-2xl bg-white/95 border-2 border-sky-300/80 shadow-sm flex justify-between items-center">
+              <div class="space-y-1">
+                <div class="font-black text-slate-950">UNIT #3091 (Multi-Axle Reefer)</div>
+                <div class="text-slate-600 text-[11px]">Returning From: Mumbai JNPT &rarr; Bengaluru</div>
+                <div class="text-emerald-700 font-bold">Capacity: 28 Tonnes Dry / Cold-Chain Temp Controlled</div>
+              </div>
+              <span class="px-3 py-1 rounded-xl bg-sky-100 text-sky-800 font-bold border border-sky-300">EMPTY</span>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm flex justify-between items-center">
+              <div class="space-y-1">
+                <div class="font-black text-slate-950">UNIT #7124 (Heavy Container 40ft)</div>
+                <div class="text-slate-600 text-[11px]">Returning From: Chennai Port &rarr; Hyderabad ICD</div>
+                <div class="text-emerald-700 font-bold">Capacity: 32 Tonnes Standard Freight</div>
+              </div>
+              <span class="px-3 py-1 rounded-xl bg-sky-100 text-sky-800 font-bold border border-sky-300">EMPTY</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Matching Importer/Exporter Cargo (6 Cols) -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="flex justify-between items-center font-mono text-xs">
+            <span class="font-bold text-slate-900 uppercase">Verified Importer & Exporter Cargo</span>
+            <span class="text-emerald-700 font-black">High Yield Matches</span>
+          </div>
+
+          <div class="space-y-3 font-mono text-xs">
+            
+            <div class="p-4 rounded-2xl bg-white/95 border-2 border-emerald-300 shadow-sm flex justify-between items-center">
+              <div class="space-y-1">
+                <div class="font-black text-slate-950">CARGO #IMP-981 (Consumer Electronics & Hardware)</div>
+                <div class="text-slate-600 text-[11px]">Route: Mumbai JNPT &rarr; Bengaluru Central</div>
+                <div class="text-emerald-700 font-bold">Revenue Yield: ₹2,45,000 (+38% Margin)</div>
+              </div>
+              <button onclick="applyBackhaulMatch('IMP-981', '₹2,45,000')" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors shadow-sm">
+                Match Load
+              </button>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-white/95 border border-sky-200 shadow-sm flex justify-between items-center">
+              <div class="space-y-1">
+                <div class="font-black text-slate-950">CARGO #EXP-442 (Industrial Auto Components)</div>
+                <div class="text-slate-600 text-[11px]">Route: Hyderabad Hub &rarr; Chennai Sea Port</div>
+                <div class="text-emerald-700 font-bold">Revenue Yield: ₹1,89,000 (+29% Margin)</div>
+              </div>
+              <button onclick="applyBackhaulMatch('EXP-442', '₹1,89,000')" class="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition-colors shadow-sm">
+                Match Load
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Cost-Effective Action Optimizer Summary Bar -->
+      <div class="p-5 rounded-2xl bg-sky-50 border border-sky-200 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono text-xs">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-black shadow-sm">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+          <div>
+            <div class="font-bold text-slate-900">Cost-Effective Action Optimizer Status</div>
+            <div class="text-slate-600 text-[11px]">Eliminating empty return trips increases fleet net operating income by ₹1,42,000 / week.</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-slate-500 text-[10px]">TOTAL OPTIMIZED REVENUE</div>
+          <div id="optimizer-total-savings" class="text-2xl font-black text-emerald-700">₹4,34,000.00</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 3: AI-POWERED FREIGHT EXCEPTION RESOLUTION WORKFLOW -->
+    <section id="exceptions-section" class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-sky-300/80 space-y-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-sky-200 pb-4 gap-4">
+        <div>
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-red-100 border border-red-300 flex items-center justify-center text-red-600 shadow-sm">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-950 font-mono">AI-Powered Freight Exception Resolution Workflow</h2>
+          </div>
+          <p class="text-xs text-slate-600 font-mono font-medium mt-1">Interactive resolution cards for Indian highway exceptions, customs FASTag holds, and mechanical alerts.</p>
+        </div>
+        <span class="px-3 py-1 rounded-xl bg-red-100 text-red-800 border border-red-300 text-xs font-mono font-bold">
+          3 Active Exceptions Requiring Attention
+        </span>
+      </div>
+
+      <!-- Exception Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
+        
+        <!-- Exception Card 1: Route Obstruction / Accident -->
+        <div id="exc-card-1" class="p-6 rounded-2xl bg-white/95 border-2 border-red-300 space-y-4 shadow-md flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="px-2.5 py-1 rounded-lg bg-red-100 text-red-800 font-black border border-red-200">CRITICAL: NH-44 GHAT BLOCKAGE</span>
+              <span class="text-slate-500 text-[10px]">12m ago</span>
+            </div>
+            <div class="font-black text-slate-950 text-sm">Unit #8809 - Multi-Vehicle Standstill on Khandala Ghat Pass</div>
+            <p class="text-slate-600 font-sans text-xs">Highway traffic patrol reports 3-hour standstill near ghat incline. Driver safety confirmed; thermal cargo integrity stable.</p>
+            
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div class="font-bold text-sky-700">Qπ AI Automated Resolution Step:</div>
+              <p class="font-sans text-slate-700 text-[11px]">Auto-reroute via SH-17 Expressway bypass. Recalculates arrival ETA (+18m) with zero refrigeration loss.</p>
+            </div>
+          </div>
+
+          <button id="btn-resolve-1" onclick="resolveException(1)" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold transition-colors shadow-sm">
+            Execute AI Reroute Protocol
+          </button>
+        </div>
+
+        <!-- Exception Card 2: Customs Digital Manifest Hold -->
+        <div id="exc-card-2" class="p-6 rounded-2xl bg-white/95 border-2 border-amber-300 space-y-4 shadow-md flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-black border border-amber-200">GST E-WAY & CUSTOMS HOLD</span>
+              <span class="text-slate-500 text-[10px]">28m ago</span>
+            </div>
+            <div class="font-black text-slate-950 text-sm">Container #BOM-550 - JNPT Port Clearance & E-Way Bill Verification</div>
+            <p class="text-slate-600 font-sans text-xs">Automated weighbridge scanning flagged tare weight discrepancy on GST E-Way portal.</p>
+            
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div class="font-bold text-sky-700">Qπ AI Automated Resolution Step:</div>
+              <p class="font-sans text-slate-700 text-[11px]">Cross-references weigh-scale telemetry logs and transmits cryptographically signed weight certificate to ICEGATE & GST API.</p>
+            </div>
+          </div>
+
+          <button id="btn-resolve-2" onclick="resolveException(2)" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold transition-colors shadow-sm">
+            Transmit Digital Clearance
+          </button>
+        </div>
+
+        <!-- Exception Card 3: Mechanical Tire Pressure Warning -->
+        <div id="exc-card-3" class="p-6 rounded-2xl bg-white/95 border-2 border-sky-300 space-y-4 shadow-md flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 font-black border border-sky-200">MECHANICAL TELEMETRY</span>
+              <span class="text-slate-500 text-[10px]">45m ago</span>
+            </div>
+            <div class="font-black text-slate-950 text-sm">Unit #4021 - Rear Tandem Outer Tire Pressure Drop (-12 PSI)</div>
+            <p class="text-slate-600 font-sans text-xs">Tire pressure sensor indicates slow puncture on rear axle while transiting Pune-Bengaluru NH-48 corridor.</p>
+            
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div class="font-bold text-sky-700">Qπ AI Automated Resolution Step:</div>
+              <p class="font-sans text-slate-700 text-[11px]">Dispatches mobile service team to upcoming Highway Logistics Plaza (NH-48 Toll Waypoint) and reserves priority bay.</p>
+            </div>
+          </div>
+
+          <button id="btn-resolve-3" onclick="resolveException(3)" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold transition-colors shadow-sm">
+            Dispatch Service Bay
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+       GLOBAL SLIDE-OVER: Qπ AI FREIGHT CO-PILOT CHAT DRAWER
+       ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="copilot-drawer" class="fixed inset-0 z-50 overflow-hidden hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onclick="toggleCopilotDrawer()"></div>
+    
+    <!-- Drawer Panel -->
+    <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+      <div class="w-screen max-w-md glass-panel-dark border-l border-sky-400/40 p-6 flex flex-col justify-between shadow-2xl relative text-white">
+        
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-cyan-600 flex items-center justify-center text-white shadow-md">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold">QpiAi Pilot</h3>
+              <p class="text-[10px] font-mono text-sky-300">Active Neural Corridor Assistant</p>
+            </div>
+          </div>
+          <button onclick="toggleCopilotDrawer()" class="text-slate-400 hover:text-white p-2">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Chat History Stream -->
+        <div id="copilot-chat-stream" class="flex-1 overflow-y-auto py-4 space-y-4 font-mono text-xs">
+          
+          <div class="flex items-start space-x-3">
+            <div class="w-7 h-7 rounded-lg bg-sky-600 flex items-center justify-center text-white font-bold shrink-0">Qπ</div>
+            <div class="p-3.5 rounded-2xl bg-slate-900 border border-sky-500/30 text-slate-200 leading-relaxed font-sans">
+              Hello Director. I am your Qπ AI Freight Co-Pilot. You can ask me to simulate weather risks, analyze backhaul profitability, or execute exception resolutions instantly. How may I assist your fleet today?
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="pt-4 border-t border-slate-800 space-y-2">
+          <div class="flex space-x-2">
+            <input id="copilot-input" type="text" placeholder="Ask Qπ Co-Pilot (e.g. 'Analyze I-80 weather risk')" class="flex-1 bg-slate-900 border border-sky-400/40 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-sky-400 font-mono shadow-inner" onkeydown="if(event.key === 'Enter') sendCopilotMessage()">
+            <button onclick="sendCopilotMessage()" class="px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-600 hover:from-sky-400 hover:to-cyan-500 text-white font-bold text-xs shadow-md transition-all">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1">
+            <span>Secured Session Token</span>
+            <span class="text-emerald-400 font-bold">READY</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+       REUSABLE MODAL DIALOG
+       ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md hidden transition-opacity">
+    <div class="glass-panel p-8 rounded-2xl border-2 border-sky-400 max-w-md w-full mx-4 space-y-5 relative shadow-2xl">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-xl shadow-sm">
+          <i id="modal-icon" class="fa-solid fa-circle-info"></i>
+        </div>
+        <div>
+          <h3 id="modal-title" class="text-lg font-bold text-slate-950">Notice</h3>
+          <p id="modal-subtitle" class="text-xs font-mono text-slate-600">FREIGHTIQ System Dialog</p>
+        </div>
+      </div>
+
+      <div id="modal-body" class="text-sm text-slate-700 leading-relaxed font-sans font-medium">
+        Modal body content goes here.
+      </div>
+
+      <div class="pt-3 border-t border-sky-200 flex justify-end">
+        <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 text-white font-bold text-xs hover:from-sky-500 hover:to-cyan-500 transition-colors shadow-md border border-sky-300/40">
+          Acknowledge & Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════
+       JAVASCRIPT: UNIFIED SINGLE FRONTEND APPLICATION CONTROLLER
+       ════════════════════════════════════════════════════════════════════════════ -->
+  <script>
+    const API_BASE = 'http://localhost:8000';
+    let currentView = 'landing';
+
+    // --- 1. SINGLE-PAGE ARCHITECTURE: VIEW SWITCHER ---
+    function switchView(viewName) {
+      currentView = viewName;
+
+      const landingEl = document.getElementById('view-landing');
+      const loginEl = document.getElementById('view-login');
+      const dashEl = document.getElementById('view-dashboard');
+
+      const landingLinks = document.getElementById('nav-landing-links');
+      const dashLinks = document.getElementById('nav-dashboard-links');
+      const badgeText = document.getElementById('nav-badge-text');
+      const actionWrap = document.getElementById('nav-action-wrap');
+
+      // Update switcher tab pill classes
+      ['landing', 'login', 'dashboard'].forEach(v => {
+        const btn = document.getElementById(`tab-btn-${v}`);
+        if (btn) {
+          if (v === viewName) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+
+      // Hide all views
+      landingEl.classList.add('view-hidden');
+      loginEl.classList.add('view-hidden');
+      dashEl.classList.add('view-hidden');
+
+      if (viewName === 'dashboard') {
+        dashEl.classList.remove('view-hidden');
+        landingLinks.classList.add('hidden');
+        landingLinks.classList.remove('md:flex');
+        dashLinks.classList.remove('hidden');
+        dashLinks.classList.add('md:flex');
+
+        badgeText.innerHTML = `Enterprise Command Center | <strong class="text-slate-900 font-semibold">Qπ AI</strong>`;
+        actionWrap.innerHTML = `
+          <button onclick="handleSignOut()" class="text-sm font-semibold text-slate-800 hover:text-sky-600 px-4 py-2 rounded-xl border border-sky-300/80 hover:border-sky-500 transition-all bg-white/90 shadow-sm backdrop-blur-md">
+            <i class="fa-solid fa-right-from-bracket text-xs mr-2 text-sky-600"></i>Exit Dashboard
+          </button>
+        `;
+      } else if (viewName === 'login') {
+        loginEl.classList.remove('view-hidden');
+        landingLinks.classList.add('hidden');
+        landingLinks.classList.remove('md:flex');
+        dashLinks.classList.add('hidden');
+        dashLinks.classList.remove('md:flex');
+
+        badgeText.innerHTML = `Security Portal | <strong class="text-slate-900 font-semibold">Qπ AI</strong>`;
+        actionWrap.innerHTML = `
+          <button onclick="switchView('landing')" class="text-sm font-semibold text-slate-800 hover:text-sky-600 px-4 py-2 rounded-xl border border-sky-300/80 hover:border-sky-500 transition-all bg-white/90 shadow-sm backdrop-blur-md">
+            <i class="fa-solid fa-house text-xs mr-2 text-sky-600"></i>Landing
+          </button>
+        `;
+      } else {
+        // 'landing' view
+        landingEl.classList.remove('view-hidden');
+        landingLinks.classList.remove('hidden');
+        landingLinks.classList.add('md:flex');
+        dashLinks.classList.add('hidden');
+        dashLinks.classList.remove('md:flex');
+
+        badgeText.innerHTML = `Autonomous Freight | <strong class="text-slate-900 font-semibold">Qπ AI</strong>`;
+        actionWrap.innerHTML = `
+          <button id="nav-portal-btn" onclick="switchView('login')" class="text-sm font-semibold text-slate-800 hover:text-sky-600 px-4 py-2 rounded-xl border border-sky-300/80 hover:border-sky-500 transition-all bg-white/90 shadow-sm backdrop-blur-md">
+            <i class="fa-solid fa-lock text-xs mr-2 text-sky-600"></i>Client Portal
+          </button>
+        `;
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.location.hash = viewName;
+    }
+
+    function handleSignOut() {
+      sessionStorage.removeItem('fiq_token');
+      sessionStorage.removeItem('fiq_user');
+      switchView('landing');
+      openModal('Signed Out', 'You have securely signed out of the FREIGHTIQ Command Center.', 'fa-circle-check');
+    }
+
+    // --- 2. MODAL CONTROLLER ---
+    function openModal(title, text, icon = 'fa-circle-info') {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-body').innerText = text;
+      document.getElementById('modal-icon').className = `fa-solid ${icon}`;
+      document.getElementById('app-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('app-modal').classList.add('hidden');
+    }
+
+    function openDemoModal() {
+      openModal(
+        'Request FREIGHTIQ Enterprise Demo',
+        'Thank you for your interest in Qπ AI Road Freight Intelligence. Our enterprise logistics team will schedule a customized live corridor demonstration for your fleet within 24 hours.',
+        'fa-paper-plane'
+      );
+    }
+
+    // --- 3. BENTO FLEET ROI CALCULATOR ---
+    function updateFleetCalc(val) {
+      document.getElementById('fleet-count-display').innerText = `${val} Semi-Trucks`;
+      const dieselSavings = (val * 245000).toLocaleString('en-IN');
+      const demurrageSavings = (val * 142000).toLocaleString('en-IN');
+      const co2Offset = (val * 8.24).toFixed(0);
+      document.getElementById('diesel-saved').innerText = `₹${dieselSavings}`;
+      document.getElementById('demurrage-saved').innerText = `₹${demurrageSavings}`;
+      document.getElementById('co2-saved').innerText = `${co2Offset} Metric Tons`;
+    }
+
+    // --- 4. LIVE TELEMETRY NODE SELECTOR WIDGET ---
+    const truckData = {
+      'truck-1': {
+        title: 'UNIT #4021 - TELEMETRY COCKPIT',
+        sub: 'Transmitting via Qπ AI Satellite Link | 100% Signal Strength',
+        speed: '68 km/h',
+        weight: '38,500 KG',
+        mpg: '4.2 KM/L',
+        progressText: '64% Completed',
+        progressWidth: '64%',
+        origin: 'Origin: Bengaluru Logistics Park',
+        dest: 'Destination: Mumbai JNPT Intermodal',
+        aiNote: 'Maintain speed at 68 km/h along NH-48. Low wind resistance corridor active. Arrival ETA reduced by 22 minutes with zero additional fuel burn.'
+      },
+      'truck-2': {
+        title: 'UNIT #1094 - REEFER TEMPERATURE LINK',
+        sub: 'Transmitting via Qπ AI Sub-GHz Telemetry | 98% Signal Strength',
+        speed: '62 km/h',
+        weight: '32,400 KG',
+        mpg: '3.8 KM/L',
+        progressText: '81% Completed',
+        progressWidth: '81%',
+        origin: 'Origin: Pune Chakan Cold Hub',
+        dest: 'Destination: Delhi-NCR Distribution Yard',
+        aiNote: 'Thermal monitoring indicates stable -18°C setpoint for pharmaceutical cold-chain cargo. Automatic green-corridor toll pre-cleared.'
+      },
+      'truck-3': {
+        title: 'UNIT #8809 - FLATBED STRUCTURAL COCKPIT',
+        sub: 'Transmitting via Cellular Mesh & Satellite | 99% Signal Strength',
+        speed: '58 km/h',
+        weight: '42,000 KG',
+        mpg: '3.5 KM/L',
+        progressText: '42% Completed',
+        progressWidth: '42%',
+        origin: 'Origin: Jamshedpur Steel Plant',
+        dest: 'Destination: Chennai Port Terminal',
+        aiNote: 'Heavy structural freight stabilizer engaged. Speed governor engaged for Western Ghats gradient safety.'
+      },
+      'truck-4': {
+        title: 'UNIT #3120 - TANKER HAZMAT SECURE NODE',
+        sub: 'Cryptographically Encrypted Qπ Telemetry | 100% Signal Strength',
+        speed: '65 km/h',
+        weight: '36,000 KG',
+        mpg: '3.9 KM/L',
+        progressText: '93% Completed',
+        progressWidth: '93%',
+        origin: 'Origin: Jamnagar Refinery Complex',
+        dest: 'Destination: Hyderabad Bulk Fuel Depot',
+        aiNote: 'Liquid surge baffle sensors calibrated. Automatic FASTag electronic pre-clearance transmitted to Hyderabad terminal gate, eliminating dwell time.'
+      }
+    };
+
+    function selectTruckNode(truckKey) {
+      const data = truckData[truckKey];
+      if (!data) return;
+
+      document.getElementById('truck-title').innerText = data.title;
+      document.getElementById('truck-sub').innerText = data.sub;
+      document.getElementById('truck-speed').innerText = data.speed;
+      document.getElementById('truck-weight').innerText = data.weight;
+      document.getElementById('truck-mpg').innerText = data.mpg;
+      document.getElementById('truck-progress-text').innerText = data.progressText;
+      document.getElementById('truck-progress-bar').style.width = data.progressWidth;
+      document.getElementById('truck-origin').innerText = data.origin;
+      document.getElementById('truck-dest').innerText = data.dest;
+      document.getElementById('truck-ai-note').innerText = data.aiNote;
+
+      ['truck-1', 'truck-2', 'truck-3', 'truck-4'].forEach(id => {
+        const btn = document.getElementById(`btn-node-${id}`);
+        if (id === truckKey) {
+          btn.className = "px-3.5 py-1.5 rounded-xl bg-sky-600 text-white font-bold transition-colors";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors";
+        }
+      });
+    }
+
+    // --- 5. AUTHENTICATION & LOGIN LOGIC ---
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-submit-btn');
+      const form = document.getElementById('login-form');
+      const email = form.querySelector('input[type="email"]').value;
+      const password = form.querySelector('input[type="password"]').value;
+
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Authenticating Qπ Tokens...</span>`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          sessionStorage.setItem('fiq_token', data.access_token || 'demo-token');
+          sessionStorage.setItem('fiq_user', JSON.stringify(data.user || { email, role: 'Fleet Director' }));
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Authenticated!</span>`;
+          setTimeout(() => {
+            btn.innerHTML = `<span>Sign In to Telemetry Portal</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
+            btn.disabled = false;
+            switchView('dashboard');
+            openModal('Authentication Verified', `Welcome back, Director (${email}). Autonomous corridor mesh initialized.`, 'fa-shield-halved');
+          }, 400);
+        } else {
+          throw new Error(data.detail || 'Authentication failed');
+        }
+      } catch (err) {
+        // Fallback for local testing / offline demo
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Demo Session Authorized</span>`;
+        setTimeout(() => {
+          btn.innerHTML = `<span>Sign In to Telemetry Portal</span> <i class="fa-solid fa-arrow-right text-xs"></i>`;
+          btn.disabled = false;
+          sessionStorage.setItem('fiq_token', 'demo-token-active');
+          sessionStorage.setItem('fiq_user', JSON.stringify({ email: email || 'dispatcher@freightiq.ai', role: 'Fleet Director' }));
+          switchView('dashboard');
+          openModal('Demo Session Authorized', `Connected to local simulation environment. Corridors ready for testing.`, 'fa-shield-halved');
+        }, 500);
+      }
+    }
+
+    function quickDemoAccess() {
+      sessionStorage.setItem('fiq_token', 'quick-demo-token');
+      sessionStorage.setItem('fiq_user', JSON.stringify({ email: 'dispatcher@freightiq.ai', role: 'Fleet Director' }));
+      switchView('dashboard');
+      openModal('Quick Demo Access', 'Welcome to the FREIGHTIQ Enterprise Command Center. All AI modules and simulations are fully operational.', 'fa-bolt');
+    }
+
+    function handleSSOLogin() {
+      openModal('Enterprise SSO Redirection', 'Connecting to corporate Single Sign-On provider via SAML 2.0 / Qπ OAuth2 Security Proxy...', 'fa-building-lock');
+    }
+
+    // --- 6. MODULE 1: WEATHER SIMULATION LOGIC ---
+    let weatherState = { severity: 3.5, wind: 22, precip: 15 };
+    let weatherDebounce = null;
+
+    function updateWeatherSimulation(param, val) {
+      weatherState[param] = parseFloat(val);
+
+      document.getElementById('val-severity').innerText = `${weatherState.severity} / 10`;
+      document.getElementById('val-wind').innerText = `${weatherState.wind} MPH`;
+      document.getElementById('val-precip').innerText = `${weatherState.precip}%`;
+
+      clearTimeout(weatherDebounce);
+      weatherDebounce = setTimeout(async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/weather/simulate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(weatherState)
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error('API error');
+
+          document.getElementById('sim-safety-score').innerText = `${data.safety_score} / 100`;
+
+          const badge = document.getElementById('weather-risk-badge');
+          const protocol = document.getElementById('sim-ai-protocol');
+          const speedRec = document.getElementById('sim-speed-rec');
+          const rerouteStatus = document.getElementById('sim-reroute-status');
+
+          const levelClass = {
+            HIGH:     'px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 border border-red-500/40 font-bold',
+            MODERATE: 'px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold',
+            LOW:      'px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold',
+          };
+          badge.className = levelClass[data.risk_level] || levelClass['LOW'];
+          badge.innerText = data.badge_text;
+          speedRec.innerText = data.speed_rec;
+          rerouteStatus.innerText = data.reroute_status;
+          protocol.innerText = data.ai_protocol;
+        } catch (e) {
+          // Local fallback calculation
+          let riskScore = 100 - (weatherState.severity * 4) - (weatherState.wind * 0.4) - (weatherState.precip * 0.25);
+          riskScore = Math.max(45, Math.min(99, riskScore)).toFixed(1);
+          document.getElementById('sim-safety-score').innerText = `${riskScore} / 100`;
+
+          const badge = document.getElementById('weather-risk-badge');
+          const protocol = document.getElementById('sim-ai-protocol');
+          const speedRec = document.getElementById('sim-speed-rec');
+          const rerouteStatus = document.getElementById('sim-reroute-status');
+
+          if (weatherState.severity > 7 || weatherState.wind > 50 || weatherState.precip > 70) {
+            badge.className = "px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 border border-red-500/40 font-bold";
+            badge.innerText = "HIGH WEATHER RISK";
+            speedRec.innerText = "45 km/h (RESTRICTED)";
+            rerouteStatus.innerText = "BYPASS NH-48 EXPRESS";
+            protocol.innerText = "Severe monsoon front detected. Qπ AI has initiated mandatory speed restriction to 45 km/h and auto-rerouted 14 units around the ghat pass.";
+          } else if (weatherState.severity > 4 || weatherState.wind > 30 || weatherState.precip > 40) {
+            badge.className = "px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold";
+            badge.innerText = "MODERATE RISK";
+            speedRec.innerText = "55 km/h";
+            rerouteStatus.innerText = "WIND CORRIDOR ACTIVE";
+            protocol.innerText = "Crosswind velocities elevated in Deccan Plateau. Platoon gap extended to 50 meters to maintain aerodynamic stability.";
+          } else {
+            badge.className = "px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold";
+            badge.innerText = "LOW RISK CORRIDOR";
+            speedRec.innerText = "68 km/h";
+            rerouteStatus.innerText = "STANDARD NH-44";
+            protocol.innerText = "Weather conditions are nominal. Platoon spacing maintained at standard 40-meter interval. No speed restrictions mandated by Qπ AI telemetry.";
+          }
+        }
+      }, 350);
+    }
+
+    // --- 7. MODULE 2: BACKHAUL MATCHING & OPTIMIZER ---
+    async function runBackhaulMatchingEngine() {
+      openModal('Qπ AI Backhaul Engine Running...', 'Scanning returning empty semi-trucks against open cargo manifests via Qπ Quantum Optimizer...', 'fa-wand-magic-sparkles');
+      try {
+        const res = await fetch(`${API_BASE}/api/backhaul/match`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ origin: 'Bengaluru Logistics Park', destination: 'Mumbai JNPT Intermodal', cargo_type: 'General', weight_lbs: 40000 })
+        });
+        const data = await res.json();
+        closeModal();
+        openModal(
+          'Qπ AI Backhaul Engine Executed',
+          `Successfully scanned ${data.total_units_scanned || 142} returning empty semi-trucks against open importer/exporter cargo manifests. ${data.matched_count || 18} optimal revenue pairings verified. Total yield: ₹${(data.total_revenue_usd || 434000).toLocaleString('en-IN')}. Backend: ${data.quantum_backend || 'QpiAI QUBO'}.`,
+          'fa-wand-magic-sparkles'
+        );
+      } catch (e) {
+        closeModal();
+        openModal('Qπ AI Backhaul Engine Executed', 'Successfully scanned 142 returning empty semi-trucks against open Indian freight manifests. 18 optimal revenue pairings verified via QpiAI Quantum Simulator.', 'fa-wand-magic-sparkles');
+      }
+    }
+
+    let totalSavedAmount = 434000;
+    async function applyBackhaulMatch(cargoId, amountStr) {
+      try {
+        const res = await fetch(`${API_BASE}/api/backhaul/apply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cargo_id: cargoId, revenue: amountStr })
+        });
+        const data = await res.json();
+        openModal('Backhaul Match Confirmed', `Cargo load ${cargoId} successfully matched with returning empty semi unit. Projected revenue yield: ${amountStr}. Digital e-waybill ${data.waybill || 'generated'}.`, 'fa-circle-check');
+      } catch (e) {
+        openModal('Backhaul Match Confirmed', `Cargo load ${cargoId} successfully matched with returning empty semi unit. Projected revenue yield: ${amountStr}. Digital e-waybill generated.`, 'fa-circle-check');
+      }
+      totalSavedAmount += parseInt(amountStr.replace('₹', '').replace('$', '').replace(',', ''));
+      document.getElementById('optimizer-total-savings').innerText = `₹${totalSavedAmount.toLocaleString('en-IN')}.00`;
+    }
+
+    // --- 8. MODULE 3: EXCEPTION RESOLUTION WORKFLOW ---
+    async function resolveException(id) {
+      const card = document.getElementById(`exc-card-${id}`);
+      const btn = document.getElementById(`btn-resolve-${id}`);
+
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Executing AI Protocol...`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/exceptions/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ exception_id: id, exception_type: 'route_deviation' })
+        });
+        const data = await res.json();
+
+        if (card) card.style.opacity = '0.5';
+        btn.className = "w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold cursor-not-allowed";
+        btn.innerHTML = `<i class="fa-solid fa-check mr-2"></i>Resolved & Dispatched`;
+
+        const briefing = data.briefing || `Exception #${id} resolved via Qπ AI automated protocol. Telemetry updated across regional Indian logistics hubs.`;
+        openModal(`Exception #${id} Resolved`, briefing, 'fa-shield-check');
+      } catch (e) {
+        if (card) card.style.opacity = '0.5';
+        btn.className = "w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold cursor-not-allowed";
+        btn.innerHTML = `<i class="fa-solid fa-check mr-2"></i>Resolved & Dispatched`;
+        openModal('Exception Resolved Successfully', `Automated Qπ AI resolution workflow for Exception #${id} executed successfully. Telemetry updated across regional Indian hubs.`, 'fa-shield-check');
+      }
+    }
+
+    // --- 9. AI CO-PILOT DRAWER & CHAT LOGIC ---
+    function toggleCopilotDrawer() {
+      const drawer = document.getElementById('copilot-drawer');
+      drawer.classList.toggle('hidden');
+    }
+
+    async function sendCopilotMessage() {
+      const input = document.getElementById('copilot-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const stream = document.getElementById('copilot-chat-stream');
+
+      stream.innerHTML += `
+        <div class="flex justify-end">
+          <div class="p-3.5 rounded-2xl bg-sky-600 text-white max-w-[85%] font-sans leading-relaxed">
+            ${text}
+          </div>
+        </div>
+      `;
+      input.value = '';
+      stream.scrollTop = stream.scrollHeight;
+
+      const typingId = `typing-${Date.now()}`;
+      stream.innerHTML += `
+        <div id="${typingId}" class="flex items-start space-x-3">
+          <div class="w-7 h-7 rounded-lg bg-sky-600 flex items-center justify-center text-white font-bold shrink-0">Qπ</div>
+          <div class="p-3.5 rounded-2xl bg-slate-900 border border-sky-500/30 text-slate-400 leading-relaxed font-sans italic">
+            Analyzing Indian neural corridors...
+          </div>
+        </div>
+      `;
+      stream.scrollTop = stream.scrollHeight;
+
+      let aiReply = "I have analyzed your query across our Indian logistics corridor models. All semi-truck units are maintaining optimal fuel efficiency and weather risk factors are within safe operational parameters.";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/copilot/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, context: 'freightiq_dashboard' })
+        });
+        const data = await res.json();
+        if (data.success && data.reply) aiReply = data.reply;
+      } catch (e) {
+        const tl = text.toLowerCase();
+        if (tl.includes('weather') || tl.includes('storm')) {
+          aiReply = "Weather risk simulation indicates NH-44 corridor is currently stable. You can adjust the severity slider in the dashboard to test monsoon mitigation protocols.";
+        } else if (tl.includes('backhaul') || tl.includes('cargo')) {
+          aiReply = "Backhaul matching engine has identified 18 empty returning units ready for immediate cargo pairing, yielding an estimated ₹4,34,000+ in weekly net optimization.";
+        } else if (tl.includes('exception') || tl.includes('accident')) {
+          aiReply = "There are 3 active exceptions requiring attention. Unit #8809 has an automated AI reroute ready for execution to bypass the NH-44 ghat standstill.";
+        }
+      }
+
+      const typingEl = document.getElementById(typingId);
+      if (typingEl) {
+        typingEl.querySelector('div:last-child').className = "p-3.5 rounded-2xl bg-slate-900 border border-sky-500/30 text-slate-200 leading-relaxed font-sans";
+        typingEl.querySelector('div:last-child').innerText = aiReply;
+      }
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    // --- 10. THREE.JS 3D SCENES ---
+    function initHero3DScene() {
+      const canvas = document.getElementById('hero-webgl-canvas');
+      if (!canvas) return;
+
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0xf0f5fa, 0.012);
+
+      const camera = new THREE.PerspectiveCamera(45, (canvas.clientWidth || 1) / (canvas.clientHeight || 1), 0.1, 1000);
+      camera.position.set(-18, 9, 28);
+      camera.lookAt(8, 2, 0);
+
+      const ambientLight = new THREE.AmbientLight(0xe0f2fe, 1.4);
+      scene.add(ambientLight);
+
+      const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+      sunLight.position.set(30, 40, -30);
+      sunLight.castShadow = true;
+      scene.add(sunLight);
+
+      const skyLight = new THREE.DirectionalLight(0x0284c7, 1.0);
+      skyLight.position.set(-20, 20, 20);
+      scene.add(skyLight);
+
+      // Highway Road Surface
+      const roadGroup = new THREE.Group();
+      const roadGeo = new THREE.PlaneGeometry(16, 200);
+      const roadMat = new THREE.MeshStandardMaterial({ color: 0x05080e, roughness: 0.9, metalness: 0.1 });
+      const road = new THREE.Mesh(roadGeo, roadMat);
+      road.rotation.x = -Math.PI / 2;
+      road.receiveShadow = true;
+      roadGroup.add(road);
+
+      // Tire Tread Markings
+      const tireMarkMat = new THREE.MeshBasicMaterial({ color: 0x0a0a0a, transparent: true, opacity: 0.85 });
+      const tirePositions = [-4.8, -4.2, -0.8, -0.2, 0.2, 0.8, 4.2, 4.8];
+      tirePositions.forEach(xPos => {
+        const tireGeo = new THREE.PlaneGeometry(0.2, 200);
+        const tireMark = new THREE.Mesh(tireGeo, tireMarkMat);
+        tireMark.rotation.x = -Math.PI / 2;
+        tireMark.position.set(xPos, 0.01, 0);
+        roadGroup.add(tireMark);
+      });
+
+      // Dash Markings
+      const dashGroup = new THREE.Group();
+      const dashGeo = new THREE.PlaneGeometry(0.3, 3);
+      const dashMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      for (let z = -100; z < 100; z += 8) {
+        const dash1 = new THREE.Mesh(dashGeo, dashMat);
+        dash1.rotation.x = -Math.PI / 2;
+        dash1.position.set(-2.5, 0.02, z);
+        dashGroup.add(dash1);
+
+        const dash2 = new THREE.Mesh(dashGeo, dashMat);
+        dash2.rotation.x = -Math.PI / 2;
+        dash2.position.set(2.5, 0.02, z);
+        dashGroup.add(dash2);
+      }
+      roadGroup.add(dashGroup);
+      scene.add(roadGroup);
+
+      // Semi-Truck & Trailer
+      const truckGroup = new THREE.Group();
+      const trailerGeo = new THREE.BoxGeometry(3.2, 3.8, 12);
+      const trailerMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.2, roughness: 0.2 });
+      const trailer = new THREE.Mesh(trailerGeo, trailerMat);
+      trailer.position.set(0, 2.5, 0);
+      trailer.castShadow = true;
+      truckGroup.add(trailer);
+
+      const stripeGeo = new THREE.BoxGeometry(3.25, 0.4, 12.02);
+      const stripeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.8, roughness: 0.2 });
+      const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+      stripe.position.set(0, 2.3, 0);
+      truckGroup.add(stripe);
+
+      const cabGeo = new THREE.BoxGeometry(3.2, 3.2, 4.5);
+      const cabMat = new THREE.MeshStandardMaterial({ color: 0x0369a1, metalness: 0.7, roughness: 0.3 });
+      const cab = new THREE.Mesh(cabGeo, cabMat);
+      cab.position.set(0, 2.2, 7.5);
+      cab.castShadow = true;
+      truckGroup.add(cab);
+
+      const glassGeo = new THREE.BoxGeometry(3.0, 1.2, 1.5);
+      const glassMat = new THREE.MeshStandardMaterial({ color: 0xbae6fd, metalness: 0.9, roughness: 0.1 });
+      const glass = new THREE.Mesh(glassGeo, glassMat);
+      glass.position.set(0, 3.0, 8.2);
+      truckGroup.add(glass);
+
+      const wheelGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.6, 16);
+      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x020617, roughness: 0.95 });
+      const wheelPositions = [
+        [-1.6, 0.7, -4], [1.6, 0.7, -4],
+        [-1.6, 0.7, 4],  [1.6, 0.7, 4],
+        [-1.6, 0.7, 7.5],[1.6, 0.7, 7.5]
+      ];
+      wheelPositions.forEach(pos => {
+        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(...pos);
+        truckGroup.add(wheel);
+      });
+
+      truckGroup.position.set(2.5, 0, -2);
+      scene.add(truckGroup);
+
+      // Distant Port & Cranes
+      const portGroup = new THREE.Group();
+      const shipHullGeo = new THREE.BoxGeometry(8, 3, 30);
+      const shipMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.5 });
+      const ship = new THREE.Mesh(shipHullGeo, shipMat);
+      ship.position.set(60, 0, -80);
+      portGroup.add(ship);
+
+      const craneLightMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+      for (let i = 0; i < 4; i++) {
+        const cranePoint = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), craneLightMat);
+        cranePoint.position.set(55 + i * 4, 8 + (i % 2), -85 + i * 5);
+        portGroup.add(cranePoint);
+      }
+      scene.add(portGroup);
+
+      // HUD nodes
+      const hudGroup = new THREE.Group();
+      const nodeGeo = new THREE.SphereGeometry(0.2, 16, 16);
+      const nodeMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
+      for (let i = 0; i < 8; i++) {
+        const node = new THREE.Mesh(nodeGeo, nodeMat);
+        node.position.set((Math.random() - 0.5) * 20, 2 + Math.random() * 6, (Math.random() - 0.5) * 40);
+        hudGroup.add(node);
+      }
+      scene.add(hudGroup);
+
+      let clock = new THREE.Clock();
+      let mouseX = 0, mouseY = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth) - 0.5;
+        mouseY = (e.clientY / window.innerHeight) - 0.5;
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (currentView !== 'landing') return; // Save GPU cycles when on login/dashboard
+
+        const delta = clock.getDelta();
+        dashGroup.position.z += delta * 25;
+        if (dashGroup.position.z > 8) dashGroup.position.z = 0;
+
+        truckGroup.position.y = Math.sin(clock.getElapsedTime() * 8) * 0.04;
+        hudGroup.rotation.y += delta * 0.1;
+
+        camera.position.x = -18 + (mouseX * 2);
+        camera.position.y = 9 + (mouseY * 1.5);
+        camera.lookAt(8, 2, 0);
+
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener('resize', () => {
+        if (!canvas) return;
+        camera.aspect = (canvas.clientWidth || 1) / (canvas.clientHeight || 1);
+        camera.updateProjectionMatrix();
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      });
+
+      animate();
+    }
+
+    function initLogin3DScene() {
+      const canvas = document.getElementById('login-topography-canvas');
+      if (!canvas) return;
+
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, (canvas.clientWidth || 1) / (canvas.clientHeight || 1), 0.1, 100);
+      camera.position.set(0, 15, 20);
+      camera.lookAt(0, 0, 0);
+
+      const gridGeo = new THREE.PlaneGeometry(40, 40, 24, 24);
+      const gridMat = new THREE.MeshBasicMaterial({ color: 0x0284c7, wireframe: true, transparent: true, opacity: 0.4 });
+      const grid = new THREE.Mesh(gridGeo, gridMat);
+      grid.rotation.x = -Math.PI / 2.5;
+      scene.add(grid);
+
+      const particlesGeo = new THREE.BufferGeometry();
+      const count = 60;
+      const posArray = new Float32Array(count * 3);
+      for (let i = 0; i < count * 3; i += 3) {
+        posArray[i] = (Math.random() - 0.5) * 30;
+        posArray[i + 1] = Math.random() * 3;
+        posArray[i + 2] = (Math.random() - 0.5) * 30;
+      }
+      particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+      const particlesMat = new THREE.PointsMaterial({ size: 0.4, color: 0x38bdf8 });
+      const particles = new THREE.Points(particlesGeo, particlesMat);
+      scene.add(particles);
+
+      function animateLogin() {
+        requestAnimationFrame(animateLogin);
+        if (currentView !== 'login') return;
+
+        grid.rotation.z += 0.002;
+        particles.rotation.y += 0.003;
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener('resize', () => {
+        if (!canvas) return;
+        camera.aspect = (canvas.clientWidth || 1) / (canvas.clientHeight || 1);
+        camera.updateProjectionMatrix();
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      });
+
+      animateLogin();
+    }
+
+    // --- 11. INITIALIZATION & LIVE STATS SYNC ---
+    async function loadLiveStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/stats`);
+        const json = await res.json();
+        if (json.success && json.stats) {
+          const s = json.stats;
+          const activeEl = document.getElementById('stat-active-units');
+          if (activeEl) activeEl.innerText = `${s.active_units || 482} Semis`;
+          const fleetEl = document.getElementById('stat-active-fleet');
+          if (fleetEl) fleetEl.innerText = `${s.active_units || 482} Units`;
+          const dashSemis = document.getElementById('dash-active-semis');
+          if (dashSemis) dashSemis.innerText = `${s.active_units || 482} Units`;
+
+          const savingsEl = document.getElementById('stat-total-savings');
+          if (savingsEl && s.total_savings_usd) savingsEl.innerText = `₹${s.total_savings_usd.toLocaleString('en-IN')}`;
+          const dashNet = document.getElementById('dash-net-savings');
+          if (dashNet && s.total_savings_usd) dashNet.innerText = `₹${s.total_savings_usd.toLocaleString('en-IN')}`;
+
+          const onTimeEl = document.getElementById('stat-on-time');
+          if (onTimeEl) onTimeEl.innerText = `${s.on_time_pct || 99.4}%`;
+        }
+      } catch (e) {
+        // Backend not running, use demo stats
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check URL hash for initial view (e.g. #dashboard, #login, #landing)
+      const hash = window.location.hash.replace('#', '');
+      const savedUser = sessionStorage.getItem('fiq_user');
+
+      if (hash === 'dashboard' || (savedUser && !hash)) {
+        switchView('dashboard');
+      } else if (hash === 'login') {
+        switchView('login');
+      } else {
+        switchView('landing');
+      }
+
+      initHero3DScene();
+      initLogin3DScene();
+      loadLiveStats();
+    });
+  </script>
+</body>
+</html>

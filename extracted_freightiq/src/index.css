@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --navy-900: #08193A;
+    --navy-800: #0B2150;
+    --navy-600: #1B3A7A;
+    --mint-300: #A7F3D0;
+    --mint-400: #6EE7B7;
+    --mint-500: #34D399;
+    --slate-500: #5B6B86;
+    --risk-low: #34D399;
+    --risk-mod: #F6C65B;
+    --risk-high: #F59E5B;
+    --risk-crit: #F26D6D;
+
+    /* Nudgeable percentages for trailer telemetry panel */
+    --panel-left: 33%;
+    --panel-top: 26%;
+    --panel-width: 59%;
+    --panel-height: 32%;
+
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  body {
+    background: linear-gradient(135deg, #F3F8FF 0%, #EAF6F1 50%, #F0F7FF 100%);
+    color: #08193A;
+    overflow-x: hidden;
+    min-height: 100vh;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Monospace fonts for IDs, formulas, QASM */
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Glass Material Panels */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 40px rgba(8, 25, 58, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  position: relative;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.28s ease;
+}
+
+.glass-panel:hover {
+  box-shadow: 0 16px 48px rgba(8, 25, 58, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.glass-panel-dark {
+  background: rgba(8, 25, 58, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 14px 44px rgba(8, 25, 58, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  transition: border-color 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.glass-panel-dark:hover {
+  border-color: rgba(110, 231, 183, 0.4);
+  box-shadow: 0 16px 48px rgba(8, 25, 58, 0.3), 0 0 24px rgba(52, 211, 153, 0.2);
+}
+
+.glass-amber {
+  background: rgba(254, 243, 199, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(246, 198, 91, 0.4);
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px rgba(8, 25, 58, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.glass-pill:hover {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 20px rgba(8, 25, 58, 0.08);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 2px 4px rgba(8, 25, 58, 0.03);
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: #34D399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+}
+
+/* Liquid spring button response & magnetic hover */
+.liquid-btn {
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.liquid-btn:hover {
+  transform: translateY(-1.5px);
+}
+
+.liquid-btn:active {
+  transform: scale(0.97);
+}
+
+/* Custom range slider with glass lens thumb */
+input[type="range"].glass-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(8, 25, 58, 0.08);
+  height: 8px;
+  border-radius: 9999px;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+input[type="range"].glass-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #D1FAE5 50%, #34D399 100%);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 3px 10px rgba(8, 25, 58, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+input[type="range"].glass-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Drifting ambient blobs keyframes */
+@keyframes driftBlob1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(80px, 60px) scale(1.12); }
+  66% { transform: translate(-50px, 90px) scale(0.94); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes driftBlob2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(-90px, -40px) scale(1.08); }
+  66% { transform: translate(60px, -70px) scale(0.92); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes driftBlob3 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(60px, -80px) scale(1.15); }
+  66% { transform: translate(-80px, 40px) scale(0.88); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob-1 {
+  animation: driftBlob1 40s ease-in-out infinite;
+}
+
+.animate-blob-2 {
+  animation: driftBlob2 45s ease-in-out infinite;
+}
+
+.animate-blob-3 {
+  animation: driftBlob3 50s ease-in-out infinite;
+}
+
+/* Pulsing live mint dot */
+@keyframes mintPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 7px rgba(52, 211, 153, 0);
+  }
+}
+
+.animate-mint-pulse {
+  animation: mintPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Heartbeat pulse for LIVE badge */
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.2); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  70% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartBeat 2.2s infinite;
+}
+
+/* Mint flash when cell updates */
+@keyframes mintFlash {
+  0% {
+    background-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.6);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.mint-updated {
+  animation: mintFlash 1.6s ease-out;
+}
+
+/* Truck Stage Animations */
+@keyframes truckBob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3.5px); }
+}
+
+.animate-truck-bob {
+  animation: truckBob 6s ease-in-out infinite;
+}
+
+@keyframes shadowBreath {
+  0%, 100% { transform: scale(1); opacity: 0.16; }
+  50% { transform: scale(0.95); opacity: 0.11; }
+}
+
+.animate-shadow-breath {
+  animation: shadowBreath 6s ease-in-out infinite;
+}
+
+/* Moving road line under truck */
+@keyframes dashMove {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -40; }
+}
+
+.animate-dash-road {
+  stroke-dasharray: 12, 16;
+  animation: dashMove 1.2s linear infinite;
+}
+
+/* Speed streaks behind truck */
+@keyframes speedStreaks {
+  0% { opacity: 0; transform: translateX(15px); }
+  50% { opacity: 0.65; }
+  100% { opacity: 0; transform: translateX(-35px); }
+}
+
+.animate-speed-streak-1 {
+  animation: speedStreaks 2s ease-out infinite;
+}
+
+.animate-speed-streak-2 {
+  animation: speedStreaks 2.4s ease-out 0.8s infinite;
+}
+
+.animate-speed-streak-3 {
+  animation: speedStreaks 1.8s ease-out 0.4s infinite;
+}
+
+/* Shimmer on progress bar */
+@keyframes shimmerMove {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-shimmer {
+  animation: shimmerMove 2.2s ease-in-out infinite;
+}
+
+/* Custom thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(8, 25, 58, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(8, 25, 58, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,3 @@
+disruption_id,transport_mode,origin_port,destination_hub,cargo_type,disruption_cause,severity_level,cost_impact_usd
+DIS-801,Maritime,Port of Rotterdam,Frankfurt Logistics Center,Pharmaceuticals (Cold-Chain),Customs Inspection Hold,CRITICAL,12500.0
+DIS-802,Rail,Chicago Terminal Hub,Dallas Intermodal Yard,Industrial Goods,Track Maintenance,HIGH,3200.0

@@ -1,0 +1,118 @@
+{
+  "name": "FreightGuard AI - Autonomous Incident Triage & Carrier Rerouting",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freightguard-incident",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "FreightGuard Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "freightguard-incident"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.ml_telemetry.risk_tier }}",
+              "operation": "regex",
+              "value2": "CRITICAL|HIGH"
+            }
+          ]
+        }
+      },
+      "id": "2",
+      "name": "High Risk Filter",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "notification_status",
+              "value": "DISPATCH_AUTHORIZED"
+            },
+            {
+              "name": "action_summary",
+              "value": "=Shipment {{ $json.body.shipment_id }} auto-rerouted to {{ $json.body.qpiai_quantum_solution.selected_carrier }} preserving ₹{{ $json.body.qpiai_quantum_solution.net_financial_savings_inr || $json.body.qpiai_quantum_solution.net_financial_savings_usd }} INR."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3",
+      "name": "Log Incident Triage",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        720,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"SUCCESS_DISPATCHED\",\n  \"shipment_id\": \"{{ $node['FreightGuard Webhook'].json.body.shipment_id }}\",\n  \"assigned_carrier\": \"{{ $node['FreightGuard Webhook'].json.body.qpiai_quantum_solution.selected_carrier }}\",\n  \"saved_margin_inr\": {{ $node['FreightGuard Webhook'].json.body.qpiai_quantum_solution.net_financial_savings_inr || $node['FreightGuard Webhook'].json.body.qpiai_quantum_solution.net_financial_savings_usd }},\n  \"currency\": \"INR\",\n  \"timestamp\": \"{{ $now.toISO() }}\"\n}"
+      },
+      "id": "4",
+      "name": "Respond to FreightGuard",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        940,
+        280
+      ]
+    }
+  ],
+  "connections": {
+    "FreightGuard Webhook": {
+      "main": [
+        [
+          {
+            "node": "High Risk Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Risk Filter": {
+      "main": [
+        [
+          {
+            "node": "Log Incident Triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Incident Triage": {
+      "main": [
+        [
+          {
+            "node": "Respond to FreightGuard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

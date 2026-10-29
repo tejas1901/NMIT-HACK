@@ -1,0 +1,77 @@
+{
+  "dataset_rows": 58905,
+  "train_rows": 47124,
+  "test_rows": 11781,
+  "classification_metrics": {
+    "accuracy": 0.7285,
+    "precision": 0.8861,
+    "recall": 0.6082,
+    "f1_score": 0.7213,
+    "roc_auc": 0.7929
+  },
+  "regression_metrics": {
+    "mae_usd": 38.49,
+    "rmse_usd": 50.61,
+    "r2_score": 0.2633
+  },
+  "top_predictive_features": [
+    {
+      "feature": "order_item_total",
+      "importance": 851.0
+    },
+    {
+      "feature": "order_hour",
+      "importance": 690.0
+    },
+    {
+      "feature": "order_item_discount_rate",
+      "importance": 439.0
+    },
+    {
+      "feature": "order_month",
+      "importance": 373.0
+    },
+    {
+      "feature": "order_day_of_week",
+      "importance": 362.0
+    },
+    {
+      "feature": "order_item_quantity",
+      "importance": 162.0
+    },
+    {
+      "feature": "customer_segment_Home Office",
+      "importance": 139.0
+    },
+    {
+      "feature": "customer_segment_Consumer",
+      "importance": 127.0
+    },
+    {
+      "feature": "days_for_shipment_scheduled",
+      "importance": 127.0
+    },
+    {
+      "feature": "shipping_mode_Second Class",
+      "importance": 86.0
+    }
+  ],
+  "features": {
+    "categorical": [
+      "shipping_mode",
+      "order_region",
+      "market",
+      "customer_segment",
+      "department_name"
+    ],
+    "numerical": [
+      "days_for_shipment_scheduled",
+      "order_item_total",
+      "order_item_quantity",
+      "order_item_discount_rate",
+      "order_month",
+      "order_day_of_week",
+      "order_hour"
+    ]
+  }
+}

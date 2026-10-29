@@ -1,0 +1,6 @@
+booking_ref,origin,destination,cargo_department,weight_lbs,cargo_value_usd,shipping_mode,xgboost_delay_risk_pct,demurrage_risk_usd,assigned_carrier,qpiai_circuit,net_savings_usd,status
+CRG-24551,Chicago Terminal Hub,Dallas Intermodal Yard,Industrial Goods,42000,125000.0,First Class,99.8,93.22,Expedited Regional Express,qpiai_circuit_1793224539.qasm,37.24,CONFIRMED
+CRG-21818,Chicago Terminal Hub,Dallas Intermodal Yard,Perishable Foodstuff,42000,124997.0,Second Class,75.5,91.12,Expedited Regional Express,qpiai_circuit_1793221812.qasm,35.45,CONFIRMED
+CRG-20835,Port of Rotterdam,Frankfurt Logistics Center,Pharmaceuticals (Cold-Chain),32000,240000.0,First Class,99.8,106.56,Expedited Regional Express,qpiai_circuit_1793220832.qasm,48.58,CONFIRMED
+CRG-8910,Chicago Hub 04 (Clear),Dallas Intermodal Rail (Arrived),Industrial Machinery,44000,185000.0,First Class,78.4,125.0,Dedicated Priority Air Cargo,qpiai_circuit_1793220505.qasm,92.5,DELIVERED
+CRG-8911,Long Beach Port Dock 7,Denver Distribution Center,Pharmaceuticals (Cold-Chain),28500,340000.0,Same Day Priority,88.2,210.0,Dedicated Priority Air Cargo,qpiai_circuit_1793220505.qasm,115.0,DISPATCHED

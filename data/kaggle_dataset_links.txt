@@ -1,0 +1,16 @@
+Supply Chain & Logistics Datasets Reference List:
+
+1. Live Manifest Register Dataset (Extracted from UI)
+   Filename: live_manifest_register_data.csv
+
+2. DataCo Smart Supply Chain for Big Data
+   Filename: dataco_smart_supply_chain_sample.csv
+   Kaggle URL: https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data
+
+3. Supply Chain Order Delay Risk Analysis
+   Filename: supply_chain_delay_risk_sample.csv
+   Kaggle URL: https://www.kaggle.com/datasets/jayjoshi37/supply-chain-order-delay-risk-analysis
+
+4. Logistics and Supply Chain Disruption Dataset
+   Filename: logistics_disruption_sample.csv
+   Kaggle URL: https://www.kaggle.com/datasets/datasetengineer/logistics-and-supply-chain-dataset
