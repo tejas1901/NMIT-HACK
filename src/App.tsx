@@ -1187,21 +1187,30 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             setPage('login');
           }}
           onLoginSuccess={(u: any) => {
-            const r = u?.role?.toLowerCase() === 'admin' ? 'admin' : 'customer';
+            const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase().includes('rajath') || u?.email?.toLowerCase().includes('admin');
+            const r: Role = isAdmin ? 'admin' : 'customer';
+            if (isAdmin) {
+              setElevationToken('freightiq-admin-master-elevation-token');
+              try {
+                sessionStorage.setItem('freightiq_admin_token', 'freightiq-admin-master-elevation-token');
+                sessionStorage.setItem('freightiq_active_role', 'admin');
+                localStorage.setItem('freightiq_active_role', 'admin');
+              } catch {}
+            }
             setActiveRole(r);
-            setActiveTab(r === 'admin' ? 'admin-exception-tower' : 'customer-shipments');
+            setActiveTab(isAdmin ? 'admin-exception-tower' : 'customer-shipments');
             if (u) {
               const fullUser: UserProfile = {
                 id: u.id || `usr-${Date.now().toString().slice(-6)}`,
-                email: u.email || LOGGED_IN_CUSTOMER_EMAIL,
-                full_name: u.full_name || u.name || LOGGED_IN_CUSTOMER_NAME,
-                company: u.company || LOGGED_IN_CUSTOMER_COMPANY,
+                email: u.email || (isAdmin ? 'rajathgowda@gmail.com' : LOGGED_IN_CUSTOMER_EMAIL),
+                full_name: u.full_name || u.name || (isAdmin ? 'Rajathgowda' : LOGGED_IN_CUSTOMER_NAME),
+                company: u.company || (isAdmin ? 'FreightIQ Command' : LOGGED_IN_CUSTOMER_COMPANY),
                 phone: u.phone || '+91 98201 55194',
                 gstin: u.gstin || '27AABCV1234F1Z5',
                 corridor: u.corridor || 'NH-48 (Bengaluru - Mumbai JNPT)',
                 depot: u.depot || 'JNPT Nhava Sheva Terminal 3',
-                role: r === 'admin' ? 'ADMIN' : 'CUSTOMER',
-                role_label: r === 'admin' ? 'Master Administrator' : 'Verified Customer'
+                role: isAdmin ? 'ADMIN' : 'CUSTOMER',
+                role_label: isAdmin ? 'Master Administrator' : 'Verified Customer'
               };
               setCurrentUser(fullUser);
               try { localStorage.setItem('freightiq_user', JSON.stringify(fullUser)); } catch {}
@@ -1220,21 +1229,30 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           initialRole={loginRole}
           onNavigateLanding={() => setPage('landing')}
           onLoginSuccess={(u: any) => {
-            const r = u?.role?.toLowerCase() === 'admin' ? 'admin' : 'customer';
+            const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase().includes('rajath') || u?.email?.toLowerCase().includes('admin');
+            const r: Role = isAdmin ? 'admin' : 'customer';
+            if (isAdmin) {
+              setElevationToken('freightiq-admin-master-elevation-token');
+              try {
+                sessionStorage.setItem('freightiq_admin_token', 'freightiq-admin-master-elevation-token');
+                sessionStorage.setItem('freightiq_active_role', 'admin');
+                localStorage.setItem('freightiq_active_role', 'admin');
+              } catch {}
+            }
             setActiveRole(r);
-            setActiveTab(r === 'admin' ? 'admin-exception-tower' : 'customer-shipments');
+            setActiveTab(isAdmin ? 'admin-exception-tower' : 'customer-shipments');
             if (u) {
               const fullUser: UserProfile = {
                 id: u.id || `usr-${Date.now().toString().slice(-6)}`,
-                email: u.email || LOGGED_IN_CUSTOMER_EMAIL,
-                full_name: u.full_name || u.name || LOGGED_IN_CUSTOMER_NAME,
-                company: u.company || LOGGED_IN_CUSTOMER_COMPANY,
+                email: u.email || (isAdmin ? 'rajathgowda@gmail.com' : LOGGED_IN_CUSTOMER_EMAIL),
+                full_name: u.full_name || u.name || (isAdmin ? 'Rajathgowda' : LOGGED_IN_CUSTOMER_NAME),
+                company: u.company || (isAdmin ? 'FreightIQ Command' : LOGGED_IN_CUSTOMER_COMPANY),
                 phone: u.phone || '+91 98201 55194',
                 gstin: u.gstin || '27AABCV1234F1Z5',
                 corridor: u.corridor || 'NH-48 (Bengaluru - Mumbai JNPT)',
                 depot: u.depot || 'JNPT Nhava Sheva Terminal 3',
-                role: r === 'admin' ? 'ADMIN' : 'CUSTOMER',
-                role_label: r === 'admin' ? 'Master Administrator' : 'Verified Customer'
+                role: isAdmin ? 'ADMIN' : 'CUSTOMER',
+                role_label: isAdmin ? 'Master Administrator' : 'Verified Customer'
               };
               setCurrentUser(fullUser);
               try { localStorage.setItem('freightiq_user', JSON.stringify(fullUser)); } catch {}

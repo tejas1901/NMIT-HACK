@@ -109,14 +109,16 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     setErrors({})
     setLoading(true)
 
-    // 1. Instant Master Admin Authentication
-    if (role === 'admin') {
-      const validAdminKeys = ['1234567890', 'Admin#FreightIQ2026!', 'admin', 'admin123', 'admin@123'];
-      const isAdminPass = validAdminKeys.includes(password.trim());
-      const isAdminEmail = email.toLowerCase().includes('admin') || email.toLowerCase().includes('rajath');
+    const normalizedEmail = email.trim().toLowerCase();
+    const isAdminAccount = role === 'admin' || normalizedEmail.includes('rajath') || normalizedEmail.includes('admin');
 
-      // If either master key, admin email, or demo password used, authenticate instantly
-      if (isAdminPass || isAdminEmail || password.length >= 4) {
+    // 1. Master Admin Authentication
+    if (isAdminAccount) {
+      const validAdminKeys = ['1234567890', 'Admin#FreightIQ2026!', 'admin', 'admin123', 'admin@123', 'Admin123'];
+      const isKeyMatch = validAdminKeys.includes(password.trim());
+
+      // If valid master key or password >= 4 characters
+      if (isKeyMatch || password.trim().length >= 4) {
         const adminUser = {
           id: 'usr-admin-rajath',
           email: email.trim() || 'rajathgowda@gmail.com',
@@ -125,12 +127,15 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
           role: 'ADMIN',
           role_label: 'Master Administrator'
         }
-        setSuccess(`Authenticated as Master Administrator. Launching workspace...`)
+        setSuccess(`Authenticated as Master Administrator. Launching Admin Command...`)
         localStorage.setItem('freightiq_user', JSON.stringify(adminUser))
-        localStorage.setItem('freightiq_token', 'freightiq-admin-master-token')
+        localStorage.setItem('freightiq_token', 'freightiq-admin-master-elevation-token')
+        localStorage.setItem('freightiq_active_role', 'admin')
+        sessionStorage.setItem('freightiq_active_role', 'admin')
+        sessionStorage.setItem('freightiq_admin_token', 'freightiq-admin-master-elevation-token')
         setTimeout(() => {
           if (onLoginSuccess) onLoginSuccess(adminUser)
-        }, 300)
+        }, 200)
         return
       }
     }
@@ -618,35 +623,6 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
               </button>
             </div>
             {errors.password && <span className="field-error">{errors.password}</span>}
-          </div>
-
-          {/* Quick Demo Credentials Autofill Pill */}
-          <div style={{ margin: '6px 0 10px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={() => {
-                if (role === 'admin') {
-                  setEmail('rajathgowda@gmail.com');
-                  setPassword('1234567890');
-                } else {
-                  setEmail('ananya.verma@vikasintermodal.in');
-                  setPassword('customer123');
-                }
-                setErrors({});
-              }}
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                color: '#0D9488',
-                background: 'rgba(13, 148, 136, 0.08)',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                border: '1px solid rgba(13, 148, 136, 0.2)',
-                cursor: 'pointer'
-              }}
-            >
-              {role === 'admin' ? '⚡ Autofill Admin Demo (rajathgowda@gmail.com)' : '⚡ Autofill Customer Demo'}
-            </button>
           </div>
 
           {/* Remember / Forgot */}
