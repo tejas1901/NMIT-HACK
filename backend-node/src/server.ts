@@ -87,8 +87,8 @@ app.all(['/api/bookings', '/api/bookings/*'], async (req, res, next) => {
 // Centralized Error Handling
 app.use(errorHandler);
 
-// Start Server
-if (process.env.NODE_ENV !== 'test') {
+// Start Server (only when not running inside Vercel serverless environment)
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   app.listen(config.port, config.host, () => {
     console.log(`[+] FREIGHTIQ Node Gateway running on http://${config.host}:${config.port}`);
   });

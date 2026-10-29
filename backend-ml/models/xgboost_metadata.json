@@ -1,0 +1,141 @@
+{
+  "model_engine": "XGBoost 3.2.0 (Extreme Gradient Boosting)",
+  "dataset_rows": 58905,
+  "train_rows": 47124,
+  "test_rows": 11781,
+  "classification_metrics": {
+    "accuracy": 0.7282,
+    "precision": 0.8571,
+    "recall": 0.6354,
+    "f1_score": 0.7297,
+    "roc_auc": 0.7959
+  },
+  "regression_metrics": {
+    "mae_usd": 38.46,
+    "rmse_usd": 48.93,
+    "r2_score": 0.3113
+  },
+  "top_predictive_features": [
+    {
+      "feature": "shipping_mode_First Class",
+      "importance": 29.59
+    },
+    {
+      "feature": "days_for_shipment_scheduled",
+      "importance": 25.05
+    },
+    {
+      "feature": "shipping_mode_Standard Class",
+      "importance": 19.38
+    },
+    {
+      "feature": "shipping_mode_Second Class",
+      "importance": 4.52
+    },
+    {
+      "feature": "shipping_mode_Same Day",
+      "importance": 2.07
+    },
+    {
+      "feature": "order_hour",
+      "importance": 1.09
+    },
+    {
+      "feature": "customer_segment_Home Office",
+      "importance": 0.73
+    },
+    {
+      "feature": "order_day_of_week",
+      "importance": 0.71
+    },
+    {
+      "feature": "order_region_Oceania",
+      "importance": 0.51
+    },
+    {
+      "feature": "market_Pacific Asia",
+      "importance": 0.5
+    }
+  ],
+  "features": {
+    "categorical": [
+      "shipping_mode",
+      "order_region",
+      "market",
+      "customer_segment",
+      "department_name"
+    ],
+    "numerical": [
+      "days_for_shipment_scheduled",
+      "order_item_total",
+      "order_item_quantity",
+      "order_item_discount_rate",
+      "order_month",
+      "order_day_of_week",
+      "order_hour"
+    ],
+    "all_features": [
+      "days_for_shipment_scheduled",
+      "order_item_total",
+      "order_item_quantity",
+      "order_item_discount_rate",
+      "order_month",
+      "order_day_of_week",
+      "order_hour",
+      "shipping_mode_First Class",
+      "shipping_mode_Same Day",
+      "shipping_mode_Same Day Priority",
+      "shipping_mode_Second Class",
+      "shipping_mode_Standard Class",
+      "order_region_Canada",
+      "order_region_Caribbean",
+      "order_region_Central Africa",
+      "order_region_Central America",
+      "order_region_Central Asia",
+      "order_region_East Africa",
+      "order_region_East of USA",
+      "order_region_Eastern Asia",
+      "order_region_Eastern Europe",
+      "order_region_North Africa",
+      "order_region_North America",
+      "order_region_Northern Europe",
+      "order_region_Oceania",
+      "order_region_South America",
+      "order_region_South Asia",
+      "order_region_South of  USA ",
+      "order_region_Southeast Asia",
+      "order_region_Southern Africa",
+      "order_region_Southern Europe",
+      "order_region_US Center ",
+      "order_region_West Africa",
+      "order_region_West Asia",
+      "order_region_West of USA ",
+      "order_region_Western Europe",
+      "market_Africa",
+      "market_Europe",
+      "market_LATAM",
+      "market_Pacific Asia",
+      "market_USCA",
+      "customer_segment_Consumer",
+      "customer_segment_Corporate",
+      "customer_segment_Enterprise Cargo",
+      "customer_segment_Home Office",
+      "department_name_Apparel",
+      "department_name_Book Shop",
+      "department_name_Discs Shop",
+      "department_name_Fan Shop",
+      "department_name_Fitness",
+      "department_name_Footwear",
+      "department_name_Golf",
+      "department_name_Health and Beauty ",
+      "department_name_Heavy Industrial",
+      "department_name_Industrial Goods",
+      "department_name_Industrial Machinery",
+      "department_name_Outdoors",
+      "department_name_Perishable Foodstuff",
+      "department_name_Pet Shop",
+      "department_name_Pharmaceuticals (Cold-Chain)",
+      "department_name_Technology"
+    ]
+  }
+}
