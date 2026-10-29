@@ -1,0 +1,39 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "vite"
+    },
+    "backend-node": {
+      "root": "backend-node",
+      "framework": "express",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "backend-ml",
+          "format": "url",
+          "env": "BACKEND_ML_URL"
+        }
+      ]
+    },
+    "backend-ml": {
+      "root": "backend-ml",
+      "framework": "fastapi"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "backend-node"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
+  ]
+}

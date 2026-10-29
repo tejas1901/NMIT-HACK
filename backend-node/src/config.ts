@@ -15,8 +15,8 @@ export const config = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'sb_publishable__uivHUYOrPe8_2yzD7hBhg_x6O9m85a',
   
-  // ML Service (FastAPI)
-  mlServiceUrl: process.env.ML_SERVICE_URL || 'http://localhost:8000',
+  // ML Service (FastAPI) - supports Vercel Service binding BACKEND_ML_URL
+  mlServiceUrl: process.env.BACKEND_ML_URL || process.env.ML_SERVICE_URL || process.env.FASTAPI_URL || 'http://localhost:8000',
 
   // n8n
   n8nWebhookUrl: process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook/freightguard-incident',
