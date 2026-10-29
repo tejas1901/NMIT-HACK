@@ -175,7 +175,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     return role === 'admin' ? 'admin-exception-tower' : 'customer-shipments';
   };
 
-  const initialUrlPage = searchParams?.get('page') || 'cockpit';
+  const initialUrlPage = searchParams?.get('page') || 'landing';
   const [page, setPage] = useState<string>(initialUrlPage);
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(initialRole);
 
@@ -240,12 +240,22 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       sessionStorage.setItem('freightiq_active_tab', activeTab);
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
-        url.searchParams.set('role', activeRole);
-        url.searchParams.set('tab', activeTab);
+        if (page === 'cockpit') {
+          url.searchParams.set('page', 'cockpit');
+          url.searchParams.set('role', activeRole);
+          url.searchParams.set('tab', activeTab);
+        } else if (page === 'login') {
+          url.searchParams.set('page', 'login');
+          url.searchParams.delete('tab');
+        } else {
+          url.searchParams.delete('page');
+          url.searchParams.delete('role');
+          url.searchParams.delete('tab');
+        }
         window.history.replaceState({}, '', url.toString());
       }
     } catch {}
-  }, [activeRole, activeTab]);
+  }, [activeRole, activeTab, page]);
 
   // Master Application Data States with LocalStorage Persistence
   const [allConsignments, setAllConsignments] = useState<Consignment[]>(() => {
@@ -1272,7 +1282,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             if (onSignOut) {
               onSignOut();
             } else {
-              setPage('login');
+              setPage('landing');
               showToast('Signed out from workspace.');
             }
           }}
