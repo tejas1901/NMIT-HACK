@@ -1215,7 +1215,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
               setCurrentUser(fullUser);
               try { localStorage.setItem('freightiq_user', JSON.stringify(fullUser)); } catch {}
             }
-            setPage('cockpit');
+            if (typeof window !== 'undefined') {
+              window.location.assign(`/?page=cockpit&role=${r}&tab=${isAdmin ? 'admin-exception-tower' : 'customer-shipments'}`);
+            } else {
+              setPage('cockpit');
+            }
           }}
         />
       </Suspense>
@@ -1257,7 +1261,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
               setCurrentUser(fullUser);
               try { localStorage.setItem('freightiq_user', JSON.stringify(fullUser)); } catch {}
             }
-            setPage('cockpit');
+            if (typeof window !== 'undefined') {
+              window.location.assign(`/?page=cockpit&role=${r}&tab=${isAdmin ? 'admin-exception-tower' : 'customer-shipments'}`);
+            } else {
+              setPage('cockpit');
+            }
           }}
         />
       </Suspense>

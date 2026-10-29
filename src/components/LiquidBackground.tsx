@@ -21,6 +21,8 @@ export const LiquidBackground: React.FC = () => {
     };
 
     window.addEventListener('resize', handleResize);
+    const ro = new ResizeObserver(() => handleResize());
+    ro.observe(document.body);
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = e.clientX;
@@ -122,6 +124,7 @@ export const LiquidBackground: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      ro.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
