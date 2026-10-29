@@ -1,0 +1,76 @@
+{
+  "name": "FreightIQ - 04 Event Carrier Optimization Completed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "carrier-optimization-event",
+        "options": {}
+      },
+      "id": "node-inbound-opt",
+      "name": "Optimization Event Listener",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "carrier-optimization-event"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://node-gateway:3001/api/webhooks/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-FreightIQ-Secret",
+              "value": "freightiq-n8n-secure-token-2026"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event\": \"CARRIER_OPTIMIZATION_LOGGED\",\n  \"action\": \"DISPATCH_CARRIER_ASSIGNMENT\",\n  \"details\": {\n    \"shipmentId\": \"{{ $json.body.shipment_id }}\",\n    \"solver\": \"{{ $json.body.solver }}\",\n    \"selectedCarrier\": \"{{ $json.body.selected_carrier }}\",\n    \"netSavings\": {{ $json.body.net_savings }}\n  }\n}",
+        "options": {}
+      },
+      "id": "node-post-gateway-opt",
+      "name": "Log Optimization Run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "node-email-customer",
+      "name": "Email Shipper Auto-Mitigation (Placeholder)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Optimization Event Listener": {
+      "main": [
+        [
+          {
+            "node": "Log Optimization Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Optimization Run": {
+      "main": [
+        [
+          {
+            "node": "Email Shipper Auto-Mitigation (Placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

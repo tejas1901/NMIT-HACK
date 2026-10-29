@@ -286,6 +286,98 @@ export const QpiAIQuantumView: React.FC<QpiAIQuantumProps> = ({ onShowToast }) =
           </div>
         </div>
       </div>
+
+      {/* QpiAI Opt Combinatorial Optimization Suite */}
+      <div className="p-5 md:p-6 rounded-[28px] glass-panel space-y-4 border border-white/80 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-black/5">
+          <div>
+            <h3 className="text-base md:text-lg font-bold text-[#08193A] flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#1B3A7A]" />
+              <span>QpiAI Opt Combinatorial Optimization Suite</span>
+            </h3>
+            <p className="text-xs text-[#5B6B86] mt-0.5">
+              Production mathematical solvers formulated with QpiAI Opt across the freight lifecycle
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#1B3A7A]/10 text-[#1B3A7A] border border-[#1B3A7A]/20">
+            4 Solvers Active
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Carrier Allocation */}
+          <div className="p-4 rounded-2xl bg-white/70 border border-white/90 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6B86]">QUBO Formulation</span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#34D399]/20 text-[#08193A]">CONVERGED</span>
+              </div>
+              <h4 className="text-xs font-bold text-[#08193A]">Carrier Demurrage QUBO</h4>
+              <p className="text-[11px] text-[#5B6B86]">
+                Evaluates expedite surcharge vs SLA penalties across 3-qubit state space.
+              </p>
+            </div>
+            <div className="pt-2 border-t border-black/5">
+              <span className="text-[10px] text-[#5B6B86] block">Net Optimization</span>
+              <span className="text-xs font-mono font-bold text-[#34D399]">+₹34,800/consignment</span>
+            </div>
+          </div>
+
+          {/* Card 2: Backhaul Optimization */}
+          <div className="p-4 rounded-2xl bg-white/70 border border-white/90 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6B86]">VRP Routing Opt</span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#1B3A7A]/15 text-[#1B3A7A]">ACTIVE</span>
+              </div>
+              <h4 className="text-xs font-bold text-[#08193A]">Empty Truck Backhaul</h4>
+              <p className="text-[11px] text-[#5B6B86]">
+                Pairs returning empty haulers along Golden Quadrilateral with cargo bookings.
+              </p>
+            </div>
+            <div className="pt-2 border-t border-black/5">
+              <span className="text-[10px] text-[#5B6B86] block">Weekly Fuel Savings</span>
+              <span className="text-xs font-mono font-bold text-[#34D399]">+₹4,34,000/week</span>
+            </div>
+          </div>
+
+          {/* Card 3: Yard Slot Map */}
+          <div className="p-4 rounded-2xl bg-white/70 border border-white/90 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6B86]">Bin-Packing QUBO</span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#34D399]/20 text-[#08193A]">SOLVED</span>
+              </div>
+              <h4 className="text-xs font-bold text-[#08193A]">Yard Slot & Crane Opt</h4>
+              <p className="text-[11px] text-[#5B6B86]">
+                Re-arranges port terminal berths to minimize crane turns and eliminate dwell penalty.
+              </p>
+            </div>
+            <div className="pt-2 border-t border-black/5">
+              <span className="text-[10px] text-[#5B6B86] block">Dwell Cost Reclaimed</span>
+              <span className="text-xs font-mono font-bold text-[#34D399]">₹7,800/hr burn saved</span>
+            </div>
+          </div>
+
+          {/* Card 4: Incident Blocker Mitigation */}
+          <div className="p-4 rounded-2xl bg-white/70 border border-white/90 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6B86]">Autonomous n8n</span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#1B3A7A]/15 text-[#1B3A7A]">DISPATCHED</span>
+              </div>
+              <h4 className="text-xs font-bold text-[#08193A]">Corridor Blocker Solver</h4>
+              <p className="text-[11px] text-[#5B6B86]">
+                Real-time exception tower rerouting during mountain ghat weather bottlenecks.
+              </p>
+            </div>
+            <div className="pt-2 border-t border-black/5">
+              <span className="text-[10px] text-[#5B6B86] block">SLA Compliance</span>
+              <span className="text-xs font-mono font-bold text-[#34D399]">100% Zero Breach</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

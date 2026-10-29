@@ -1,0 +1,87 @@
+{
+  "name": "FreightIQ - 02 Daily XGBoost Retraining Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "node-daily-cron",
+      "name": "Daily at 02:00 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/ml/demurrage/train",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"test_size\": 0.2,\n  \"n_estimators\": 200,\n  \"max_depth\": 6,\n  \"learning_rate\": 0.05\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-train-xgboost",
+      "name": "Trigger XGBoost Retrain",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://node-gateway:3001/api/webhooks/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-FreightIQ-Secret",
+              "value": "freightiq-n8n-secure-token-2026"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event\": \"MODEL_RETRAINED\",\n  \"action\": \"VERSION_PROMOTED\",\n  \"details\": {\n    \"version\": \"{{ $json.model_version }}\",\n    \"roc_auc\": {{ $json.roc_auc }},\n    \"accuracy\": {{ $json.accuracy }},\n    \"datasetRows\": {{ $json.dataset_rows }}\n  }\n}",
+        "options": {}
+      },
+      "id": "node-post-gateway",
+      "name": "Log Retrain to Audit Stream",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Daily at 02:00 AM": {
+      "main": [
+        [
+          {
+            "node": "Trigger XGBoost Retrain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger XGBoost Retrain": {
+      "main": [
+        [
+          {
+            "node": "Log Retrain to Audit Stream",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

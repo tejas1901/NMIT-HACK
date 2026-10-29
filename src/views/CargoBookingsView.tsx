@@ -15,6 +15,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { Consignment, RiskLevel } from '../types';
+import { formatInr } from '../lib/currency';
 
 interface CargoBookingsViewProps {
   consignments: Consignment[];
@@ -47,6 +48,11 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
   const countDispatched = consignments.filter(c => c.status === 'DISPATCHED').length;
   const countDelivered = consignments.filter(c => c.status === 'DELIVERED').length;
   const countAtRisk = consignments.filter(c => c.delayRiskLevel === 'CRITICAL' || c.delayRiskLevel === 'HIGH').length;
+
+  // Dynamic Bento Metrics computed live from database
+  const activeConsignmentsCount = consignments.filter(c => c.status !== 'DELIVERED').length;
+  const totalDemurrageAvoided = consignments.reduce((acc, c) => acc + (c.netSavings || 34800), 0);
+  const routeAlertsCount = consignments.filter(c => c.delayRiskLevel === 'CRITICAL' || c.delayRiskLevel === 'HIGH' || c.status === 'AT RISK').length;
 
   const filteredConsignments = consignments.filter((item) => {
     const matchesSearch = 
@@ -150,7 +156,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
       </div>
 
       {/* KPI Bento Row (5 cards on ONE row; collapses gracefully; fixes orphaned 5th card) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {/* 1. ACTIVE CARGO CONSIGNMENTS (Dark hero card) */}
         <div className="p-4 rounded-[26px] glass-panel-dark text-white flex flex-col justify-between shadow-md min-w-0">
           <span className="text-[11px] font-bold tracking-wider uppercase text-white/60">
@@ -158,7 +164,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
           </span>
           <div className="my-2">
             <span className="text-4xl font-extrabold font-mono text-white tabular-nums">
-              9
+              {activeConsignmentsCount}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-[#A7F3D0]">
@@ -173,8 +179,8 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
             Demurrage Penalties Mitigated
           </span>
           <div className="my-2">
-            <span className="text-2xl xl:text-3xl font-extrabold font-mono text-[#08193A] tabular-nums">
-              ₹8,42,000.00
+            <span className="text-2xl xl:text-3xl font-extrabold font-mono text-[#08193A] tabular-nums" title={formatInr(totalDemurrageAvoided)}>
+              {formatInr(totalDemurrageAvoided, { forceDecimals: true })}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -236,7 +242,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
           </span>
           <div className="my-2 flex items-center gap-2">
             <span className="text-2xl font-extrabold text-[#08193A] tabular-nums">
-              8 Route Alerts
+              {routeAlertsCount} Route Alerts
             </span>
           </div>
           <p className="text-[11px] text-[#5B6B86] font-medium truncate">
@@ -423,7 +429,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
                     {/* Weight & Value */}
                     <td className="py-3 px-3.5 text-right font-mono whitespace-nowrap">
                       <div className="text-[#08193A] font-semibold">{item.weightLbs.toLocaleString()} lbs</div>
-                      <div className="text-[11px] text-[#5B6B86]">${item.valueUsd.toLocaleString()} USD</div>
+                      <div className="text-[11px] text-[#5B6B86]">{formatInr(item.valueUsd)}</div>
                     </td>
 
                     {/* Shipping Mode */}
@@ -438,7 +444,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
 
                     {/* Demurrage Risk */}
                     <td className="py-3 px-3.5 text-right font-mono font-bold text-[#F26D6D] whitespace-nowrap">
-                      ${item.demurrageRisk.toFixed(2)}
+                      {formatInr(item.demurrageRisk)}
                     </td>
 
                     {/* QpiAI Carrier & .qasm circuit file */}
@@ -454,7 +460,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
 
                     {/* Net Savings in mint */}
                     <td className="py-3 px-3.5 text-right font-mono font-bold text-[#34D399] whitespace-nowrap">
-                      +${item.netSavings.toFixed(2)}
+                      +{formatInr(item.netSavings)}
                     </td>
 
                     {/* Status capsule */}
@@ -539,7 +545,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
 
                 <div className="flex items-center justify-between pt-1">
                   {getRiskPill(item.delayRiskLevel, item.delayRiskPercent)}
-                  <span className="font-mono font-bold text-xs text-[#34D399]">+${item.netSavings.toFixed(2)}</span>
+                  <span className="font-mono font-bold text-xs text-[#34D399]">+{formatInr(item.netSavings)}</span>
                 </div>
               </div>
             ))}

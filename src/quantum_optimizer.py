@@ -130,25 +130,15 @@ class QpiAICarrierOptimizer:
         is_cloud_executed = False
         cloud_error_reason = None
 
-        # 1. PRIMARY DEFAULT: Attempt Remote QpiAI QCloud Execution
-        print(f"[*] Submitting Quantum Job to QpiAI QCloud (Target: {self.default_device}, Exp: '{self.experiment_name}')...")
-        try:
-            # Attempts remote execution on QpiAI QCloud
-            job_result = qc.run(
-                shots=shots,
-                experiment_name=self.experiment_name,
-                device_name=self.default_device
-            )
-            raw_counts = job_result.get_counts()
-            is_cloud_executed = True
-            print(f"[+] QpiAI QCloud Remote Job Succeeded on {self.default_device}!")
-        except Exception as cloud_err:
-            cloud_error_reason = str(cloud_err)
-            print(f"[!] QpiAI QCloud remote submission notice: {cloud_err}")
-            print(f"[*] Note: QpiAI Cloud rejected submission (Subscription required on account '{os.getenv('QPIAI_USERNAME')}'). Circuit saved to {qasm_path}")
-            print(f"[*] Seamlessly executing on QpiAI-QSV-Local engine...")
+        force_local = (
+            os.getenv("QPIAI_LOCAL") == "1"
+            or "--local" in sys.argv
+            or self.default_device == "QpiAI-QSV-Local"
+        )
+
+        if force_local:
+            print(f"[*] Running directly on QpiAI Local Statevector Simulator (QpiAI-QSV-Local)...")
             try:
-                # Local QpiAI state vector execution
                 job_result = qc.run(
                     backend_type="local",
                     device_name="QpiAI-QSV-Local",
@@ -164,6 +154,41 @@ class QpiAICarrierOptimizer:
                     "100": int(shots * normalized_probs[2])
                 }
                 execution_backend = "QpiAI-Density-Simulated"
+        else:
+            # 1. PRIMARY DEFAULT: Attempt Remote QpiAI QCloud Execution
+            print(f"[*] Submitting Quantum Job to QpiAI QCloud (Target: {self.default_device}, Exp: '{self.experiment_name}')...")
+            try:
+                # Attempts remote execution on QpiAI QCloud
+                job_result = qc.run(
+                    shots=shots,
+                    experiment_name=self.experiment_name,
+                    device_name=self.default_device
+                )
+                raw_counts = job_result.get_counts()
+                is_cloud_executed = True
+                print(f"[+] QpiAI QCloud Remote Job Succeeded on {self.default_device}!")
+            except Exception as cloud_err:
+                cloud_error_reason = str(cloud_err)
+                print(f"[!] QpiAI QCloud remote submission notice: {cloud_err}")
+                print(f"[*] Note: QpiAI Cloud rejected submission (Subscription required on account '{os.getenv('QPIAI_USERNAME')}'). Circuit saved to {qasm_path}")
+                print(f"[*] Seamlessly executing on QpiAI-QSV-Local engine...")
+                try:
+                    # Local QpiAI state vector execution
+                    job_result = qc.run(
+                        backend_type="local",
+                        device_name="QpiAI-QSV-Local",
+                        shots=shots
+                    )
+                    raw_counts = job_result.get_counts()
+                    execution_backend = "QpiAI-QSV-Local (Statevector Simulator)"
+                except Exception as local_err:
+                    print(f"[!] Local engine fallback warning: {local_err}")
+                    raw_counts = {
+                        "001": int(shots * normalized_probs[0]),
+                        "010": int(shots * normalized_probs[1]),
+                        "100": int(shots * normalized_probs[2])
+                    }
+                    execution_backend = "QpiAI-Density-Simulated"
 
         # Select the winning carrier (candidate with highest net savings)
         best_candidate = max(candidates, key=lambda c: c["net_savings_vs_status_quo"])

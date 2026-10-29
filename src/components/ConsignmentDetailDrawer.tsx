@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, ShieldAlert, Truck, FileText, CheckCircle2, ArrowRight, Activity, DollarSign, Calendar, MapPin } from 'lucide-react';
 import { Consignment } from '../types';
+import { formatInr } from '../lib/currency';
 
 interface ConsignmentDetailDrawerProps {
   consignment: Consignment | null;
@@ -141,7 +142,7 @@ export const ConsignmentDetailDrawer: React.FC<ConsignmentDetailDrawerProps> = (
                   </div>
                   <div className="p-3.5 rounded-[18px] bg-white/60 border border-white/80">
                     <p className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">Cargo Valuation</p>
-                    <p className="text-sm font-bold text-[#08193A] mt-1 font-mono">${consignment.valueUsd.toLocaleString()} USD</p>
+                    <p className="text-sm font-bold text-[#08193A] mt-1 font-mono">{formatInr(consignment.valueUsd)}</p>
                   </div>
                 </div>
 
@@ -150,7 +151,7 @@ export const ConsignmentDetailDrawer: React.FC<ConsignmentDetailDrawerProps> = (
                   <div>
                     <p className="text-[10px] font-bold tracking-wider uppercase text-[#5B6B86]">Assigned Driver</p>
                     <p className="text-sm font-bold text-[#08193A]">{consignment.driverName || 'Regional Telematics Unit'}</p>
-                    <p className="text-xs text-[#5B6B86] font-mono">{consignment.driverPhone || '+1 (800) FREIGHT-IQ'}</p>
+                    <p className="text-xs text-[#5B6B86] font-mono">{consignment.driverPhone || '+91 1800 242 8000'}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold tracking-wider uppercase text-[#5B6B86]">ETA Target</p>
@@ -179,7 +180,7 @@ export const ConsignmentDetailDrawer: React.FC<ConsignmentDetailDrawerProps> = (
                     <div className="text-right">
                       <p className="text-[11px] text-white/60 uppercase font-bold">Demurrage At Risk</p>
                       <p className="text-2xl font-bold font-mono text-[#F26D6D]">
-                        ${consignment.demurrageRisk.toFixed(2)}
+                        {formatInr(consignment.demurrageRisk)}
                       </p>
                     </div>
                   </div>
@@ -188,7 +189,7 @@ export const ConsignmentDetailDrawer: React.FC<ConsignmentDetailDrawerProps> = (
                 <div className="p-4 rounded-[20px] bg-white/70 border border-white/90 space-y-2">
                   <p className="text-xs font-bold text-[#08193A]">Risk Mitigation Recommendation</p>
                   <p className="text-xs text-[#5B6B86] leading-relaxed">
-                    XGBoost model detects heavy departure bottlenecks and high cargo density. Expedited Regional carrier slot assigned via QpiAI Quantum QUBO minimizes delay penalties by <span className="font-bold text-[#34D399]">+${consignment.netSavings.toFixed(2)}</span>.
+                    XGBoost model detects heavy departure bottlenecks and high cargo density. Expedited Regional carrier slot assigned via QpiAI Quantum QUBO minimizes delay penalties by <span className="font-bold text-[#34D399]">+{formatInr(consignment.netSavings)}</span>.
                   </p>
                   <div className="pt-2 flex gap-2">
                     <button
@@ -221,7 +222,7 @@ export const ConsignmentDetailDrawer: React.FC<ConsignmentDetailDrawerProps> = (
                     <div>
                       <p className="text-[10px] uppercase font-bold text-[#5B6B86]">Net Savings Generated</p>
                       <p className="text-lg font-bold font-mono text-[#34D399]">
-                        +${consignment.netSavings.toFixed(2)} USD
+                        +{formatInr(consignment.netSavings)}
                       </p>
                     </div>
                     <button

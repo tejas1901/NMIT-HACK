@@ -1,0 +1,101 @@
+container_id,shipment_id,port_id,port_name,carrier_id,carrier_name,container_type,eta_timestamp,month,day_of_week,is_weekend,free_days_allowed,dwell_days_actual,dwell_days_so_far,congestion_index,weather_risk_score,customs_hold_flag,inspection_required_flag,hazardous_cargo_flag,excess_dwell_days,demurrage_incurred,demurrage_cost_inr,data_provenance
+CONT-USSAV-100000,SHP-HAP-200000,USSAV,Savannah Ocean Terminal,HAP,Hapag-Lloyd,40ft High Cube,2025-02-18T19:00:00,2,1,0,7,6,5,73.28,27.86,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100001,SHP-COS-200001,NLRTM,Port of Rotterdam,COS,COSCO Shipping,20ft Standard,2026-02-22T04:00:00,2,6,1,7,11,10,58.42,22.07,1,1,0,4,1,46000.0,synthetic-freightiq-v1.0
+CONT-INMAA-100002,SHP-CMA-200002,INMAA,Chennai Port,CMA,CMA CGM,40ft High Cube,2025-12-20T19:00:00,12,5,1,5,12,12,64.85,14.09,0,1,1,7,1,60480.0,synthetic-freightiq-v1.0
+CONT-USSAV-100003,SHP-MSK-200003,USSAV,Savannah Ocean Terminal,MSK,Maersk Line,40ft High Cube,2025-08-25T00:00:00,8,0,0,5,11,9,50.21,0.0,1,0,0,6,1,72000.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100004,SHP-MSK-200004,NLRTM,Port of Rotterdam,MSK,Maersk Line,40ft Reefer,2025-08-22T19:00:00,8,4,0,5,2,1,49.17,40.3,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100005,SHP-MSK-200005,NLRTM,Port of Rotterdam,MSK,Maersk Line,40ft High Cube,2026-04-09T18:00:00,4,3,0,5,9,3,59.64,45.81,0,1,0,4,1,46000.0,synthetic-freightiq-v1.0
+CONT-INMAA-100006,SHP-MSK-200006,INMAA,Chennai Port,MSK,Maersk Line,20ft Standard,2025-02-16T18:00:00,2,6,1,5,10,9,33.03,33.92,1,0,0,5,1,36000.0,synthetic-freightiq-v1.0
+CONT-INMAA-100007,SHP-HAP-200007,INMAA,Chennai Port,HAP,Hapag-Lloyd,40ft High Cube,2026-01-12T15:00:00,1,0,0,7,5,3,59.34,39.81,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100008,SHP-MSK-200008,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,20ft Standard,2025-04-19T11:00:00,4,5,1,5,6,1,66.6,18.03,0,0,0,1,1,8500.0,synthetic-freightiq-v1.0
+CONT-USSAV-100009,SHP-CMA-200009,USSAV,Savannah Ocean Terminal,CMA,CMA CGM,20ft Standard,2025-02-20T16:00:00,2,3,0,5,3,1,57.85,25.0,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100010,SHP-HAP-200010,INMUN,Mundra Port,HAP,Hapag-Lloyd,40ft High Cube,2025-10-12T06:00:00,10,6,1,7,3,2,34.59,13.12,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100011,SHP-CMA-200011,INNSA,JNPT Nhava Sheva,CMA,CMA CGM,20ft Standard,2026-06-11T18:00:00,6,3,0,5,4,3,68.59,60.28,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100012,SHP-MSK-200012,INMAA,Chennai Port,MSK,Maersk Line,20ft Standard,2026-02-02T13:00:00,2,0,0,5,6,2,86.17,23.35,0,0,0,1,1,7200.0,synthetic-freightiq-v1.0
+CONT-INMUN-100013,SHP-ONE-200013,INMUN,Mundra Port,ONE,Ocean Network Express,20ft Standard,2026-02-16T11:00:00,2,0,0,5,7,6,53.16,7.23,0,0,0,2,1,18000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100014,SHP-HAP-200014,INNSA,JNPT Nhava Sheva,HAP,Hapag-Lloyd,20ft Standard,2026-01-23T12:00:00,1,4,0,7,5,4,58.57,26.81,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100015,SHP-HAP-200015,SGSIN,Singapore PSA,HAP,Hapag-Lloyd,20ft Standard,2026-03-01T13:00:00,3,6,1,7,5,5,58.37,33.43,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100016,SHP-MSK-200016,NLRTM,Port of Rotterdam,MSK,Maersk Line,20ft Standard,2025-10-05T00:00:00,10,6,1,5,6,5,55.22,11.61,0,0,0,1,1,11500.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100017,SHP-MSK-200017,NLRTM,Port of Rotterdam,MSK,Maersk Line,40ft High Cube,2025-03-11T03:00:00,3,1,0,5,4,1,54.14,30.02,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100018,SHP-COS-200018,INMAA,Chennai Port,COS,COSCO Shipping,20ft Standard,2026-03-30T05:00:00,3,0,0,7,6,3,71.03,17.13,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100019,SHP-MSC-200019,INMUN,Mundra Port,MSC,Mediterranean Shipping Co,45ft High Cube,2025-09-01T02:00:00,9,0,0,5,9,5,53.66,43.38,0,1,0,4,1,36000.0,synthetic-freightiq-v1.0
+CONT-INMUN-100020,SHP-MSC-200020,INMUN,Mundra Port,MSC,Mediterranean Shipping Co,45ft High Cube,2025-09-28T10:00:00,9,6,1,5,10,8,71.77,21.59,1,0,0,5,1,45000.0,synthetic-freightiq-v1.0
+CONT-INMUN-100021,SHP-CMA-200021,INMUN,Mundra Port,CMA,CMA CGM,40ft High Cube,2025-07-20T16:00:00,7,6,1,5,8,7,60.44,42.37,0,0,0,3,1,27000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100022,SHP-HAP-200022,INNSA,JNPT Nhava Sheva,HAP,Hapag-Lloyd,20ft Standard,2025-04-09T15:00:00,4,2,0,7,4,4,86.42,18.69,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100023,SHP-COS-200023,INMAA,Chennai Port,COS,COSCO Shipping,40ft High Cube,2026-05-16T11:00:00,5,5,1,7,8,5,44.33,18.94,0,0,0,1,1,7200.0,synthetic-freightiq-v1.0
+CONT-INNSA-100024,SHP-MSC-200024,INNSA,JNPT Nhava Sheva,MSC,Mediterranean Shipping Co,40ft Reefer,2026-02-27T20:00:00,2,4,0,5,4,1,60.08,10.21,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100025,SHP-COS-200025,INMUN,Mundra Port,COS,COSCO Shipping,40ft High Cube,2025-12-14T13:00:00,12,6,1,7,6,5,50.28,0.0,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100026,SHP-MSK-200026,INMAA,Chennai Port,MSK,Maersk Line,40ft Reefer,2025-08-06T01:00:00,8,2,0,5,3,3,51.12,53.09,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100027,SHP-CMA-200027,INNSA,JNPT Nhava Sheva,CMA,CMA CGM,40ft High Cube,2026-03-21T18:00:00,3,5,1,5,6,4,81.33,1.66,0,0,0,1,1,8500.0,synthetic-freightiq-v1.0
+CONT-INNSA-100028,SHP-CMA-200028,INNSA,JNPT Nhava Sheva,CMA,CMA CGM,40ft High Cube,2025-10-22T13:00:00,10,2,0,5,2,1,46.63,13.65,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100029,SHP-MSK-200029,INMUN,Mundra Port,MSK,Maersk Line,20ft Standard,2025-08-28T15:00:00,8,3,0,5,7,6,73.29,48.09,0,0,0,2,1,18000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100030,SHP-MSK-200030,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,40ft High Cube,2025-09-01T13:00:00,9,0,0,5,5,2,78.46,41.99,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-USSAV-100031,SHP-MSC-200031,USSAV,Savannah Ocean Terminal,MSC,Mediterranean Shipping Co,20ft Standard,2025-05-03T13:00:00,5,5,1,5,9,8,70.9,10.79,0,0,1,4,1,57600.0,synthetic-freightiq-v1.0
+CONT-INMUN-100032,SHP-COS-200032,INMUN,Mundra Port,COS,COSCO Shipping,40ft High Cube,2025-02-19T02:00:00,2,2,0,7,2,2,53.65,12.0,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100033,SHP-CMA-200033,INMAA,Chennai Port,CMA,CMA CGM,40ft Reefer,2025-10-27T13:00:00,10,0,0,5,2,2,50.14,0.0,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100034,SHP-COS-200034,INMUN,Mundra Port,COS,COSCO Shipping,20ft Standard,2026-04-25T19:00:00,4,5,1,7,5,1,54.29,0.0,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100035,SHP-ONE-200035,INNSA,JNPT Nhava Sheva,ONE,Ocean Network Express,40ft High Cube,2025-02-04T07:00:00,2,1,0,5,8,5,41.23,22.47,0,0,0,3,1,25500.0,synthetic-freightiq-v1.0
+CONT-USSAV-100036,SHP-MSC-200036,USSAV,Savannah Ocean Terminal,MSC,Mediterranean Shipping Co,20ft Standard,2026-04-09T14:00:00,4,3,0,5,5,5,75.05,24.79,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100037,SHP-HAP-200037,INMUN,Mundra Port,HAP,Hapag-Lloyd,40ft High Cube,2026-03-23T00:00:00,3,0,0,7,5,4,37.17,14.86,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100038,SHP-MSK-200038,NLRTM,Port of Rotterdam,MSK,Maersk Line,20ft Standard,2025-05-30T08:00:00,5,4,0,5,5,2,19.22,31.77,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100039,SHP-MSK-200039,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,45ft High Cube,2025-12-08T10:00:00,12,0,0,5,7,7,66.62,26.3,0,0,0,2,1,17000.0,synthetic-freightiq-v1.0
+CONT-INMUN-100040,SHP-ONE-200040,INMUN,Mundra Port,ONE,Ocean Network Express,20ft Standard,2025-03-31T23:00:00,3,0,0,5,4,4,41.74,13.47,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100041,SHP-HAP-200041,INMUN,Mundra Port,HAP,Hapag-Lloyd,20ft Tank,2026-02-14T05:00:00,2,5,1,7,6,4,45.05,34.28,0,0,1,0,0,0.0,synthetic-freightiq-v1.0
+CONT-USSAV-100042,SHP-MSK-200042,USSAV,Savannah Ocean Terminal,MSK,Maersk Line,40ft Reefer,2026-01-14T06:00:00,1,2,0,5,3,3,56.44,6.27,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100043,SHP-CMA-200043,INMUN,Mundra Port,CMA,CMA CGM,40ft High Cube,2025-07-11T09:00:00,7,4,0,5,5,1,46.29,43.84,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100044,SHP-CMA-200044,INMUN,Mundra Port,CMA,CMA CGM,40ft High Cube,2025-02-06T23:00:00,2,3,0,5,6,3,35.58,19.82,0,0,0,1,1,9000.0,synthetic-freightiq-v1.0
+CONT-INMAA-100045,SHP-ONE-200045,INMAA,Chennai Port,ONE,Ocean Network Express,40ft High Cube,2026-06-09T20:00:00,6,1,0,5,10,9,63.85,74.42,0,0,0,5,1,36000.0,synthetic-freightiq-v1.0
+CONT-INMAA-100046,SHP-CMA-200046,INMAA,Chennai Port,CMA,CMA CGM,45ft High Cube,2025-08-29T00:00:00,8,4,0,5,8,1,74.21,40.4,0,0,0,3,1,21600.0,synthetic-freightiq-v1.0
+CONT-INMUN-100047,SHP-MSC-200047,INMUN,Mundra Port,MSC,Mediterranean Shipping Co,20ft Standard,2026-04-28T05:00:00,4,1,0,5,12,12,49.9,31.67,1,0,0,7,1,63000.0,synthetic-freightiq-v1.0
+CONT-INMAA-100048,SHP-MSC-200048,INMAA,Chennai Port,MSC,Mediterranean Shipping Co,40ft High Cube,2026-01-02T19:00:00,1,4,0,5,4,2,32.68,21.49,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100049,SHP-MSC-200049,INNSA,JNPT Nhava Sheva,MSC,Mediterranean Shipping Co,20ft Standard,2026-02-25T01:00:00,2,2,0,5,4,2,58.41,4.77,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100050,SHP-HAP-200050,SGSIN,Singapore PSA,HAP,Hapag-Lloyd,40ft High Cube,2026-02-15T20:00:00,2,6,1,7,7,6,49.68,26.64,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100051,SHP-ONE-200051,SGSIN,Singapore PSA,ONE,Ocean Network Express,20ft Standard,2025-04-16T06:00:00,4,2,0,5,7,3,43.0,11.66,0,0,0,2,1,21000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100052,SHP-MSC-200052,INNSA,JNPT Nhava Sheva,MSC,Mediterranean Shipping Co,40ft High Cube,2025-07-16T22:00:00,7,2,0,5,7,2,88.21,57.68,0,0,0,2,1,17000.0,synthetic-freightiq-v1.0
+CONT-INMUN-100053,SHP-MSK-200053,INMUN,Mundra Port,MSK,Maersk Line,40ft High Cube,2025-09-10T07:00:00,9,2,0,5,6,1,57.04,84.46,0,0,0,1,1,9000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100054,SHP-MSK-200054,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,40ft High Cube,2025-09-26T10:00:00,9,4,0,5,7,1,59.01,55.23,1,1,0,2,1,17000.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100055,SHP-HAP-200055,NLRTM,Port of Rotterdam,HAP,Hapag-Lloyd,40ft High Cube,2025-01-24T15:00:00,1,4,0,7,6,4,62.71,35.39,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100056,SHP-ONE-200056,INMAA,Chennai Port,ONE,Ocean Network Express,40ft High Cube,2025-10-23T03:00:00,10,3,0,5,7,1,70.45,36.5,0,0,0,2,1,14400.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100057,SHP-MSK-200057,NLRTM,Port of Rotterdam,MSK,Maersk Line,40ft High Cube,2025-03-25T13:00:00,3,1,0,5,11,9,53.03,12.44,1,1,0,6,1,69000.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100058,SHP-MSK-200058,NLRTM,Port of Rotterdam,MSK,Maersk Line,40ft High Cube,2026-02-06T12:00:00,2,4,0,5,2,2,44.23,41.57,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100059,SHP-CMA-200059,NLRTM,Port of Rotterdam,CMA,CMA CGM,40ft High Cube,2026-01-04T18:00:00,1,6,1,5,10,9,50.37,18.24,0,0,0,5,1,57500.0,synthetic-freightiq-v1.0
+CONT-INNSA-100060,SHP-MSK-200060,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,45ft High Cube,2026-05-14T23:00:00,5,3,0,5,9,2,57.44,8.71,0,0,0,4,1,34000.0,synthetic-freightiq-v1.0
+CONT-USSAV-100061,SHP-ONE-200061,USSAV,Savannah Ocean Terminal,ONE,Ocean Network Express,20ft Standard,2026-02-07T15:00:00,2,5,1,5,16,16,68.43,46.31,0,0,0,11,1,132000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100062,SHP-MSC-200062,INNSA,JNPT Nhava Sheva,MSC,Mediterranean Shipping Co,20ft Standard,2025-07-17T09:00:00,7,3,0,5,7,6,63.51,72.03,0,0,0,2,1,17000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100063,SHP-MSK-200063,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,20ft Standard,2026-06-07T09:00:00,6,6,1,5,5,1,76.04,63.87,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMUN-100064,SHP-COS-200064,INMUN,Mundra Port,COS,COSCO Shipping,40ft High Cube,2025-08-10T10:00:00,8,6,1,7,6,1,59.01,47.1,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100065,SHP-MSK-200065,INMAA,Chennai Port,MSK,Maersk Line,20ft Standard,2025-06-25T19:00:00,6,2,0,5,6,1,52.91,68.36,0,0,0,1,1,7200.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100066,SHP-MSC-200066,SGSIN,Singapore PSA,MSC,Mediterranean Shipping Co,40ft High Cube,2026-05-04T07:00:00,5,0,0,5,3,2,40.76,19.58,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100067,SHP-MSK-200067,SGSIN,Singapore PSA,MSK,Maersk Line,40ft High Cube,2025-07-20T04:00:00,7,6,1,5,8,2,56.94,13.53,1,0,0,3,1,31500.0,synthetic-freightiq-v1.0
+CONT-INMAA-100068,SHP-MSK-200068,INMAA,Chennai Port,MSK,Maersk Line,20ft Standard,2025-02-11T08:00:00,2,1,0,5,3,1,51.26,35.74,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-USSAV-100069,SHP-MSK-200069,USSAV,Savannah Ocean Terminal,MSK,Maersk Line,40ft Reefer,2025-09-11T00:00:00,9,3,0,5,3,3,66.23,43.82,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100070,SHP-MSK-200070,INMAA,Chennai Port,MSK,Maersk Line,40ft High Cube,2026-03-06T02:00:00,3,4,0,5,6,4,42.09,8.72,0,0,0,1,1,7200.0,synthetic-freightiq-v1.0
+CONT-INMUN-100071,SHP-MSK-200071,INMUN,Mundra Port,MSK,Maersk Line,20ft Standard,2025-04-13T02:00:00,4,6,1,5,4,4,36.44,27.94,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100072,SHP-MSK-200072,INMAA,Chennai Port,MSK,Maersk Line,20ft Standard,2025-09-07T18:00:00,9,6,1,5,6,3,58.14,55.01,0,0,0,1,1,7200.0,synthetic-freightiq-v1.0
+CONT-USSAV-100073,SHP-CMA-200073,USSAV,Savannah Ocean Terminal,CMA,CMA CGM,20ft Standard,2025-03-12T17:00:00,3,2,0,5,4,1,73.38,37.48,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100074,SHP-HAP-200074,INNSA,JNPT Nhava Sheva,HAP,Hapag-Lloyd,20ft Standard,2026-01-06T16:00:00,1,1,0,7,9,5,73.28,32.99,0,0,0,2,1,17000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100075,SHP-MSC-200075,INNSA,JNPT Nhava Sheva,MSC,Mediterranean Shipping Co,20ft Standard,2025-09-14T11:00:00,9,6,1,5,8,5,76.03,13.54,0,0,0,3,1,25500.0,synthetic-freightiq-v1.0
+CONT-INMAA-100076,SHP-MSC-200076,INMAA,Chennai Port,MSC,Mediterranean Shipping Co,45ft High Cube,2025-06-28T17:00:00,6,5,1,5,6,5,51.05,46.82,0,0,0,1,1,7200.0,synthetic-freightiq-v1.0
+CONT-USSAV-100077,SHP-CMA-200077,USSAV,Savannah Ocean Terminal,CMA,CMA CGM,20ft Standard,2025-05-03T03:00:00,5,5,1,5,8,2,69.57,4.96,0,1,0,3,1,36000.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100078,SHP-ONE-200078,SGSIN,Singapore PSA,ONE,Ocean Network Express,20ft Standard,2025-11-01T21:00:00,11,5,1,5,7,3,53.09,20.52,0,0,0,2,1,21000.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100079,SHP-ONE-200079,NLRTM,Port of Rotterdam,ONE,Ocean Network Express,40ft High Cube,2025-12-28T12:00:00,12,6,1,5,4,3,63.26,13.81,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100080,SHP-MSK-200080,SGSIN,Singapore PSA,MSK,Maersk Line,40ft High Cube,2026-05-23T22:00:00,5,5,1,5,11,9,50.83,25.62,1,0,0,6,1,63000.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100081,SHP-MSK-200081,SGSIN,Singapore PSA,MSK,Maersk Line,45ft High Cube,2025-08-25T03:00:00,8,0,0,5,6,4,52.45,42.19,0,0,0,1,1,10500.0,synthetic-freightiq-v1.0
+CONT-INMUN-100082,SHP-MSK-200082,INMUN,Mundra Port,MSK,Maersk Line,40ft High Cube,2025-03-28T11:00:00,3,4,0,5,4,2,49.45,21.96,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100083,SHP-MSK-200083,INMAA,Chennai Port,MSK,Maersk Line,40ft High Cube,2026-03-26T16:00:00,3,3,0,5,5,1,59.08,30.05,0,0,1,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100084,SHP-CMA-200084,NLRTM,Port of Rotterdam,CMA,CMA CGM,20ft Standard,2025-12-07T11:00:00,12,6,1,5,5,2,43.99,0.0,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100085,SHP-MSC-200085,NLRTM,Port of Rotterdam,MSC,Mediterranean Shipping Co,20ft Tank,2026-01-14T10:00:00,1,2,0,5,3,1,54.08,24.74,0,0,1,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100086,SHP-MSK-200086,INMAA,Chennai Port,MSK,Maersk Line,40ft High Cube,2025-02-22T03:00:00,2,5,1,5,5,3,28.84,20.54,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INNSA-100087,SHP-MSC-200087,INNSA,JNPT Nhava Sheva,MSC,Mediterranean Shipping Co,20ft Tank,2025-06-18T09:00:00,6,2,0,5,10,1,65.66,57.48,0,0,1,5,1,51000.0,synthetic-freightiq-v1.0
+CONT-NLRTM-100088,SHP-CMA-200088,NLRTM,Port of Rotterdam,CMA,CMA CGM,20ft Standard,2026-02-19T05:00:00,2,3,0,5,4,4,38.54,34.61,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-INMAA-100089,SHP-MSK-200089,INMAA,Chennai Port,MSK,Maersk Line,40ft Reefer,2026-03-26T07:00:00,3,3,0,5,10,10,43.53,26.56,0,0,0,5,1,54000.0,synthetic-freightiq-v1.0
+CONT-USSAV-100090,SHP-ONE-200090,USSAV,Savannah Ocean Terminal,ONE,Ocean Network Express,40ft High Cube,2025-08-24T16:00:00,8,6,1,5,7,5,85.66,22.25,0,0,0,2,1,24000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100091,SHP-MSK-200091,INNSA,JNPT Nhava Sheva,MSK,Maersk Line,20ft Standard,2026-03-11T15:00:00,3,2,0,5,9,8,75.59,10.33,1,0,0,4,1,34000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100092,SHP-COS-200092,INNSA,JNPT Nhava Sheva,COS,COSCO Shipping,40ft High Cube,2026-03-31T14:00:00,3,1,0,7,8,8,48.62,16.56,0,0,0,1,1,8500.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100093,SHP-MSK-200093,SGSIN,Singapore PSA,MSK,Maersk Line,40ft High Cube,2025-07-29T08:00:00,7,1,0,5,10,10,59.22,23.66,1,1,0,5,1,52500.0,synthetic-freightiq-v1.0
+CONT-INNSA-100094,SHP-ONE-200094,INNSA,JNPT Nhava Sheva,ONE,Ocean Network Express,20ft Standard,2026-04-30T23:00:00,4,3,0,5,7,1,43.48,29.8,0,0,0,2,1,17000.0,synthetic-freightiq-v1.0
+CONT-INNSA-100095,SHP-COS-200095,INNSA,JNPT Nhava Sheva,COS,COSCO Shipping,40ft High Cube,2025-06-05T02:00:00,6,3,0,7,10,10,86.72,81.19,0,0,0,3,1,25500.0,synthetic-freightiq-v1.0
+CONT-INMUN-100096,SHP-COS-200096,INMUN,Mundra Port,COS,COSCO Shipping,40ft Reefer,2025-05-10T08:00:00,5,5,1,7,4,2,55.18,27.79,0,0,0,0,0,0.0,synthetic-freightiq-v1.0
+CONT-SGSIN-100097,SHP-ONE-200097,SGSIN,Singapore PSA,ONE,Ocean Network Express,20ft Standard,2026-01-04T02:00:00,1,6,1,5,6,2,59.85,15.92,0,0,0,1,1,10500.0,synthetic-freightiq-v1.0
+CONT-INNSA-100098,SHP-HAP-200098,INNSA,JNPT Nhava Sheva,HAP,Hapag-Lloyd,40ft High Cube,2025-12-10T08:00:00,12,2,0,7,10,1,57.66,25.28,1,1,1,3,1,30600.0,synthetic-freightiq-v1.0
+CONT-INMAA-100099,SHP-CMA-200099,INMAA,Chennai Port,CMA,CMA CGM,20ft Standard,2025-03-17T23:00:00,3,0,0,5,4,1,51.76,46.57,0,0,0,0,0,0.0,synthetic-freightiq-v1.0

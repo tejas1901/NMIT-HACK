@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  'https://iwcqkrzefoawlpugergc.supabase.co',
-  'sb_publishable__uivHUYOrPe8_2yzD7hBhg_x6O9m85a'
-)
+import { supabase } from '../lib/supabase'
 
 /* Professional SVG Icons (No Emojis) */
 const UserIcon = () => (
@@ -63,9 +58,11 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
   const [regForm, setRegForm] = useState({
     name: '',
     company: '',
+    phone: '',
     email: '',
     password: '',
-    corridor: 'NH-48 (Bengaluru - Mumbai JNPT)'
+    corridor: 'NH-48 (Bengaluru - Mumbai JNPT)',
+    gstin: ''
   })
 
   const [errors, setErrors] = useState({})
@@ -204,7 +201,13 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
       const data = await res.json()
 
       if (res.ok && data.success) {
-        const u = { ...data.user, role: 'CUSTOMER', role_label: 'Verified Customer' }
+        const u = { 
+          ...data.user, 
+          phone: regForm.phone || '+91 98201 55194',
+          gstin: regForm.gstin || '27AABCV1234F1Z5',
+          role: 'CUSTOMER', 
+          role_label: 'Verified Customer' 
+        }
         setSuccess(`Account registered successfully for ${regForm.name}. Entering workspace...`)
         localStorage.setItem('freightiq_user', JSON.stringify(u))
         localStorage.setItem('freightiq_token', data.access_token || '')
@@ -222,6 +225,8 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
           data: {
             full_name: regForm.name,
             company: regForm.company,
+            phone: regForm.phone,
+            gstin: regForm.gstin,
             corridor: regForm.corridor,
             role: 'CUSTOMER'
           }
@@ -232,10 +237,13 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
         setErrors({ general: sbError.message })
       } else {
         const u = {
-          id: sbData.user?.id || 'usr-reg-cust',
+          id: sbData.user?.id || `usr-${Date.now().toString().slice(-6)}`,
           email: regForm.email,
           full_name: regForm.name,
           company: regForm.company,
+          phone: regForm.phone || '+91 98201 55194',
+          gstin: regForm.gstin || '27AABCV1234F1Z5',
+          corridor: regForm.corridor,
           role: 'CUSTOMER',
           role_label: 'Verified Customer'
         }
@@ -248,10 +256,13 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     } catch {
       // Offline fallback
       const u = {
-        id: 'usr-offline-customer',
+        id: `usr-${Date.now().toString().slice(-6)}`,
         email: regForm.email,
         full_name: regForm.name,
         company: regForm.company,
+        phone: regForm.phone || '+91 98201 55194',
+        gstin: regForm.gstin || '27AABCV1234F1Z5',
+        corridor: regForm.corridor,
         role: 'CUSTOMER',
         role_label: 'Verified Customer'
       }
@@ -373,6 +384,32 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
               />
             </div>
             {errors.company && <span className="field-error">{errors.company}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Phone Number (+91)</label>
+            <div className="input-wrap">
+              <input
+                type="tel"
+                className="form-input"
+                placeholder="+91 98201 55194"
+                value={regForm.phone}
+                onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">GSTIN / Tax ID (Optional)</label>
+            <div className="input-wrap">
+              <input
+                type="text"
+                className="form-input"
+                placeholder="27AABCV1234F1Z5"
+                value={regForm.gstin}
+                onChange={(e) => setRegForm({ ...regForm, gstin: e.target.value.toUpperCase() })}
+              />
+            </div>
           </div>
 
           <div className="form-group">
@@ -503,7 +540,7 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
               />
               Remember me
             </label>
-            <button type="button" className="forgot-btn" onClick={onForgotPassword}>
+            <button type="button" className="forgot-btn" onClick={() => onForgotPassword && onForgotPassword(role)}>
               Forgot password?
             </button>
           </div>

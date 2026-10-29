@@ -78,7 +78,7 @@ Provide exactly three sections in clear Markdown:
                     "num_predict": 250
                 }
             }
-            res = requests.post(f"{self.host}/api/generate", json=payload, timeout=60)
+            res = requests.post(f"{self.host}/api/generate", json=payload, timeout=5)
             if res.status_code == 200:
                 generated_text = res.json().get("response", "").strip()
                 return {

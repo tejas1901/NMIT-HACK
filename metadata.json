@@ -1,0 +1,6 @@
+{
+  "name": "FREIGHTIQ – Unified Intelligence",
+  "description": "Production-grade unified logistics intelligence dashboard with real-time waypoint weather forecasting, XGBoost demurrage risk analysis, QpiAI quantum carrier optimization, and fleet corridor cockpits in iOS 26 Liquid Glass aesthetic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

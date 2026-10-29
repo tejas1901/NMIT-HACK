@@ -1,0 +1,129 @@
+{
+  "name": "FreightIQ - 01 Scheduled Route Weather Sentinel",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "node-schedule-cron",
+      "name": "Cron Every 30 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://fastapi:8000/ml/weather/waypoints",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"corridor_name\": \"NH-48 Golden Quadrilateral\",\n  \"waypoints\": [\n    {\"id\": \"WP-1\", \"location_name\": \"Bengaluru Logistics Park\", \"lat\": 12.9716, \"lng\": 77.5946, \"stage\": \"ORIGIN\", \"distance_km\": 0.0},\n    {\"id\": \"WP-2\", \"location_name\": \"Hubballi Highway Waypoint\", \"lat\": 15.3647, \"lng\": 75.1240, \"stage\": \"WAYPOINT\", \"distance_km\": 410.0},\n    {\"id\": \"WP-3\", \"location_name\": \"Pune Chakan Industrial Hub\", \"lat\": 18.7600, \"lng\": 73.8600, \"stage\": \"WAYPOINT\", \"distance_km\": 840.0},\n    {\"id\": \"WP-4\", \"location_name\": \"Khandala Ghat Mountain Pass\", \"lat\": 18.7500, \"lng\": 73.3700, \"stage\": \"GHAT PASS\", \"distance_km\": 890.0},\n    {\"id\": \"WP-5\", \"location_name\": \"Mumbai JNPT Intermodal Yard\", \"lat\": 18.9500, \"lng\": 72.9500, \"stage\": \"DESTINATION\", \"distance_km\": 980.0}\n  ]\n}",
+        "options": {}
+      },
+      "id": "node-fetch-weather",
+      "name": "Fetch Route Waypoints Forecast",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.overall_corridor_risk_score }}",
+              "operation": "largerEqual",
+              "value2": 40
+            }
+          ]
+        }
+      },
+      "id": "node-filter-risk",
+      "name": "Is Risk > Threshold (40)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://node-gateway:3001/api/webhooks/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-FreightIQ-Secret",
+              "value": "freightiq-n8n-secure-token-2026"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event\": \"SEVERE_WEATHER_ALERT\",\n  \"action\": \"DISPATCH_ADVISORY\",\n  \"details\": {\n    \"corridor\": \"{{ $json.corridor_name }}\",\n    \"riskScore\": {{ $json.overall_corridor_risk_score }},\n    \"alerts\": {{ JSON.stringify($json.alerts_triggered) }}\n  }\n}",
+        "options": {}
+      },
+      "id": "node-notify-gateway",
+      "name": "Notify Gateway & SSE Stream",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 200]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "node-email-placeholder",
+      "name": "Email / Slack Notification (Placeholder)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [920, 380]
+    }
+  ],
+  "connections": {
+    "Cron Every 30 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Fetch Route Waypoints Forecast",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Route Waypoints Forecast": {
+      "main": [
+        [
+          {
+            "node": "Is Risk > Threshold (40)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Risk > Threshold (40)?": {
+      "main": [
+        [
+          {
+            "node": "Notify Gateway & SSE Stream",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email / Slack Notification (Placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

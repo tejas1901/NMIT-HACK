@@ -6,26 +6,36 @@ import {
   Sparkles, 
   CloudRain, 
   Wind, 
-  ShieldAlert, 
   Navigation,
+  CreditCard,
   CheckCircle2,
-  CornerDownLeft
+  Package,
+  ArrowRight
 } from 'lucide-react';
-import { ChatMessage } from '../types';
+import { ChatMessage, CheckoutItem } from '../types';
 
 interface QpiAiPilotProps {
   initialPrompt?: string;
   onClearInitialPrompt?: () => void;
+  userName?: string;
+  userRole?: string;
+  onInitiateCheckout?: (item: CheckoutItem) => void;
 }
 
-export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onClearInitialPrompt }) => {
+export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ 
+  initialPrompt, 
+  onClearInitialPrompt,
+  userName = 'Customer',
+  userRole = 'customer',
+  onInitiateCheckout
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'init-1',
       sender: 'pilot',
-      text: 'QpiAi Pilot — Hello Rajathgowda! I am your QpiAi Pilot powered by FreightGuard AI. I can help you assess Open-Meteo route weather hazards, mitigate demurrage, optimize cargo routing with QpiAI, and assess XGBoost delay risks.',
-      timestamp: '22:20:01',
-      dataBadges: ['FreightGuard AI', 'Open-Meteo Live', 'QpiAI QUBO']
+      text: `Hello ${userName}! I am your FreightIQ Assistant.\n\nI can help you check your shipments, monitor weather along highway routes, or book a haul for you right away. If you'd like to book, simply tell me where you want to send your cargo (e.g. "Book a haul from Mumbai to Pune") and I'll arrange it and open the payment page for you!`,
+      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      dataBadges: ['FreightIQ Assistant', 'Active GPS Radar', 'Instant Booking Ready']
     }
   ]);
 
@@ -34,10 +44,10 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const promptChips = [
-    { label: 'High weather risk shipments?', icon: ShieldAlert },
-    { label: 'Heavy rain segments on highway routes?', icon: CloudRain },
-    { label: 'NH-48 Corridor Weather Analysis', icon: Navigation },
-    { label: 'Open-Meteo Radar Status', icon: Wind }
+    { label: 'How are my active shipments?', icon: Package },
+    { label: 'Any rain or delays on the highway?', icon: CloudRain },
+    { label: 'Book a haul from Mumbai to Pune', icon: Sparkles },
+    { label: 'Book a truck from Bengaluru to Chennai', icon: Sparkles }
   ];
 
   const scrollToBottom = () => {
@@ -71,27 +81,90 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
     setInputVal('');
     setIsTyping(true);
 
-    // Stream intelligent response grounded in live dashboard data
     setTimeout(() => {
       let reply = '';
       let badges: string[] = [];
+      let actionItem: CheckoutItem | undefined = undefined;
+      let actionLabel: string | undefined = undefined;
 
       const queryLower = text.toLowerCase();
-      if (queryLower.includes('high weather') || queryLower.includes('risk')) {
-        reply = "Route assessment complete: 2 active shipments flagged under MODERATE/CRITICAL corridor weather risk. CRG-19402 near Savannah Container Terminal is experiencing 42.8 km/h crosswinds. In the Indian corridor, Unit #4021 traversing Pune Chakan and Khandala Ghat faces light moisture and 30.2 km/h gusts. Governor speed is automatically constrained to 55 km/h.";
-        badges = ['Savannah Terminal: 42.8 km/h', 'Khandala Ghat: 26.3 km/h', 'Governor: 55 km/h'];
-      } else if (queryLower.includes('heavy rain') || queryLower.includes('rain')) {
-        reply = "Open-Meteo radar reports light drizzle across Pune Chakan (0.4 mm precip) and Khandala Ghat Mountain Pass (0.1 mm precip). Road slickness simulator indicates 15% traction reduction. Safe platoon spacing has been lengthened from 40m to 55m.";
-        badges = ['Pune: 0.4 mm', 'Khandala: 0.1 mm', 'Platoon Spacing: 55m'];
-      } else if (queryLower.includes('nh-48') || queryLower.includes('corridor')) {
-        reply = "NH-48 Golden Quadrilateral (Bengaluru → Mumbai, 980 KM) status: 5 waypoints continuously polled. Segment 1 (Bengaluru) and Segment 2 (Hubballi) are Clear Sky. Segment 3 & 4 (Pune & Khandala) show moderate crosswinds. Estimated arrival time at JNPT Intermodal is currently on schedule for 04:18:22 with ₹0 demurrage penalties.";
-        badges = ['NH-48: 980 KM', 'Hubballi: Clear', 'ETA: 04:18:22'];
-      } else if (queryLower.includes('open-meteo') || queryLower.includes('radar')) {
-        reply = "Open-Meteo API connection is LIVE & HEALTHY. Auto-refresh cadence: 30 minutes. Last telemetry polling confirmed 5/5 waypoints with zero packet loss across satellite uplink.";
-        badges = ['Open-Meteo: Connected', 'Ping: 18ms', 'Polling: 30m Auto'];
+
+      // Check if user is asking to book or request a haul
+      const isBooking = 
+        queryLower.includes('book') || 
+        queryLower.includes('booking') || 
+        queryLower.includes('reserve') || 
+        queryLower.includes('hire') || 
+        queryLower.includes('rent a truck') ||
+        queryLower.includes('haul') || 
+        queryLower.includes('ship cargo') || 
+        queryLower.includes('send cargo') ||
+        queryLower.includes('order');
+
+      if (isBooking) {
+        // Parse cities or default to popular corridor
+        let origin = 'Mumbai JNPT Port Gate 4';
+        let destination = 'Pune Logistics Hub, Chakan';
+        let priceInr = 24500;
+
+        if ((queryLower.includes('bengaluru') || queryLower.includes('bangalore')) && queryLower.includes('chennai')) {
+          origin = 'Bengaluru Logistics Park, Whitefield';
+          destination = 'Chennai Harbour Terminal Dock 3';
+          priceInr = 28000;
+        } else if (queryLower.includes('delhi') && queryLower.includes('mumbai')) {
+          origin = 'Delhi NCR Logistics Hub';
+          destination = 'Mumbai Nhava Sheva Port Gate 4';
+          priceInr = 48000;
+        } else if (queryLower.includes('pune') && (queryLower.includes('mumbai') || queryLower.includes('jnpt'))) {
+          origin = 'Mumbai JNPT Port Gate 4';
+          destination = 'Pune Logistics Hub, Chakan';
+          priceInr = 24500;
+        } else if (queryLower.includes('chennai')) {
+          origin = 'Bengaluru Logistics Park';
+          destination = 'Chennai Harbour Terminal';
+          priceInr = 28000;
+        }
+
+        actionItem = {
+          type: 'CONSIGNMENT',
+          title: `Express Haul: ${origin} → ${destination}`,
+          subtitle: 'Full 24-Ton Truckload • Monitored Corridor Transit',
+          referenceId: `CRG-BK-${Math.floor(10000 + Math.random() * 90000)}`,
+          priceUsd: Math.round(priceInr / 83),
+          priceInr: priceInr,
+          metadata: {
+            Origin: origin,
+            Destination: destination,
+            Cargo: 'Commercial Intermodal Freight',
+            Weight: '24,000 kg',
+            TransitTime: '5-7 Hours',
+            type: 'CONSIGNMENT'
+          }
+        };
+
+        actionLabel = `Open Payment Page (₹${priceInr.toLocaleString('en-IN')})`;
+        reply = `I have set up your booking from ${origin} to ${destination} for ₹${priceInr.toLocaleString('en-IN')}.\n\nI am opening the payment page for you right now so you can enter your payment details manually and confirm your haul!`;
+        badges = ['Booking Created', `${origin} → ${destination}`, `Total: ₹${priceInr.toLocaleString('en-IN')}`];
+
+        // Automatically trigger the payment checkout modal as requested by user
+        if (onInitiateCheckout && actionItem) {
+          const itemToCheckout = actionItem;
+          setTimeout(() => {
+            onInitiateCheckout(itemToCheckout);
+          }, 600);
+        }
+      } else if (queryLower.includes('weather') || queryLower.includes('risk') || queryLower.includes('rain')) {
+        reply = "Weather update: The highway route has light drizzle near Khandala Ghat, but the roads remain open and our drivers are driving carefully at safe speeds. All your shipments are completely safe with no significant delays.";
+        badges = ['Weather: Light Drizzle', 'Route: Safe Speeds', 'Status: On Track'];
+      } else if (queryLower.includes('shipment') || queryLower.includes('track') || queryLower.includes('cargo') || queryLower.includes('status')) {
+        reply = "Status update: All your active shipments are moving smoothly on highway NH-48. GPS tracking is active and your deliveries are scheduled to arrive on time with no delays.";
+        badges = ['Active Shipments: 100% On Time', 'GPS: Active', 'Delays: None'];
+      } else if (queryLower.includes('nh-48') || queryLower.includes('corridor') || queryLower.includes('highway')) {
+        reply = "Highway update: The NH-48 corridor from Bengaluru to Mumbai is moving normally. Traffic flow is smooth and estimated delivery times are right on schedule.";
+        badges = ['Highway NH-48: Clear', 'Traffic: Normal', 'Delivery: On Schedule'];
       } else {
-        reply = `FreightGuard analysis for "${text}": All 7 active commercial consignments are verified in Supabase Cloud. XGBoost 3.2 predicts an aggregate 86.2% precision on demurrage boundaries, while QpiAI Quantum QUBO statevector |010⟩ has successfully mitigated ₹8,42,000.00 in delay penalties.`;
-        badges = ['XGBoost 3.2 Active', 'QpiAI Ground State |010⟩', '₹8,42,000 Saved'];
+        reply = `I'm here to help! All your shipments are active and running safely. You can ask me about route weather, check delivery status, or simply say "Book a haul from Mumbai to Pune" and I will create the booking and open the payment page for you.`;
+        badges = ['Status: All Clear', 'Tracking: Live'];
       }
 
       const pilotMsg: ChatMessage = {
@@ -99,12 +172,14 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
         sender: 'pilot',
         text: reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        dataBadges: badges
+        dataBadges: badges,
+        actionItem,
+        actionLabel
       };
 
       setMessages((prev) => [...prev, pilotMsg]);
       setIsTyping(false);
-    }, 850);
+    }, 700);
   };
 
   return (
@@ -112,21 +187,21 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
       {/* Title & Subtitle */}
       <div className="shrink-0">
         <h1 className="text-2xl md:text-3xl font-extrabold text-[#08193A] tracking-tight">
-          QpiAi Pilot Logistics Intelligence
+          FreightIQ Assistant
         </h1>
         <p className="text-xs md:text-sm text-[#5B6B86] mt-1 max-w-4xl leading-relaxed">
-          Powered by QpiAi Pilot. Ask anything about port congestion, customs clearance, demurrage minimization, and quantum routing.
+          Your personal shipping assistant. Ask questions about your shipments, check weather along the highway, or ask to book a new truck haul.
         </p>
       </div>
 
       {/* Main Glass Chat Container */}
       <div className="flex-1 glass-panel rounded-[32px] p-4 md:p-6 flex flex-col justify-between overflow-hidden shadow-md">
-        {/* Top Strip: WEATHER INTELLIGENCE PROMPTS */}
+        {/* Top Strip: QUICK PROMPT CHIPS */}
         <div className="pb-4 border-b border-[#08193A]/10 shrink-0">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-3.5 h-3.5 text-[#34D399]" />
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#5B6B86]">
-              Weather Intelligence Prompts:
+              Quick Assistant Options:
             </span>
           </div>
 
@@ -165,7 +240,7 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
                 >
                   <div className="flex items-center justify-between gap-3 pb-1 border-b border-white/10 mb-1.5">
                     <span className="font-bold text-[11px] uppercase tracking-wider">
-                      {isUser ? 'Rajathgowda (Dispatcher)' : 'QpiAi Pilot'}
+                      {isUser ? userName : 'FreightIQ Assistant'}
                     </span>
                     <span className={`text-[10px] font-mono ${isUser ? 'text-white/60' : 'text-[#5B6B86]'}`}>
                       {msg.timestamp}
@@ -173,6 +248,21 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
                   </div>
 
                   <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                  {/* Booking Action Button (opens payment modal manually) */}
+                  {msg.actionItem && onInitiateCheckout && (
+                    <div className="mt-3 pt-2.5 border-t border-black/10">
+                      <button
+                        type="button"
+                        onClick={() => onInitiateCheckout(msg.actionItem!)}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] shadow-md liquid-btn flex items-center justify-center gap-2 cursor-pointer transition-all"
+                      >
+                        <CreditCard className="w-3.5 h-3.5 text-[#34D399]" />
+                        <span>{msg.actionLabel || 'Open Payment Page'}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
 
                   {/* Grounded Data Badges */}
                   {msg.dataBadges && msg.dataBadges.length > 0 && (
@@ -195,7 +285,7 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
           {isTyping && (
             <div className="flex items-center gap-2 p-3.5 rounded-[22px] bg-[#A7F3D0]/25 border border-[#34D399]/30 text-xs text-[#08193A] w-fit">
               <Bot className="w-4 h-4 text-[#34D399] animate-spin" />
-              <span className="font-semibold">QpiAi Pilot synthesizing dispatch guidance...</span>
+              <span className="font-semibold">Assistant is preparing an answer...</span>
             </div>
           )}
 
@@ -211,20 +301,11 @@ export const QpiAiPilotView: React.FC<QpiAiPilotProps> = ({ initialPrompt, onCle
             }}
             className="flex items-center gap-2 relative"
           >
-            <button
-              type="button"
-              onClick={() => alert('Manifest / Waypoint attachment protocol ready.')}
-              aria-label="Attach File"
-              className="p-2.5 rounded-full glass-pill text-[#5B6B86] hover:text-[#08193A] hover:bg-white transition-all shrink-0 cursor-pointer"
-            >
-              <Paperclip className="w-4 h-4" />
-            </button>
-
             <input
               type="text"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              placeholder="Ask QpiAi Pilot about weather radar, demurrage risk, or quantum circuits..."
+              placeholder="Ask about shipments, weather, or type 'Book a haul from Mumbai to Pune'..."
               className="flex-1 px-4 py-2.5 rounded-full text-xs md:text-sm font-medium glass-input text-[#08193A] placeholder-[#5B6B86]/70 shadow-xs"
             />
 

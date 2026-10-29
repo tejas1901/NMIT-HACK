@@ -1,0 +1,70 @@
+{
+  "model_version": "v20261029_134155",
+  "trained_at": "2026-10-29T13:41:55.488087",
+  "training_samples": 84000,
+  "test_samples": 21000,
+  "features": [
+    "port_id",
+    "carrier_id",
+    "container_type",
+    "dwell_days_so_far",
+    "weather_risk_score",
+    "congestion_index",
+    "customs_hold_flag",
+    "inspection_required_flag",
+    "hazardous_cargo_flag",
+    "day_of_week",
+    "month",
+    "is_weekend"
+  ],
+  "metrics": {
+    "auc": 0.8722,
+    "accuracy": 0.781,
+    "precision": 0.8241,
+    "recall": 0.7512,
+    "rmse": 1.5129,
+    "mae": 1.0488
+  },
+  "top_features": [
+    {
+      "feature": "customs_hold_flag",
+      "importance": 0.3157
+    },
+    {
+      "feature": "dwell_days_so_far",
+      "importance": 0.1822
+    },
+    {
+      "feature": "carrier_id_HAP",
+      "importance": 0.1057
+    },
+    {
+      "feature": "inspection_required_flag",
+      "importance": 0.0899
+    },
+    {
+      "feature": "carrier_id_COS",
+      "importance": 0.0847
+    },
+    {
+      "feature": "hazardous_cargo_flag",
+      "importance": 0.0512
+    },
+    {
+      "feature": "is_weekend",
+      "importance": 0.0222
+    },
+    {
+      "feature": "container_type_40ft Reefer",
+      "importance": 0.0206
+    },
+    {
+      "feature": "congestion_index",
+      "importance": 0.0141
+    },
+    {
+      "feature": "day_of_week",
+      "importance": 0.014
+    }
+  ]
+}

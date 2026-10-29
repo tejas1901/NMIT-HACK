@@ -103,6 +103,18 @@ CREATE TABLE IF NOT EXISTS public.cargo_bookings (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. Table: audit_logs (Tamper-Evident Admin Audit Records)
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id TEXT PRIMARY KEY,
+    action TEXT NOT NULL,
+    actor_email TEXT,
+    actor_role TEXT,
+    details TEXT,
+    ip_address TEXT,
+    severity TEXT DEFAULT 'INFO',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- --------------------------------------------------------------------
 -- Enable Row Level Security (RLS) on all exposed tables
 -- --------------------------------------------------------------------
@@ -111,24 +123,51 @@ ALTER TABLE public.model_training_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.qpiai_quantum_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shipment_incidents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cargo_bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- --------------------------------------------------------------------
--- Permissive Policies for Webhook, API, and Dashboard Clients
+-- Helper: Check if requesting JWT has admin role claim or profile
+-- --------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin_user()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN (
+    coalesce(auth.jwt() ->> 'role', '') = 'admin' OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = (SELECT auth.uid()) AND role = 'admin')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- --------------------------------------------------------------------
+-- Strict Admin & Role-Isolated Policies
 -- --------------------------------------------------------------------
 DROP POLICY IF EXISTS "Allow all access to shipment_datasets" ON public.shipment_datasets;
-CREATE POLICY "Allow all access to shipment_datasets" ON public.shipment_datasets FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin read shipment_datasets" ON public.shipment_datasets FOR SELECT TO authenticated USING (public.is_admin_user());
+CREATE POLICY "Admin write shipment_datasets" ON public.shipment_datasets FOR ALL TO authenticated USING (public.is_admin_user());
 
 DROP POLICY IF EXISTS "Allow all access to model_training_runs" ON public.model_training_runs;
-CREATE POLICY "Allow all access to model_training_runs" ON public.model_training_runs FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin read model_training_runs" ON public.model_training_runs FOR SELECT TO authenticated USING (public.is_admin_user());
+CREATE POLICY "Admin write model_training_runs" ON public.model_training_runs FOR ALL TO authenticated USING (public.is_admin_user());
 
 DROP POLICY IF EXISTS "Allow all access to qpiai_quantum_jobs" ON public.qpiai_quantum_jobs;
-CREATE POLICY "Allow all access to qpiai_quantum_jobs" ON public.qpiai_quantum_jobs FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Admin read qpiai_quantum_jobs" ON public.qpiai_quantum_jobs FOR SELECT TO authenticated USING (public.is_admin_user());
+CREATE POLICY "Admin write qpiai_quantum_jobs" ON public.qpiai_quantum_jobs FOR ALL TO authenticated USING (public.is_admin_user());
+
+DROP POLICY IF EXISTS "Allow all access to audit_logs" ON public.audit_logs;
+CREATE POLICY "Admin view audit logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.is_admin_user());
+CREATE POLICY "System insert audit logs" ON public.audit_logs FOR INSERT TO anon, authenticated WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow all access to shipment_incidents" ON public.shipment_incidents;
-CREATE POLICY "Allow all access to shipment_incidents" ON public.shipment_incidents FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated read shipment_incidents" ON public.shipment_incidents FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin write shipment_incidents" ON public.shipment_incidents FOR ALL TO authenticated USING (public.is_admin_user());
 
 DROP POLICY IF EXISTS "Allow all access to cargo_bookings" ON public.cargo_bookings;
-CREATE POLICY "Allow all access to cargo_bookings" ON public.cargo_bookings FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Users read cargo_bookings" ON public.cargo_bookings FOR SELECT TO authenticated USING (
+  public.is_admin_user() OR user_email = (SELECT auth.jwt() ->> 'email')
+);
+CREATE POLICY "Users create cargo_bookings" ON public.cargo_bookings FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Admin update cargo_bookings" ON public.cargo_bookings FOR ALL TO authenticated USING (public.is_admin_user());
+
 
 -- --------------------------------------------------------------------
 -- Enable Realtime Replication Publication
