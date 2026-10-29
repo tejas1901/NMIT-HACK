@@ -9,8 +9,7 @@
     "backend-node": {
       "root": "backend-node",
       "framework": "express",
-      "entrypoint": "dist/server.js",
-      "buildCommand": "npm run build",
+      "entrypoint": "src/server.ts",
       "installCommand": "npm install --legacy-peer-deps",
       "bindings": [
         {
