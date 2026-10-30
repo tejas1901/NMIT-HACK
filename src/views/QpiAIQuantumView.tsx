@@ -10,9 +10,11 @@ import {
   RefreshCw, 
   Cpu, 
   Terminal,
-  Activity
+  Activity,
+  Zap
 } from 'lucide-react';
 import { OPENQASM_CODE } from '../data/mockData';
+import { dispatchToN8N, N8N_INSTANCE_URL } from '../services/n8nService';
 
 interface QpiAIQuantumProps {
   onShowToast: (message: string) => void;
@@ -63,6 +65,32 @@ export const QpiAIQuantumView: React.FC<QpiAIQuantumProps> = ({ onShowToast }) =
       setIsCompiling(false);
       onShowToast('Recompiled QpiAI-QSV Statevector on QCloud');
     }, 700);
+  };
+
+  const [isN8nDispatching, setIsN8nDispatching] = useState(false);
+  const [n8nLastStatus, setN8nLastStatus] = useState<string | null>(null);
+
+  const handleTriggerN8n = async () => {
+    setIsN8nDispatching(true);
+    const res = await dispatchToN8N({
+      event_type: 'QPIAI_QUANTUM_ORCHESTRATION',
+      severity: 'CRITICAL',
+      carrier_suggested: 'Quantum Intermodal Prime (Carrier QpiAI-01)',
+      penalty_avoidable_inr: 7800,
+      details: {
+        backend: 'QpiAI-QSV-Simulator',
+        algorithm: 'VQE-QUBO',
+        instance: N8N_INSTANCE_URL
+      }
+    });
+    setIsN8nDispatching(false);
+    if (res.success) {
+      setN8nLastStatus('DISPATCHED (HTTP 200)');
+      onShowToast(`✓ n8n Cloud workflow triggered! Instance: ${N8N_INSTANCE_URL}`);
+    } else {
+      setN8nLastStatus('FAILED');
+      onShowToast(`n8n trigger notice: ${res.error || 'Check network'}`);
+    }
   };
 
   return (
@@ -359,21 +387,48 @@ export const QpiAIQuantumView: React.FC<QpiAIQuantumProps> = ({ onShowToast }) =
             </div>
           </div>
 
-          {/* Card 4: Incident Blocker Mitigation */}
-          <div className="p-4 rounded-2xl bg-white/70 border border-white/90 space-y-2 flex flex-col justify-between">
-            <div className="space-y-1">
+          {/* Card 4: Incident Blocker Mitigation & n8n Cloud Orchestrator */}
+          <div className="p-4 rounded-2xl bg-white/70 border border-white/90 space-y-2 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6B86]">Autonomous n8n</span>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#1B3A7A]/15 text-[#1B3A7A]">DISPATCHED</span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5B6B86] flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-[#1B3A7A]" />
+                  <span>Autonomous n8n</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-emerald-500/15 text-emerald-800 border border-emerald-500/30">
+                  {n8nLastStatus || 'CLOUD CONNECTED'}
+                </span>
               </div>
               <h4 className="text-xs font-bold text-[#08193A]">Corridor Blocker Solver</h4>
               <p className="text-[11px] text-[#5B6B86]">
-                Real-time exception tower rerouting during mountain ghat weather bottlenecks.
+                Real-time incident webhook dispatch to <strong>tejas1901.app.n8n.cloud</strong> for autonomous SLA escalation.
               </p>
             </div>
-            <div className="pt-2 border-t border-black/5">
-              <span className="text-[10px] text-[#5B6B86] block">SLA Compliance</span>
-              <span className="text-xs font-mono font-bold text-[#34D399]">100% Zero Breach</span>
+            <div className="pt-2 border-t border-black/5 space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-mono">
+                <span className="text-[#5B6B86]">Instance</span>
+                <span className="font-bold text-[#08193A] truncate max-w-[140px]" title="https://tejas1901.app.n8n.cloud">
+                  tejas1901.app.n8n.cloud
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleTriggerN8n}
+                disabled={isN8nDispatching}
+                className="w-full py-1.5 px-3 rounded-xl text-xs font-bold bg-[#1B3A7A] hover:bg-[#08193A] text-white transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                {isN8nDispatching ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Dispatching...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-3 h-3 text-[#34D399]" />
+                    <span>Trigger n8n Workflow</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -37,8 +37,10 @@ import {
   User,
   Phone,
   ShieldCheck,
-  SquareParking
+  SquareParking,
+  Zap
 } from 'lucide-react';
+import { dispatchToN8N } from '../services/n8nService';
 import { 
   BlockerCardItem, 
   CardLane, 
@@ -512,6 +514,41 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
     if (onTriggerToast) onTriggerToast(`Container ${card?.containerId || cardId} marked as Resolved`);
     if (onWriteAuditLog && card) {
       onWriteAuditLog('BLOCKER_RESOLVED', 'ASSIGNMENT', `Blocker ${card.blockerType} for container ${card.containerId} marked resolved.`);
+    }
+  };
+
+  const [isN8nDispatchingMap, setIsN8nDispatchingMap] = useState<Record<string, boolean>>({});
+
+  const handleDispatchCardToN8N = async (card: BlockerCardItem) => {
+    setIsN8nDispatchingMap((prev) => ({ ...prev, [card.id]: true }));
+    const res = await dispatchToN8N({
+      event_type: 'FREIGHTGUARD_CRITICAL_INCIDENT',
+      shipment_id: card.containerId,
+      container_id: card.containerId,
+      blocker_type: card.blockerType,
+      severity: card.lane === 'ACT_NOW' ? 'CRITICAL' : 'HIGH',
+      penalty_avoidable_inr: card.avoidableCostInr,
+      evidence_quote: card.evidenceQuote,
+      actor: card.ownerName,
+      details: {
+        lane: card.lane,
+        docId: card.docId,
+        confidence: card.confidence
+      }
+    });
+    setIsN8nDispatchingMap((prev) => ({ ...prev, [card.id]: false }));
+
+    if (res.success) {
+      if (onTriggerToast) {
+        onTriggerToast(`✓ Incident ${card.containerId} dispatched to n8n Cloud (tejas1901.app.n8n.cloud)!`);
+      }
+      if (onWriteAuditLog) {
+        onWriteAuditLog('N8N_WORKFLOW_TRIGGERED' as any, 'TELEMETRY' as any, `Dispatched blocker ${card.containerId} (${card.blockerType}) to n8n Cloud webhook.`);
+      }
+    } else {
+      if (onTriggerToast) {
+        onTriggerToast(`n8n trigger notice: ${res.error || 'Check network'}`);
+      }
     }
   };
 
@@ -1469,6 +1506,25 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
                   <span>{gatePassIssuedMap[selectedCard.containerId] ? '✓ Gate Release Pass Dispatched' : 'Issue Electronic Gate Pass'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDispatchCardToN8N(selectedCard)}
+                  disabled={isN8nDispatchingMap[selectedCard.id]}
+                  className="w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer bg-[#1B3A7A] text-white hover:bg-[#08193A] shadow-xs disabled:opacity-60"
+                >
+                  {isN8nDispatchingMap[selectedCard.id] ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Dispatching to n8n Cloud...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-3.5 h-3.5 text-[#34D399]" />
+                      <span>⚡ Dispatch Incident to n8n Cloud</span>
+                    </>
+                  )}
                 </button>
               </div>
 
