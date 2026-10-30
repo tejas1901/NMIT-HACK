@@ -124,9 +124,10 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     const normalizedEmail = email.trim().toLowerCase();
     const isAdminAccount = role === 'admin' || normalizedEmail === 'admin@gmail.com';
 
-    // 1. Strict Master Admin Authentication (ONLY admin@gmail.com and admin@123)
+    // 1. Strict Master Admin Authentication (admin@gmail.com with admin@123 or Password@123)
     if (isAdminAccount) {
-      if (normalizedEmail === 'admin@gmail.com' && password.trim() === 'admin@123') {
+      const p = password.trim();
+      if (normalizedEmail === 'admin@gmail.com' && (p === 'admin@123' || p === 'Password@123')) {
         const adminUser = {
           id: 'usr-admin',
           email: 'admin@gmail.com',

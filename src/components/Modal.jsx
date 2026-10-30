@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import LoginCard from './LoginCard'
+import { registerCustomer } from '../services/customerAuth'
 
 /* ── SVG helpers (Enterprise Professional, No Emojis) ────────────────────────── */
 const CloseIcon = () => (
@@ -813,6 +814,19 @@ function RegisterModal({ onClose, onRegisterSuccess }) {
         });
       } catch (dbErr) {
         console.warn('Direct Supabase profiles write notice:', dbErr);
+      }
+
+      // Save to customerAuth persistent registry so logging in after logout always succeeds!
+      try {
+        await registerCustomer({
+          email: form.email,
+          password: form.password,
+          full_name: form.name,
+          company: form.company,
+          corridor: form.corridor
+        });
+      } catch (regErr) {
+        console.warn('CustomerAuth register sync notice:', regErr);
       }
 
       setSuccess('Customer account created and synced to Supabase! Entering workspace...')
