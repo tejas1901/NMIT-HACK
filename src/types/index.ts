@@ -39,7 +39,8 @@ export type NavTab =
   | 'customer-tracking'
   | 'customer-book'
   | 'marketplace'
-  | 'customer-fleet';
+  | 'customer-fleet'
+  | 'customer-unified-booking';
 
 export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
 

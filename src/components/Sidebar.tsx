@@ -24,7 +24,8 @@ import {
   ShieldAlert,
   Building2,
   Mail,
-  Inbox
+  Inbox,
+  Layers
 } from 'lucide-react';
 import { NavTab, Role, UserProfile } from '../types';
 import { DEMO_MODE } from '../roles';
@@ -88,9 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     badge?: string | number;
   }> = [
     { id: 'customer-shipments', label: 'My Shipments', icon: Package, badge: customerShipmentsCount },
-    { id: 'cargo-bookings', label: 'Cargo Booking', icon: Building2, badge: '5 FLEETS' },
-    { id: 'customer-book', label: 'Haul Booking', icon: PlusCircle },
-    { id: 'marketplace', label: 'Fleet / Truck Booking', icon: Truck, badge: 'AVAILABLE' },
+    { id: 'customer-unified-booking', label: 'Cargo, Haul & Fleet Booking', icon: Layers, badge: 'UNIFIED' },
     { id: 'corridor-simulation', label: 'Corridor & Simulator', icon: Navigation, badge: 'LIVE' },
     { id: 'customer-tracking', label: 'Live GPS Radar', icon: Radio, badge: 'LIVE' },
     { id: 'qpiai-pilot', label: 'QpiAi Copilot', icon: Bot, badge: 'AI' },
@@ -239,7 +238,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <nav className="flex flex-col gap-1.5" aria-label="Customer Navigation">
                 {customerNavItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = activeTab === item.id;
+                  const isActive = activeTab === item.id || (
+                    item.id === 'customer-unified-booking' && (
+                      activeTab === 'customer-unified-booking' || 
+                      activeTab === 'cargo-bookings' || 
+                      activeTab === 'customer-book' || 
+                      activeTab === 'marketplace'
+                    )
+                  );
                   return (
                     <button
                       key={item.id}
@@ -475,7 +481,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 glass-panel rounded-full px-2 py-1.5 shadow-[0_12px_40px_rgba(8,25,58,0.18)] flex items-center justify-around border border-white/80">
         {(activeRole === 'customer' ? customerNavItems : adminSharedItems).slice(0, 5).map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = activeTab === item.id || (
+            item.id === 'customer-unified-booking' && (
+              activeTab === 'customer-unified-booking' || 
+              activeTab === 'cargo-bookings' || 
+              activeTab === 'customer-book' || 
+              activeTab === 'marketplace'
+            )
+          );
           return (
             <button
               key={item.id}

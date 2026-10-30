@@ -84,6 +84,7 @@ const AdminAuditLogView = lazy(() => import('./views/AdminAuditLogView').then(m 
 const AdminYardSlotMapView = lazy(() => import('./views/AdminYardSlotMapView').then(m => ({ default: m.AdminYardSlotMapView })));
 const AdminUnifiedRequestsView = lazy(() => import('./views/AdminUnifiedRequestsView').then(m => ({ default: m.AdminUnifiedRequestsView })));
 const AdminGmailConnectorView = lazy(() => import('./views/AdminGmailConnectorView').then(m => ({ default: m.AdminGmailConnectorView })));
+const CustomerUnifiedBookingView = lazy(() => import('./views/CustomerUnifiedBookingView').then(m => ({ default: m.CustomerUnifiedBookingView })));
 const TruckIntelligenceDrawer = lazy(() => import('./components/TruckIntelligenceDrawer').then(m => ({ default: m.TruckIntelligenceDrawer })));
 const DevConsole = lazy(() => import('./components/DevConsoleModal').then(m => ({ default: m.DevConsole })));
 
@@ -128,6 +129,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   const ALL_CUSTOMER_ROUTES: NavTab[] = [
     'customer-shipments',
+    'customer-unified-booking',
     'cargo-bookings',
     'customer-book',
     'marketplace',
@@ -1641,15 +1643,19 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                       setSelectedTrackingConsignmentId(c.id);
                       setActiveTab('customer-tracking');
                     }}
-                    onNavigateToBook={() => setActiveTab('customer-book')}
+                    onNavigateToBook={() => setActiveTab('customer-unified-booking')}
                     onOpenDriverCall={handleOpenDriverCall}
                     companyName={currentUser?.company}
                   />
                 )}
 
-                {/* Shared Cargo Bookings & Carrier Capacities Marketplace */}
-                {activeTab === 'cargo-bookings' && (
-                  <CargoBookingsView
+                {/* Unified Customer Booking View (Cargo, Haul & Fleet in ONE Tab) */}
+                {(activeTab === 'customer-unified-booking' || activeTab === 'cargo-bookings' || activeTab === 'customer-book' || activeTab === 'marketplace') && (
+                  <CustomerUnifiedBookingView
+                    initialSubTab={
+                      activeTab === 'marketplace' ? 'FLEET' : 
+                      activeTab === 'customer-book' ? 'HAUL' : 'CARGO'
+                    }
                     consignments={allConsignments}
                     onSelectConsignment={setSelectedConsignment}
                     onOpenNewBookingModal={(carrier) => {
@@ -1663,6 +1669,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                     userRole={activeRole}
                     onAcceptOrder={handleAcceptBookingOrder}
                     onRejectOrder={handleRejectBookingOrder}
+                    onInitiatePayment={handleInitiateCheckout}
+                    onBookingConfirmed={handleCustomerBookingConfirmed}
+                    onInitiateCheckout={handleInitiateCheckout}
+                    purchasedOrders={roleOrders}
+                    onViewPurchasedOrders={() => setActiveTab('customer-fleet')}
                   />
                 )}
 
@@ -1676,26 +1687,10 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                   />
                 )}
 
-                {activeTab === 'customer-book' && (
-                  <CustomerBookShipmentView
-                    onInitiatePayment={handleInitiateCheckout}
-                    onBookingConfirmed={handleCustomerBookingConfirmed}
-                  />
-                )}
-
-                {activeTab === 'marketplace' && (
-                  <TruckMarketplaceView
-                    onInitiateCheckout={handleInitiateCheckout}
-                    purchasedOrders={roleOrders}
-                    onViewPurchasedOrders={() => setActiveTab(activeRole === 'admin' ? 'admin-all-fleet-orders' : 'customer-fleet')}
-                    userRole={activeRole}
-                  />
-                )}
-
                 {activeTab === 'customer-fleet' && (
                   <CustomerFleetOrdersView
                     purchasedOrders={roleOrders}
-                    onNavigateToMarketplace={() => setActiveTab('marketplace')}
+                    onNavigateToMarketplace={() => setActiveTab('customer-unified-booking')}
                     currency={currency}
                   />
                 )}

@@ -32,6 +32,7 @@ export const FEATURE_REGISTRY = {
   'nav.buy_trucks': { access: 'shared', description: 'Commercial vehicle showroom' },
   'nav.all_fleet_orders': { access: 'admin', description: 'All corporate truck orders' },
   'nav.my_fleet_orders': { access: 'shared', description: 'Purchased fleet inventory' },
+  'nav.customer_unified_booking': { access: 'shared', description: 'Unified Cargo, Haul & Fleet Booking for Customers' },
   
   // Shared carrier fleet marketplace, simulator & manifest
   'nav.cargo_bookings': { access: 'shared', description: 'Company cargo browser, bookings & approvals' },
