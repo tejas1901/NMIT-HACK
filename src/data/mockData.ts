@@ -36,8 +36,9 @@ export const INITIAL_CONSIGNMENTS: Consignment[] = [
     status: 'PENDING_APPROVAL',
     eta: 'Awaiting Admin Acceptance',
     notes: 'Urgent cold-chain vaccines. Requires Carrier Admin acceptance and refrigerated tractor.',
-    customerCompany: 'Biocon Pharma Intermodal',
-    customerName: 'Dr. Suresh Rao'
+    customerCompany: 'Vikas Intermodal Corp',
+    customerName: 'Ananya Verma',
+    customerEmail: 'ananya.verma@vikasintermodal.in'
   },
   // Customer 1: Vikas Intermodal Corp (Ananya Verma) - 6 Shipments
   {

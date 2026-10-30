@@ -32,12 +32,12 @@ export const NotificationBar: React.FC<NotificationBarProps> = ({
   const isAccepted = notification.type === 'ACCEPTED';
 
   return (
-    <div className={`w-full py-2.5 px-4 transition-all duration-300 z-50 sticky top-0 shadow-md ${
+    <div className={`fixed top-3 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl py-2.5 px-4 rounded-2xl transition-all duration-300 z-[100] shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-3 border ${
       isAccepted 
-        ? 'bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white border-b border-emerald-500/30' 
-        : 'bg-gradient-to-r from-rose-950 via-red-900 to-amber-950 text-white border-b border-red-500/30'
+        ? 'bg-gradient-to-r from-emerald-950/95 via-emerald-900/95 to-teal-950/95 text-white border-emerald-500/40' 
+        : 'bg-gradient-to-r from-rose-950/95 via-red-950/95 to-amber-950/95 text-white border-red-500/40'
     }`}>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+      <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
         {/* Left Side: Status & Message */}
         <div className="flex items-start md:items-center gap-3">
           <div className="shrink-0 mt-0.5 md:mt-0">

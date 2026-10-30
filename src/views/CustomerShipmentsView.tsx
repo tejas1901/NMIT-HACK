@@ -222,6 +222,11 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
                       <span>Awaiting {shipment.carrierCompany || 'Carrier'} Admin Approval</span>
                     </span>
+                  ) : shipment.status === 'CONFIRMED' ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-900 border border-emerald-500/40 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Confirmed • Operator Assigned</span>
+                    </span>
                   ) : (
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/25">
                       {shipment.department}
@@ -291,18 +296,28 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
                 {/* Driver & Telemetry Contact */}
                 <div className="p-3 rounded-2xl bg-white/60 border border-white/80 flex items-center justify-between gap-3 text-xs">
                   <div>
-                    <p className="text-[10px] text-[#5B6B86] uppercase font-semibold">Assigned Driver</p>
-                    <p className="font-bold text-[#08193A]">{shipment.driverName || 'Vikram Malhotra'}</p>
-                    <p className="text-[10px] font-mono text-[#5B6B86]">{shipment.driverPhone || '+91 98201 55194'}</p>
+                    <p className="text-[10px] text-[#5B6B86] uppercase font-semibold">
+                      {shipment.status === 'PENDING_APPROVAL' ? 'Operator Allocation' : 'Assigned Driver & Unit'}
+                    </p>
+                    <p className="font-bold text-[#08193A]">
+                      {shipment.status === 'PENDING_APPROVAL' ? 'Awaiting Admin Acceptance' : (shipment.driverName || 'Vikram Malhotra')}
+                    </p>
+                    <p className="text-[10px] font-mono text-[#5B6B86]">
+                      {shipment.status === 'PENDING_APPROVAL' 
+                        ? 'Capacity reserved on NH-48' 
+                        : `${shipment.vehicleModel || shipment.truckUnitId || 'Unit #4021'} • ${shipment.driverPhone || '+91 98201 55194'}`}
+                    </p>
                   </div>
 
-                  <button
-                    onClick={() => onOpenDriverCall(shipment.driverName, shipment.driverPhone)}
-                    className="p-2 rounded-full bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all liquid-btn cursor-pointer shadow-xs"
-                    title="Call Driver via VoIP Bridge"
-                  >
-                    <PhoneCall className="w-4 h-4 text-[#34D399]" />
-                  </button>
+                  {shipment.status !== 'PENDING_APPROVAL' && (
+                    <button
+                      onClick={() => onOpenDriverCall(shipment.driverName, shipment.driverPhone)}
+                      className="p-2 rounded-full bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all liquid-btn cursor-pointer shadow-xs"
+                      title="Call Driver via VoIP Bridge"
+                    >
+                      <PhoneCall className="w-4 h-4 text-[#34D399]" />
+                    </button>
+                  )}
                 </div>
               </div>
 

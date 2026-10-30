@@ -18,8 +18,8 @@ export const LiquidBackground: React.FC = memo(() => {
       if (!canvas) return;
       const newW = window.innerWidth;
       const newH = window.innerHeight;
-      // Only resize canvas if window viewport actually changed to prevent buffer clearing flicker
-      if (canvas.width !== newW || canvas.height !== newH) {
+      // Only resize canvas if window viewport actually changed substantially (>=20px) to prevent scrollbar buffer clearing flicker
+      if (Math.abs(canvas.width - newW) >= 20 || Math.abs(canvas.height - newH) >= 20) {
         width = canvas.width = newW;
         height = canvas.height = newH;
       }

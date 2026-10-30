@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
 import { 
   NavTab, 
   Role, 
@@ -102,6 +102,10 @@ export interface UnifiedCockpitProps {
   } | null;
   onSignOut?: () => void;
 }
+
+const TAB_INSTANCE_ID = typeof window !== 'undefined'
+  ? `tab-${Math.random().toString(36).substring(2, 9)}`
+  : 'tab-server';
 
 export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   // Skeleton Loading on First Load (~600ms)
@@ -302,12 +306,15 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     return INITIAL_CONSIGNMENTS;
   });
 
+  // Ref to track last broadcast signature of consignments to prevent broadcast spam
+  const lastBroadcastSigRef = useRef<string>('');
+
   // Real-time broadcast helper across browser tabs and windows
   const broadcastSyncEvent = (type: string, payload: any) => {
     try {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
         const bc = new BroadcastChannel('freightiq_realtime_sync');
-        bc.postMessage({ type, payload });
+        bc.postMessage({ type, payload, senderId: TAB_INSTANCE_ID });
         bc.close();
       }
     } catch {}
@@ -315,8 +322,12 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('freightiq_consignments', JSON.stringify(allConsignments));
-      broadcastSyncEvent('SYNC_CONSIGNMENTS', allConsignments);
+      const sig = allConsignments.map(c => `${c.id}:${c.status}:${c.driverName || ''}:${c.carrierName || ''}`).join('|');
+      if (sig !== lastBroadcastSigRef.current) {
+        lastBroadcastSigRef.current = sig;
+        localStorage.setItem('freightiq_consignments', JSON.stringify(allConsignments));
+        broadcastSyncEvent('SYNC_CONSIGNMENTS', allConsignments);
+      }
     } catch {}
   }, [allConsignments]);
 
@@ -428,7 +439,10 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
         bc = new BroadcastChannel('freightiq_realtime_sync');
         bc.onmessage = (event) => {
-          const { type, payload } = event.data || {};
+          if (!event.data || event.data.senderId === TAB_INSTANCE_ID) {
+            return; // Ignore messages from this same tab to prevent bounce loops!
+          }
+          const { type, payload } = event.data;
           if (type === 'SYNC_CONSIGNMENTS' && Array.isArray(payload)) {
             setAllConsignments(payload);
           } else if (type === 'SYNC_HAULS' && Array.isArray(payload)) {
@@ -457,6 +471,32 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             };
             setBookingNotification(notif);
             showToast(`✓ Order ${payload?.id} ACCEPTED: Driver ${payload?.driverName || 'Vikram Malhotra'} (${payload?.vehicleUnit || 'Unit #4021'}) assigned!`);
+
+            // Also update consignment in this tab immediately so customer account displays CONFIRMED
+            if (payload?.id) {
+              setAllConsignments((prev) =>
+                prev.map((c) => {
+                  if (c.id === payload.id || (payload.id.includes('CRG-') && c.id.includes(payload.id.replace('CRG-BK-', '').replace('CRG-', '')))) {
+                    return {
+                      ...c,
+                      status: 'CONFIRMED',
+                      eta: 'Tomorrow, 14:00 IST',
+                      driverName: payload.driverName || c.driverName,
+                      driverPhone: payload.driverPhone || c.driverPhone,
+                      truckUnitId: payload.vehicleUnit || c.truckUnitId,
+                      vehicleModel: payload.vehicleModel || c.vehicleModel,
+                      vehiclePlate: payload.plateNumber || c.vehiclePlate
+                    };
+                  }
+                  return c;
+                })
+              );
+
+              const rawId = payload.id.replace('CRG-BK-', '').replace('CRG-', '');
+              setHaulRequests((prev) =>
+                prev.map((h) => (h.id === `REQ-${rawId}` || h.id.includes(rawId) ? { ...h, status: 'APPROVED' } : h))
+              );
+            }
           } else if (type === 'ORDER_REJECTED_NOTIFY') {
             const notif: BookingNotification = {
               id: `notif-${Date.now()}`,
@@ -467,6 +507,30 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             };
             setBookingNotification(notif);
             showToast(`Notice: Order ${payload?.id} declined by Fleet Operations.`);
+
+            if (payload?.id) {
+              setAllConsignments((prev) =>
+                prev.map((c) => (c.id === payload.id || c.id.includes(payload.id.replace('CRG-BK-', '').replace('CRG-', '')) ? { ...c, status: 'REJECTED', eta: 'Order Declined' } : c))
+              );
+              const rawId = payload.id.replace('CRG-BK-', '').replace('CRG-', '');
+              setHaulRequests((prev) =>
+                prev.map((h) => (h.id === `REQ-${rawId}` || h.id.includes(rawId) ? { ...h, status: 'REJECTED' } : h))
+              );
+            }
+          } else if (type === 'FLEET_ORDER_APPROVED_NOTIFY') {
+            if (payload?.orderId) {
+              setAllOrders((prev) =>
+                prev.map((o) => (o.orderId === payload.orderId ? { ...o, status: payload.status || 'IN_TRANSIT_TO_DEPOT' } : o))
+              );
+              showToast(`✓ Commercial fleet lease #${payload.orderId} APPROVED by Fleet Operations!`);
+            }
+          } else if (type === 'FLEET_ORDER_FULFILLED_NOTIFY') {
+            if (payload?.orderId) {
+              setAllOrders((prev) =>
+                prev.map((o) => (o.orderId === payload.orderId ? { ...o, status: payload.status || 'DELIVERED_TO_FLEET' } : o))
+              );
+              showToast(`✓ Unit #${payload.orderId} delivered and active in fleet inventory.`);
+            }
           }
         };
       }
@@ -475,7 +539,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     }
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (!e.newValue) return;
+      if (!e.newValue || !e.key || !e.key.startsWith('freightiq_')) return;
       try {
         if (e.key === 'freightiq_consignments') {
           const parsed = JSON.parse(e.newValue);
@@ -584,29 +648,55 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         (payload) => {
           if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && payload.new) {
             const b: any = payload.new;
-            const item: Consignment = {
-              id: b.booking_ref || `CRG-${Math.floor(10000 + Math.random() * 90000)}`,
-              origin: b.origin || 'Mumbai Nhava Sheva (JNPT)',
-              destination: b.destination || 'Pune Chakan Industrial Hub',
-              department: b.cargo_type || 'Industrial Goods',
-              weightLbs: b.weight_lbs || 45000,
-              valueUsd: b.declared_value_usd || 120000,
-              mode: b.shipping_mode || 'First Class',
-              delayRiskLevel: (b.risk_tier || 'LOW') as RiskLevel,
-              delayRiskPercent: b.delay_risk_pct || 14.5,
-              demurrageRisk: b.demurrage_penalty_usd || 0,
-              carrierName: b.quantum_carrier_assigned || 'Western Express Logistics',
-              circuitFile: b.qasm_file || 'circuit_qaoa_opt.qasm',
-              netSavings: b.net_savings_usd || 1250,
-              status: b.status || 'CONFIRMED',
-              eta: '06h 00m',
-              driverName: 'Vikram Malhotra',
-              driverPhone: '+91 98201 55194',
-              customerCompany: currentUser?.company || LOGGED_IN_CUSTOMER_COMPANY,
-              customerName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME
-            };
-            setAllConsignments(prev => [item, ...prev.filter(p => p.id !== item.id)]);
-            showToast(`⚡ Live Postgres: Manifest ${item.id} received in real-time!`);
+            const bRef = b.booking_ref;
+            setAllConsignments((prev) => {
+              const existing = prev.find(p => p.id === bRef);
+              if (existing) {
+                // Merge status and server fields, preserving client-side driver & customer assignments
+                return prev.map(p => {
+                  if (p.id === bRef) {
+                    return {
+                      ...p,
+                      status: b.status || p.status,
+                      carrierName: b.quantum_carrier_assigned || p.carrierName,
+                      carrierCompany: b.quantum_carrier_assigned || p.carrierCompany || p.carrierName,
+                      delayRiskPercent: b.delay_risk_pct ?? p.delayRiskPercent,
+                      delayRiskLevel: b.risk_tier || p.delayRiskLevel,
+                      demurrageRisk: b.demurrage_penalty_usd ?? p.demurrageRisk,
+                      netSavings: b.net_savings_usd ?? p.netSavings
+                    };
+                  }
+                  return p;
+                });
+              } else {
+                const item: Consignment = {
+                  id: bRef || `CRG-${Math.floor(10000 + Math.random() * 90000)}`,
+                  origin: b.origin || 'Mumbai Nhava Sheva (JNPT)',
+                  destination: b.destination || 'Pune Chakan Industrial Hub',
+                  department: b.cargo_type || 'Industrial Goods',
+                  weightLbs: b.weight_lbs || 45000,
+                  valueUsd: b.declared_value_usd || 120000,
+                  mode: b.shipping_mode || 'First Class',
+                  delayRiskLevel: (b.risk_tier || 'LOW') as RiskLevel,
+                  delayRiskPercent: b.delay_risk_pct || 14.5,
+                  demurrageRisk: b.demurrage_penalty_usd || 0,
+                  carrierName: b.quantum_carrier_assigned || 'Western Express Logistics',
+                  carrierCompany: b.quantum_carrier_assigned || 'Western Express Logistics',
+                  circuitFile: b.qasm_file || 'circuit_qaoa_opt.qasm',
+                  netSavings: b.net_savings_usd || 1250,
+                  status: b.status || 'CONFIRMED',
+                  eta: '06h 00m',
+                  driverName: 'Vikram Malhotra',
+                  driverPhone: '+91 98201 55194',
+                  customerCompany: currentUser?.company || LOGGED_IN_CUSTOMER_COMPANY,
+                  customerName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME
+                };
+                return [item, ...prev];
+              }
+            });
+            if (payload.eventType === 'INSERT') {
+              showToast(`⚡ Live Postgres: Manifest ${bRef || 'new'} received in real-time!`);
+            }
           } else if (payload.eventType === 'DELETE' && payload.old) {
             const oldRef = (payload.old as any).booking_ref;
             if (oldRef) {
@@ -762,19 +852,39 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const handleSelectRole = (newRole: Role) => {
     if (newRole === 'customer') {
       clearElevationToken();
-      // Keep credentials identical to admin session (admin@gmail.com, Admin, FreightIQ Command)
-      const customerUser: UserProfile = {
-        id: 'usr-admin-customer-mode',
-        email: 'admin@gmail.com',
-        full_name: 'Admin',
-        company: 'FreightIQ Command',
-        phone: '+91 98201 55194',
-        gstin: '27AABCV1234F1Z5',
-        corridor: 'NH-48 (Bengaluru - Mumbai JNPT)',
-        depot: 'JNPT Nhava Sheva Terminal 3',
-        role: 'CUSTOMER',
-        role_label: 'Admin (Shipper Portal Mode)'
-      };
+      let customerUser: UserProfile;
+      try {
+        const savedCustomer = localStorage.getItem('freightiq_saved_customer_profile');
+        if (savedCustomer) {
+          customerUser = JSON.parse(savedCustomer);
+        } else {
+          customerUser = {
+            id: 'usr-customer-default',
+            email: LOGGED_IN_CUSTOMER_EMAIL,
+            full_name: LOGGED_IN_CUSTOMER_NAME,
+            company: LOGGED_IN_CUSTOMER_COMPANY,
+            phone: '+91 98201 55194',
+            gstin: '27AABCV1234F1Z5',
+            corridor: 'NH-48 (Bengaluru - Mumbai JNPT)',
+            depot: 'JNPT Nhava Sheva Terminal 3',
+            role: 'CUSTOMER',
+            role_label: 'Verified Customer'
+          };
+        }
+      } catch {
+        customerUser = {
+          id: 'usr-customer-default',
+          email: LOGGED_IN_CUSTOMER_EMAIL,
+          full_name: LOGGED_IN_CUSTOMER_NAME,
+          company: LOGGED_IN_CUSTOMER_COMPANY,
+          phone: '+91 98201 55194',
+          gstin: '27AABCV1234F1Z5',
+          corridor: 'NH-48 (Bengaluru - Mumbai JNPT)',
+          depot: 'JNPT Nhava Sheva Terminal 3',
+          role: 'CUSTOMER',
+          role_label: 'Verified Customer'
+        };
+      }
       setCurrentUser(customerUser);
       try {
         localStorage.setItem('freightiq_user', JSON.stringify(customerUser));
@@ -783,8 +893,13 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       } catch {}
       setActiveRole('customer');
       setActiveTab('customer-shipments');
-      showToast('Switched to Customer Panel (Session: admin@gmail.com)');
+      showToast(`Switched to Customer Panel (${customerUser.full_name} • ${customerUser.company})`);
     } else {
+      if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
+        try {
+          localStorage.setItem('freightiq_saved_customer_profile', JSON.stringify(currentUser));
+        } catch {}
+      }
       const masterToken = 'freightiq-admin-master-elevation-token';
       setElevationToken(masterToken);
       const adminUser: UserProfile = {
@@ -1652,6 +1767,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     );
 
     showToast(`✓ Order ${orderId} approved! Fleet stock reduced by 1 vehicle.`);
+    broadcastSyncEvent('FLEET_ORDER_APPROVED_NOTIFY', { orderId, status: 'IN_TRANSIT_TO_DEPOT' });
     handleWriteAuditLog('ADMIN_APPROVE_FLEET_ORDER', 'FLEET', `Admin approved fleet lease order ${orderId} for ${bookedTruckName} (Deducted 1 unit from stock)`);
   };
 
@@ -1659,6 +1775,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     setAllOrders((prev) =>
       prev.map((o) => (o.orderId === orderId ? { ...o, status: 'DELIVERED_TO_FLEET' } : o))
     );
+    broadcastSyncEvent('FLEET_ORDER_FULFILLED_NOTIFY', { orderId, status: 'DELIVERED_TO_FLEET' });
     showToast(`Order ${orderId} marked as delivered and accepted into customer fleet`);
   };
 
