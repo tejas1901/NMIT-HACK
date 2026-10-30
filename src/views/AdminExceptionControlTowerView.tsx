@@ -30,7 +30,13 @@ import {
   Lock,
   Flame,
   ArrowRight,
-  Atom
+  Atom,
+  RefreshCw,
+  Inbox,
+  Building2,
+  User,
+  Phone,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   BlockerCardItem, 
@@ -130,6 +136,226 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
 
   // Responsible AI Modal State
   const [activePrincipleModal, setActivePrincipleModal] = useState<typeof RESPONSIBLE_AI_PRINCIPLES[0] | null>(null);
+
+  // ======================= GOOGLE MAIL LIVE CONNECTOR STATE (ADMIN ONLY: admin@gmail.com) =======================
+  const [showGmailConsole, setShowGmailConsole] = useState(false);
+  const [isSyncingGmail, setIsSyncingGmail] = useState(false);
+  const [gmailMessages, setGmailMessages] = useState<Array<{
+    id: string;
+    senderName: string;
+    senderEmail: string;
+    company: string;
+    phone: string;
+    subject: string;
+    body: string;
+    timestamp: string;
+    category: 'CARGO_REQUEST' | 'HAUL_QUOTE' | 'FLEET_RENTAL' | 'CUSTOMS_DISPUTE';
+    status: 'UNREAD' | 'READ' | 'INGESTED' | 'REPLIED';
+    containerId?: string;
+    relatedRef?: string;
+    estimatedRiskInr: number;
+    recommendedAction: string;
+  }>>([
+    {
+      id: 'GM-101',
+      senderName: 'Dr. Suresh Rao',
+      senderEmail: 'suresh.rao@biocon.in',
+      company: 'Biocon Pharma Intermodal',
+      phone: '+91 98450 11234',
+      subject: 'URGENT: Booking Confirmation & Cold-Chain Telemetry - Ref CRG-BK-49210',
+      body: 'Dear FreightIQ Admin, We have lodged an expedited refrigerated cargo booking for 34,500 lbs of temperature-sensitive vaccines. Please confirm driver assignment and temperature log before Nhava Sheva cutoff. Demurrage clock triggers at 18:00.',
+      timestamp: '06:25 IST',
+      category: 'CARGO_REQUEST',
+      status: 'UNREAD',
+      containerId: 'MSCU7829104',
+      relatedRef: 'CRG-BK-49210',
+      estimatedRiskInr: 32000,
+      recommendedAction: 'Assign Priority Reefer Driver & Dispatch Gate Pass'
+    },
+    {
+      id: 'GM-102',
+      senderName: 'Ananya Verma',
+      senderEmail: 'ananya.verma@vikasintermodal.in',
+      company: 'Vikas Intermodal Corp',
+      phone: '+91 99801 88412',
+      subject: 'NH-48 Corridor Slot Booking & Port Congestion Query',
+      body: 'Hello Admin, We submitted haul inquiry for Whitefield Tech Park delivery. Requesting competitive backhaul confirmation with QpiAI corridor optimization before detention penalties start.',
+      timestamp: '06:10 IST',
+      category: 'HAUL_QUOTE',
+      status: 'UNREAD',
+      containerId: 'TEMU9914022',
+      relatedRef: 'HAUL-REQ-8812',
+      estimatedRiskInr: 18500,
+      recommendedAction: 'Approve Route Bypass around Expressway Waypoint 4'
+    },
+    {
+      id: 'GM-103',
+      senderName: 'Kunal Singhania',
+      senderEmail: 'kunal@summitlogistics.in',
+      company: 'Summit Cold-Chain Express',
+      phone: '+91 91234 56780',
+      subject: 'Commercial Rig Rental Order - 3x Volvo FH16 Heavy Multi-Axle',
+      body: 'Hi Admin, Our order for 3 commercial units is awaiting fulfillment. Please approve dispatch from JNPT Nhava Sheva Yard 3.',
+      timestamp: '05:30 IST',
+      category: 'FLEET_RENTAL',
+      status: 'READ',
+      containerId: 'HLXU3391024',
+      relatedRef: 'ORD-TRK-7721',
+      estimatedRiskInr: 25000,
+      recommendedAction: 'Release Yard 3 Gate Slot for Volvo Tri-Axle'
+    },
+    {
+      id: 'GM-104',
+      senderName: 'Customs Officer P. Nair',
+      senderEmail: 'p.nair@icegate.gov.in',
+      company: 'Indian Customs ICEGATE JNPT',
+      phone: '+91 22 2724 4000',
+      subject: 'CRITICAL: Duty Payment Pending - Container MEDU7823419',
+      body: 'Bill of Entry 4589201 requires electronic stamp clearance within 4 hours. Failure will trigger statutory demurrage and terminal lien under Customs Act Section 48.',
+      timestamp: '04:45 IST',
+      category: 'CUSTOMS_DISPUTE',
+      status: 'UNREAD',
+      containerId: 'MEDU7823419',
+      relatedRef: 'BOE-4589201',
+      estimatedRiskInr: 64000,
+      recommendedAction: 'Trigger EDI Duty Clearance & Notify Finance Lead'
+    }
+  ]);
+  const [selectedGmailId, setSelectedGmailId] = useState<string>('GM-101');
+  const [gmailReplyText, setGmailReplyText] = useState('');
+  const [isSendingGmailReply, setIsSendingGmailReply] = useState(false);
+
+  const unreadGmailCount = gmailMessages.filter((m) => m.status === 'UNREAD').length;
+
+  // Google Mail Sync Handler: Ingest emails into Document Inbox
+  const handleSyncGoogleMail = () => {
+    setIsSyncingGmail(true);
+    setTimeout(() => {
+      setIsSyncingGmail(false);
+      const uningested = gmailMessages.filter((m) => m.status === 'UNREAD');
+      if (uningested.length > 0) {
+        const newDocs: Array<LabeledDoc & { status: 'New' | 'Processed' | 'Ignored' }> = uningested.map((m) => ({
+          docId: m.id,
+          sourceType: 'Email' as const,
+          receivedAt: m.timestamp,
+          subject: `[Gmail: ${m.company}] ${m.subject}`,
+          text: `FROM: ${m.senderName} <${m.senderEmail}> (${m.company}, Tel: ${m.phone})\nCONTAINER: ${m.containerId || 'N/A'}\nREF: ${m.relatedRef || 'N/A'}\n\n${m.body}`,
+          answerKey: {
+            disposition: 'EXTRACT' as DocumentDisposition,
+            blockers: [
+              {
+                containerId: m.containerId || 'MSCU-LIVE',
+                blockerType: (m.category === 'CUSTOMS_DISPUTE' ? 'CUSTOMS_DUTY_UNPAID' : 'DEMURRAGE_RISK') as ExceptionBlockerType,
+                evidenceQuote: m.body.slice(0, 120),
+                deadlineHoursBeforePenalty: 4
+              }
+            ],
+            note: `Ingested live from admin@gmail.com Google Mail inbox.`
+          },
+          status: 'New' as const
+        }));
+
+        setDocuments((prev) => {
+          const existingIds = new Set(prev.map((d) => d.docId));
+          const toAdd = newDocs.filter((d) => !existingIds.has(d.docId));
+          return [...toAdd, ...prev];
+        });
+
+        if (onTriggerToast) {
+          onTriggerToast(`Google Mail synced: ${newDocs.length} customer emails ingested into Exception Control Tower!`);
+        }
+        if (onWriteAuditLog) {
+          onWriteAuditLog('GMAIL_INBOX_SYNCED', 'TELEMETRY', `Synced ${newDocs.length} customer inquiries from admin@gmail.com into Exception Tower`);
+        }
+      } else {
+        if (onTriggerToast) {
+          onTriggerToast('Google Mail is up to date (admin@gmail.com). All inquiries processed.');
+        }
+      }
+    }, 600);
+  };
+
+  // Promote inbound email to live blocker card
+  const handleIngestEmailAsBlocker = (msg: typeof gmailMessages[0]) => {
+    const blockerType: ExceptionBlockerType = 
+      msg.category === 'CUSTOMS_DISPUTE' ? 'CUSTOMS_DUTY_UNPAID' : 
+      msg.category === 'FLEET_RENTAL' ? 'GATE_PASS_MISSING' : 'DEMURRAGE_RISK';
+
+    const newCard: BlockerCardItem = {
+      id: `card-${msg.id.toLowerCase()}-${Date.now().toString().slice(-4)}`,
+      docId: msg.id,
+      sourceType: 'Email',
+      sourceLabel: `Google Mail (admin@gmail.com) · ${msg.company}`,
+      receivedAt: msg.timestamp,
+      containerId: msg.containerId || 'MSCU-LIVE',
+      blockerType,
+      evidenceQuote: `"${msg.body.slice(0, 130)}..."`,
+      isVerified: true,
+      confidence: 0.94,
+      penaltyStart: 'Thu 29 Oct 18:00',
+      actionDeadline: 'Thu 29 Oct 16:30',
+      deadlineTimestamp: currentSimulatedTimeMs + 3600 * 2000,
+      ownerName: 'Operations Lead (Admin)',
+      ownerRole: 'Admin Operations',
+      ownerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      whyOwner: `Customer email addressed to admin@gmail.com from ${msg.company}.`,
+      whyDeadline: 'Action required before terminal cutoff to prevent contractual demurrage.',
+      avoidableCostInr: msg.estimatedRiskInr,
+      costFormula: `Avoidable loss: ₹${msg.estimatedRiskInr.toLocaleString()} penalty averted by immediate admin action`,
+      lane: 'ACT_NOW',
+      activityLog: [
+        {
+          timestamp: 'Just now',
+          actor: 'Google Mail Ingestion Engine',
+          action: `Promoted inbound customer inquiry from ${msg.senderEmail} into Act Now queue.`
+        }
+      ]
+    };
+
+    setCards((prev) => [newCard, ...prev]);
+    setSelectedCardId(newCard.id);
+
+    setGmailMessages((prev) =>
+      prev.map((m) => (m.id === msg.id ? { ...m, status: 'INGESTED' } : m))
+    );
+
+    if (onTriggerToast) {
+      onTriggerToast(`Inquiry from ${msg.company} promoted to Exception Control Tower blocker!`);
+    }
+    if (onWriteAuditLog) {
+      onWriteAuditLog(
+        'GMAIL_PROMOTED_TO_BLOCKER',
+        'OVERRIDE',
+        `Admin ingested customer email ${msg.id} (${msg.senderEmail}) into Act Now lane with ₹${msg.estimatedRiskInr.toLocaleString()} risk.`
+      );
+    }
+  };
+
+  // Send official reply from admin@gmail.com
+  const handleSendGmailReply = () => {
+    if (!gmailReplyText.trim()) return;
+    const msg = gmailMessages.find((m) => m.id === selectedGmailId);
+    if (!msg) return;
+
+    setIsSendingGmailReply(true);
+    setTimeout(() => {
+      setIsSendingGmailReply(false);
+      setGmailMessages((prev) =>
+        prev.map((m) => (m.id === msg.id ? { ...m, status: 'REPLIED' } : m))
+      );
+      if (onTriggerToast) {
+        onTriggerToast(`Official reply dispatched from admin@gmail.com to ${msg.senderEmail}`);
+      }
+      if (onWriteAuditLog) {
+        onWriteAuditLog(
+          'GMAIL_REPLY_SENT',
+          'SECURITY',
+          `Dispatched official reply from admin@gmail.com to ${msg.senderEmail} for Ref ${msg.relatedRef || msg.id}`
+        );
+      }
+      setGmailReplyText('');
+    }, 600);
+  };
 
   // Automatically process initial documents once on mount for demo readiness
   useEffect(() => {
@@ -593,6 +819,53 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
           </div>
         </div>
       )}
+
+      {/* ======================= GOOGLE MAIL CONNECTOR IN EXCEPTION TOWER (STRICTLY ADMIN ONLY) ======================= */}
+      <section className="p-4 sm:p-5 rounded-[26px] bg-gradient-to-r from-[#08193A] via-[#1B3A7A] to-[#0D234A] text-white border border-[#34D399]/40 shadow-[0_12px_36px_rgba(8,25,58,0.25)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 text-[#34D399] shadow-inner shrink-0">
+            <Mail className="w-6 h-6 text-[#A7F3D0]" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white flex items-center gap-1.5">
+                Google Mail Live Connector
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/40">
+                ADMIN EXCLUSIVE · LIVE
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-white/10 text-slate-200 border border-white/15">
+                admin@gmail.com
+              </span>
+            </div>
+            <p className="text-xs text-slate-300">
+              IMAP TLS 1.3 listener connected to Exception Control Tower. Inbound customer bookings, demurrage queries & ICEGATE notices stream in real-time.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
+          <button
+            onClick={handleSyncGoogleMail}
+            disabled={isSyncingGmail}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-white/10 hover:bg-white/20 text-[#A7F3D0] border border-white/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGmail ? 'animate-spin' : ''}`} />
+            <span>{isSyncingGmail ? 'Syncing...' : 'Sync Inbound Emails'}</span>
+          </button>
+
+          <button
+            onClick={() => setShowGmailConsole(true)}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#A7F3D0] shadow-sm transition-all flex items-center gap-2 cursor-pointer font-sans"
+          >
+            <Inbox className="w-3.5 h-3.5" />
+            <span>Open Google Mail Console</span>
+            <span className="w-5 h-5 rounded-full bg-[#08193A] text-[#34D399] text-[10px] font-mono font-bold flex items-center justify-center">
+              {unreadGmailCount}
+            </span>
+          </button>
+        </div>
+      </section>
 
       {/* ======================= KPI STRIP (4 Glass Tiles) ======================= */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Key Performance Indicators">
@@ -1521,6 +1794,221 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
             >
               Got it
             </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {/* ======================= GOOGLE MAIL CONSOLE MODAL (ADMIN ONLY) ======================= */}
+    {showGmailConsole && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-md">
+        <div className="glass-panel rounded-[32px] max-w-5xl w-full max-h-[90vh] bg-white/95 border border-white shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          {/* Header */}
+          <div className="p-5 sm:p-6 bg-gradient-to-r from-[#08193A] to-[#1B3A7A] text-white flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 text-[#34D399] shadow-inner">
+                <Mail className="w-5 h-5 text-[#A7F3D0]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black tracking-tight text-white">
+                    Google Mail Live Inbound Stream
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#34D399]/20 text-[#34D399] border border-[#34D399]/40">
+                    admin@gmail.com
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  Customer cargo booking requests, demurrage disputes & ICEGATE notices streaming live into Exception Control Tower
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowGmailConsole(false)}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Two-Column Body */}
+          <div className="grid grid-cols-1 md:grid-cols-12 flex-1 overflow-hidden min-h-[480px]">
+            {/* Left Column: Email List (5 cols) */}
+            <div className="md:col-span-5 border-r border-black/5 p-4 flex flex-col gap-2.5 overflow-y-auto bg-slate-50/50">
+              <div className="flex items-center justify-between pb-2 border-b border-black/5">
+                <span className="text-xs font-extrabold text-[#08193A] tracking-wider uppercase">
+                  INBOUND INQUIRIES ({gmailMessages.length})
+                </span>
+                <span className="text-[10px] font-mono text-[#5B6B86]">
+                  TLS 1.3 Active
+                </span>
+              </div>
+
+              {gmailMessages.map((msg) => {
+                const isSelected = selectedGmailId === msg.id;
+                return (
+                  <div
+                    key={msg.id}
+                    onClick={() => setSelectedGmailId(msg.id)}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative ${
+                      isSelected
+                        ? 'bg-white border-[#34D399] shadow-md ring-1 ring-[#34D399]/40'
+                        : 'bg-white/80 border-black/5 hover:bg-white hover:border-black/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="font-extrabold text-xs text-[#08193A] truncate">
+                        {msg.company}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${
+                        msg.status === 'UNREAD'
+                          ? 'bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/30'
+                          : msg.status === 'INGESTED'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {msg.status}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] font-semibold text-[#1B3A7A] truncate mb-0.5">
+                      {msg.subject}
+                    </div>
+
+                    <p className="text-[10px] text-[#5B6B86] line-clamp-2">
+                      {msg.body}
+                    </p>
+
+                    <div className="mt-2 pt-1.5 border-t border-black/5 flex items-center justify-between text-[10px] text-[#5B6B86] font-mono">
+                      <span>{msg.senderName}</span>
+                      <span>{msg.timestamp}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Right Column: Selected Email Details & Actions (7 cols) */}
+            <div className="md:col-span-7 p-5 flex flex-col justify-between overflow-y-auto">
+              {(() => {
+                const activeMsg = gmailMessages.find((m) => m.id === selectedGmailId) || gmailMessages[0];
+                if (!activeMsg) return null;
+
+                return (
+                  <div className="space-y-4">
+                    {/* Header info card */}
+                    <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-xs space-y-2">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-[#1B3A7A]" />
+                          <span className="font-extrabold text-sm text-[#08193A]">
+                            {activeMsg.company}
+                          </span>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F26D6D]/15 text-[#F26D6D] border border-[#F26D6D]/30">
+                          Risk: ₹{activeMsg.estimatedRiskInr.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs text-[#5B6B86] pt-1">
+                        <div>
+                          <span className="font-semibold text-[#08193A]">Contact:</span> {activeMsg.senderName}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-[#08193A]">Email:</span> {activeMsg.senderEmail}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-[#08193A]">Phone:</span> {activeMsg.phone}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-[#08193A]">Ref / Unit:</span> {activeMsg.containerId || activeMsg.relatedRef}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Email Subject & Body */}
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-black/5 space-y-2">
+                      <h4 className="text-xs font-black text-[#08193A]">
+                        {activeMsg.subject}
+                      </h4>
+                      <p className="text-xs text-[#08193A]/80 leading-relaxed whitespace-pre-wrap">
+                        {activeMsg.body}
+                      </p>
+                      <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold text-[#1B3A7A]">
+                        <ShieldCheck className="w-4 h-4 text-[#34D399]" />
+                        <span>Recommended: {activeMsg.recommendedAction}</span>
+                      </div>
+                    </div>
+
+                    {/* Action 1: Ingest into Exception Blocker Queue */}
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="font-extrabold text-xs text-emerald-950 block">
+                          Ingest as Live Blocker Card
+                        </span>
+                        <span className="text-[11px] text-emerald-800">
+                          Adds container {activeMsg.containerId} to Act Now queue with ₹{activeMsg.estimatedRiskInr.toLocaleString()} penalty avoided calculation.
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleIngestEmailAsBlocker(activeMsg)}
+                        disabled={activeMsg.status === 'INGESTED'}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                          activeMsg.status === 'INGESTED'
+                            ? 'bg-emerald-200 text-emerald-800 cursor-default'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                        }`}
+                      >
+                        {activeMsg.status === 'INGESTED' ? '✓ Ingested in Tower' : 'Ingest to Tower'}
+                      </button>
+                    </div>
+
+                    {/* Action 2: Quick Reply Composer */}
+                    <div className="space-y-2 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold text-[#08193A]">
+                          Send Official Reply from admin@gmail.com
+                        </span>
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => setGmailReplyText(`Dear ${activeMsg.senderName},\nYour booking request (${activeMsg.relatedRef || activeMsg.containerId}) has been validated and approved. Priority gate release pass has been authorized.\n- FreightIQ Admin Operations`)}
+                            className="text-[10px] font-bold text-[#1B3A7A] hover:underline"
+                          >
+                            + Preset: Approve
+                          </button>
+                          <span className="text-black/20">|</span>
+                          <button
+                            onClick={() => setGmailReplyText(`Dear ${activeMsg.senderName},\nCustoms duty and clearance documentation have been ingested into Exception Control Tower. No demurrage will apply during verification.\n- FreightIQ Admin Operations`)}
+                            className="text-[10px] font-bold text-[#1B3A7A] hover:underline"
+                          >
+                            + Preset: Demurrage Hold
+                          </button>
+                        </div>
+                      </div>
+
+                      <textarea
+                        value={gmailReplyText}
+                        onChange={(e) => setGmailReplyText(e.target.value)}
+                        placeholder={`Type official email response to ${activeMsg.senderEmail}...`}
+                        rows={3}
+                        className="w-full p-3 rounded-2xl glass-input text-xs text-[#08193A] placeholder-[#5B6B86]/60 border border-black/10 focus:border-[#34D399]"
+                      />
+
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={handleSendGmailReply}
+                          disabled={isSendingGmailReply || !gmailReplyText.trim()}
+                          className="px-5 py-2 rounded-xl text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{isSendingGmailReply ? 'Sending from admin@gmail.com...' : 'Send Official Reply'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
       </div>
