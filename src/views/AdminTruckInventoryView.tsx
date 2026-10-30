@@ -39,15 +39,18 @@ export const AdminTruckInventoryView: React.FC<AdminTruckInventoryViewProps> = (
   const [currency, setCurrency] = useState<'USD' | 'INR'>('INR');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
-  const [editPriceUsd, setEditPriceUsd] = useState('12280000');
+  const [editPriceInr, setEditPriceInr] = useState('38500');
 
-  // New truck form state
-  const [newName, setNewName] = useState('FreightIQ UltraMax Hydrogen Rig');
+  // New truck form state (stored as strings for smooth typing & easy deletion)
+  const [newName, setNewName] = useState('FreightIQ Titan Hauler X1');
   const [newCategory, setNewCategory] = useState<TruckListing['category']>('Heavy Haul');
-  const [newPriceUsd, setNewPriceUsd] = useState(16848000);
-  const [newPayloadLbs, setNewPayloadLbs] = useState(65000);
-  const [newHp, setNewHp] = useState(600);
-  const [newStock, setNewStock] = useState(3);
+  const [newDailyRateInr, setNewDailyRateInr] = useState('5500');
+  const [newPriceInr, setNewPriceInr] = useState('38500');
+  const [newRentalDuration, setNewRentalDuration] = useState('7-Day Corridor Lease');
+  const [newPayloadLbs, setNewPayloadLbs] = useState('68000');
+  const [newHp, setNewHp] = useState('580');
+  const [newStock, setNewStock] = useState('4');
+  const [newPowertrain, setNewPowertrain] = useState('15.0L Cummins X15 Clean Diesel');
 
   const categories = ['All', 'Heavy Haul', 'Electric Semi', 'Cold-Chain Reefer', 'Urban Drayage', 'Intermodal Prime'];
 
@@ -61,34 +64,44 @@ export const AdminTruckInventoryView: React.FC<AdminTruckInventoryViewProps> = (
   });
 
   const handleSavePrice = (truckId: string) => {
-    const usd = parseFloat(editPriceUsd);
-    const inr = Math.round(usd * 86.4);
+    const inr = parseFloat(editPriceInr) || 0;
+    const usd = Math.round(inr / 86.4);
     onUpdatePrice(truckId, usd, inr);
     setEditingPriceId(null);
   };
 
   const handleCreateTruckSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const inr = Number(newPriceInr) || 38500;
+    const usd = Math.round(inr / 86.4);
+    const dailyRate = Number(newDailyRateInr) || Math.round(inr / 7);
+    const payload = Number(newPayloadLbs) || 65000;
+    const stockUnits = Math.max(1, Number(newStock) || 1);
+    const hp = Number(newHp) || 550;
+
     const created: TruckListing = {
-      id: `TRK-CUST-${Date.now().toString().slice(-4)}`,
-      name: newName,
+      id: `TRK-${Date.now().toString().slice(-6)}`,
+      name: newName.trim() || 'FreightIQ Commercial Rig',
       tagline: 'Custom Fleet Calibrated Commercial Class 8 Rig',
       category: newCategory,
-      priceUsd: Number(newPriceUsd),
-      priceInr: Math.round(Number(newPriceUsd) * 86.4),
-      payloadLbs: Number(newPayloadLbs),
-      payloadKg: Math.round(Number(newPayloadLbs) * 0.453592),
-      powertrain: 'Modular Heavy-Duty Hybrid Powertrain',
-      horsepower: Number(newHp),
-      efficiency: '4.1 km/L (9.6 MPG)',
-      rangeKm: 2100,
-      deliveryTimeline: '5 - 7 Business Days',
-      inStock: Number(newStock),
+      priceUsd: usd,
+      priceInr: inr,
+      dailyRateInr: dailyRate,
+      rentalDuration: newRentalDuration.trim() || '7-Day Corridor Lease',
+      payloadLbs: payload,
+      payloadKg: Math.round(payload * 0.453592),
+      powertrain: newPowertrain.trim() || 'Modular Clean Diesel Hybrid Powertrain',
+      horsepower: hp,
+      efficiency: newCategory === 'Electric Semi' ? '1.2 kWh / km' : '3.9 km/L (9.2 MPG)',
+      rangeKm: newCategory === 'Electric Semi' ? 950 : 2200,
+      deliveryTimeline: 'Dispatch in 24 Hours',
+      inStock: stockUnits,
       rating: 5.0,
       reviewsCount: 1,
       image: '/assets/aistudio/upscalemedia-transformed_b5694985.jpeg',
       highlights: [
         'Pre-calibrated QpiAI Autonomous Highway Governor',
+        'Dual 150-Gallon Polished Aluminum Fuel Cells',
         'Collision Mitigation Radar & Lane-Center Steer'
       ],
       badge: 'NEW ARRIVAL',
@@ -96,8 +109,23 @@ export const AdminTruckInventoryView: React.FC<AdminTruckInventoryViewProps> = (
       vinPrefix: '1FUJBBCK4RP',
       reservationStatus: 'AVAILABLE'
     };
+
     onAddNewTruck(created);
+    // Switch to All so newly added truck is immediately visible at the top!
+    setSelectedCategory('All');
+    setSearchQuery('');
     setIsAddModalOpen(false);
+
+    // Reset form fields
+    setNewName('FreightIQ Titan Hauler X1');
+    setNewCategory('Heavy Haul');
+    setNewDailyRateInr('5500');
+    setNewPriceInr('38500');
+    setNewRentalDuration('7-Day Corridor Lease');
+    setNewPayloadLbs('68000');
+    setNewHp('580');
+    setNewStock('4');
+    setNewPowertrain('15.0L Cummins X15 Clean Diesel');
   };
 
   return (
@@ -268,8 +296,9 @@ export const AdminTruckInventoryView: React.FC<AdminTruckInventoryViewProps> = (
                   <div className="flex items-center gap-1.5 w-full">
                     <input
                       type="number"
-                      value={editPriceUsd}
-                      onChange={(e) => setEditPriceUsd(e.target.value)}
+                      value={editPriceInr}
+                      onChange={(e) => setEditPriceInr(e.target.value)}
+                      placeholder="₹ Spot Price"
                       className="w-28 px-2 py-1 rounded-xl text-xs font-mono glass-input text-[#08193A]"
                     />
                     <button
@@ -295,7 +324,7 @@ export const AdminTruckInventoryView: React.FC<AdminTruckInventoryViewProps> = (
                       <button
                         onClick={() => {
                           setEditingPriceId(truck.id);
-                          setEditPriceUsd(String(truck.priceInr));
+                          setEditPriceInr(String(truck.priceInr));
                         }}
                         className="p-1 rounded-full hover:bg-black/5 text-[#5B6B86] hover:text-[#08193A] cursor-pointer"
                         title="Edit Spot Price"
@@ -313,101 +342,160 @@ export const AdminTruckInventoryView: React.FC<AdminTruckInventoryViewProps> = (
 
       {/* ADD TRUCK MODAL */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md glass-panel-dark text-white rounded-[28px] p-6 shadow-2xl border border-white/20 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-white/10">
-              <h3 className="font-extrabold text-base text-white">Add New Commercial Truck Model</h3>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+          <div className="w-full max-w-lg glass-panel-dark text-white rounded-[28px] p-6 shadow-2xl border border-white/20 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#34D399]/20 border border-[#34D399]/40 flex items-center justify-center">
+                  <Truck className="w-4 h-4 text-[#34D399]" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-white tracking-tight">Register New Commercial Fleet Rig</h3>
+                  <p className="text-[11px] text-[#A7F3D0]/80">Instantly cataloged and displayed in customer booking showroom</p>
+                </div>
+              </div>
               <button
+                type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateTruckSubmit} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-white/70 font-semibold mb-1">Model Name</label>
-                <input
-                  type="text"
-                  required
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:border-[#34D399]"
-                />
-              </div>
+            <form onSubmit={handleCreateTruckSubmit} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-white/80 font-bold mb-1">Rig Model Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. FreightIQ Titan Hauler X1"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-[#34D399]"
+                  />
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-white/70 font-semibold mb-1">Category</label>
+                  <label className="block text-white/80 font-bold mb-1">Fleet Category</label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:border-[#34D399]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#08193A] border border-white/20 text-white focus:outline-none focus:border-[#34D399]"
                   >
-                    <option value="Heavy Haul">Heavy Haul</option>
-                    <option value="Electric Semi">Electric Semi</option>
-                    <option value="Cold-Chain Reefer">Cold-Chain Reefer</option>
-                    <option value="Urban Drayage">Urban Drayage</option>
-                    <option value="Intermodal Prime">Intermodal Prime</option>
+                    <option value="Heavy Haul" className="bg-[#08193A] text-white">Heavy Haul</option>
+                    <option value="Electric Semi" className="bg-[#08193A] text-white">Electric Semi</option>
+                    <option value="Cold-Chain Reefer" className="bg-[#08193A] text-white">Cold-Chain Reefer</option>
+                    <option value="Urban Drayage" className="bg-[#08193A] text-white">Urban Drayage</option>
+                    <option value="Intermodal Prime" className="bg-[#08193A] text-white">Intermodal Prime</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-white/70 font-semibold mb-1">Base Price (₹ INR)</label>
+                  <label className="block text-white/80 font-bold mb-1">Powertrain / Engine</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 15.0L Cummins X15 Clean Diesel"
+                    value={newPowertrain}
+                    onChange={(e) => setNewPowertrain(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-[#34D399]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 font-bold mb-1">Daily Rental Rate (₹ INR / day)</label>
                   <input
                     type="number"
                     required
-                    value={newPriceUsd}
-                    onChange={(e) => setNewPriceUsd(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-mono focus:outline-none focus:border-[#34D399]"
+                    min="1000"
+                    placeholder="5500"
+                    value={newDailyRateInr}
+                    onChange={(e) => setNewDailyRateInr(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono focus:outline-none focus:border-[#34D399]"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-white/70 font-semibold mb-1">Payload (lbs)</label>
+                  <label className="block text-white/80 font-bold mb-1">Spot / Full Lease Price (₹ INR)</label>
                   <input
                     type="number"
-                    value={newPayloadLbs}
-                    onChange={(e) => setNewPayloadLbs(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-mono"
+                    required
+                    min="1000"
+                    placeholder="38500"
+                    value={newPriceInr}
+                    onChange={(e) => setNewPriceInr(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono focus:outline-none focus:border-[#34D399]"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-white/70 font-semibold mb-1">Horsepower</label>
+                  <label className="block text-white/80 font-bold mb-1">Rental Duration</label>
                   <input
-                    type="number"
-                    value={newHp}
-                    onChange={(e) => setNewHp(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-mono"
+                    type="text"
+                    required
+                    placeholder="e.g. 7-Day Corridor Lease"
+                    value={newRentalDuration}
+                    onChange={(e) => setNewRentalDuration(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-[#34D399]"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-white/70 font-semibold mb-1">In Stock</label>
+                  <label className="block text-white/80 font-bold mb-1">Units Available (In Stock)</label>
                   <input
                     type="number"
+                    required
+                    min="1"
+                    placeholder="4"
                     value={newStock}
-                    onChange={(e) => setNewStock(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-mono"
+                    onChange={(e) => setNewStock(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono focus:outline-none focus:border-[#34D399]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 font-bold mb-1">Payload Capacity (lbs)</label>
+                  <input
+                    type="number"
+                    required
+                    min="5000"
+                    placeholder="68000"
+                    value={newPayloadLbs}
+                    onChange={(e) => setNewPayloadLbs(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono focus:outline-none focus:border-[#34D399]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 font-bold mb-1">Horsepower (HP)</label>
+                  <input
+                    type="number"
+                    required
+                    min="100"
+                    placeholder="580"
+                    value={newHp}
+                    onChange={(e) => setNewHp(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-mono focus:outline-none focus:border-[#34D399]"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-bold text-white/70 hover:text-white"
+                  className="px-5 py-2.5 rounded-full text-xs font-bold text-white/70 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7] shadow-md"
+                  className="px-6 py-2.5 rounded-full text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7] shadow-[0_4px_16px_rgba(52,211,153,0.35)] cursor-pointer flex items-center gap-1.5 transition-all"
                 >
-                  Register Truck
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Register Rig into Catalog</span>
                 </button>
               </div>
             </form>

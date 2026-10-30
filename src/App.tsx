@@ -1600,9 +1600,16 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   };
 
   const handleAddNewTruck = (newTruck: TruckListing) => {
-    setTruckCatalog((prev) => [newTruck, ...prev]);
-    showToast(`✓ Registered new commercial rig ${newTruck.name} into catalog! Available immediately to customers.`);
-    handleWriteAuditLog('ADMIN_ADD_TRUCK', 'INVENTORY', `Admin registered new rig ${newTruck.name} into commercial fleet catalog with ${newTruck.inStock} units in stock.`);
+    setTruckCatalog((prev) => {
+      const updated = [newTruck, ...prev.filter(t => t.id !== newTruck.id)];
+      try {
+        localStorage.setItem('freightiq_truck_catalog', JSON.stringify(updated));
+        broadcastSyncEvent('SYNC_TRUCK_CATALOG', updated);
+      } catch {}
+      return updated;
+    });
+    showToast(`✓ Registered new commercial rig "${newTruck.name}" into catalog! Available immediately to customers.`);
+    handleWriteAuditLog('ADMIN_ADD_TRUCK', 'INVENTORY' as any, `Admin registered new rig ${newTruck.name} into commercial fleet catalog with ${newTruck.inStock} units in stock.`);
   };
 
   const handleToggleReservation = (truckId: string, status: 'AVAILABLE' | 'RESERVED' | 'SOLD', customerName?: string) => {
