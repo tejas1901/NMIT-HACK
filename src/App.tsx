@@ -82,6 +82,8 @@ const AdminAllFleetOrdersView = lazy(() => import('./views/AdminAllFleetOrdersVi
 const AdminUsersRolesView = lazy(() => import('./views/AdminUsersRolesView').then(m => ({ default: m.AdminUsersRolesView })));
 const AdminAuditLogView = lazy(() => import('./views/AdminAuditLogView').then(m => ({ default: m.AdminAuditLogView })));
 const AdminYardSlotMapView = lazy(() => import('./views/AdminYardSlotMapView').then(m => ({ default: m.AdminYardSlotMapView })));
+const AdminUnifiedRequestsView = lazy(() => import('./views/AdminUnifiedRequestsView').then(m => ({ default: m.AdminUnifiedRequestsView })));
+const AdminGmailConnectorView = lazy(() => import('./views/AdminGmailConnectorView').then(m => ({ default: m.AdminGmailConnectorView })));
 const TruckIntelligenceDrawer = lazy(() => import('./components/TruckIntelligenceDrawer').then(m => ({ default: m.TruckIntelligenceDrawer })));
 const DevConsole = lazy(() => import('./components/DevConsoleModal').then(m => ({ default: m.DevConsole })));
 
@@ -107,12 +109,14 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   const ALL_ADMIN_ROUTES: NavTab[] = [
     'admin-exception-tower',
+    'admin-all-requests',
+    'admin-all-shipments',
+    'admin-gmail-connector',
     'cargo-bookings',
     'corridor-simulation',
     'xgboost-ml',
     'qpiai-quantum',
     'qpiai-pilot',
-    'admin-all-shipments',
     'admin-fleet-radar',
     'admin-haul-queue',
     'admin-truck-inventory',
@@ -125,10 +129,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const ALL_CUSTOMER_ROUTES: NavTab[] = [
     'customer-shipments',
     'cargo-bookings',
-    'customer-tracking',
     'customer-book',
-    'qpiai-pilot',
     'marketplace',
+    'corridor-simulation',
+    'customer-tracking',
+    'qpiai-pilot',
     'customer-fleet'
   ];
 
@@ -1408,6 +1413,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           bookingCount={allConsignments.length}
           customerShipmentsCount={roleShipments.filter(c => c.status !== 'DELIVERED').length}
           purchasedFleetCount={roleOrders.length}
+          pendingRequestsCount={
+            allConsignments.filter(c => c.status === 'PENDING_APPROVAL').length +
+            haulRequests.filter(h => h.status === 'NEW_INQUIRY').length +
+            allOrders.filter(o => o.status === 'PENDING').length
+          }
           onTriggerPilotPrompt={(prompt) => {
             setActiveTab('qpiai-pilot');
             setPilotPrompt(prompt);
@@ -1590,6 +1600,22 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                   />
                 )}
 
+                {/* Corridor & Simulator View (Shared for both Customer and Admin) */}
+                {activeTab === 'corridor-simulation' && (
+                  <CorridorSimulationView
+                    waypoints={waypoints}
+                    units={units}
+                    backhauls={backhauls}
+                    exceptions={exceptions}
+                    onForceWeatherRefresh={handleForceWeatherRefresh}
+                    isWeatherRefreshing={isWeatherRefreshing}
+                    onPairBackhaul={handlePairBackhaul}
+                    onResolveException={handleResolveException}
+                    onAddException={handleAddException}
+                    onOpenDriverChat={handleOpenDriverChat}
+                  />
+                )}
+
                 {/* ===================== ADMIN ONLY VIEWS (Suspense Protected) ===================== */}
                 <RoleGate allow="admin" currentRole={activeRole}>
                   <Suspense fallback={
@@ -1656,20 +1682,26 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                       />
                     )}
 
-                    {/* Admin-Only Existing Modules */}
-                    {activeTab === 'corridor-simulation' && (
-                      <CorridorSimulationView
-                        waypoints={waypoints}
-                        units={units}
-                        backhauls={backhauls}
-                        exceptions={exceptions}
-                        onForceWeatherRefresh={handleForceWeatherRefresh}
-                        isWeatherRefreshing={isWeatherRefreshing}
-                        onPairBackhaul={handlePairBackhaul}
-                        onResolveException={handleResolveException}
-                        onAddException={handleAddException}
-                        onOpenDriverChat={handleOpenDriverChat}
+                    {/* All Booking Requests Unified Desk (Cargo, Haul, Fleet - Admin Only) */}
+                    {activeTab === 'admin-all-requests' && (
+                      <AdminUnifiedRequestsView
+                        consignments={allConsignments}
+                        haulRequests={haulRequests}
+                        fleetOrders={allOrders}
+                        onAcceptCargoOrder={handleAcceptBookingOrder}
+                        onRejectCargoOrder={handleRejectBookingOrder}
+                        onApproveHaulRequest={handleApproveHaulRequest}
+                        onRejectHaulRequest={handleRejectHaulRequest}
+                        onApproveFleetOrder={handleApproveOrder}
+                        onFulfillFleetOrder={handleFulfillOrder}
+                        onCancelFleetOrder={handleCancelOrder}
+                        onNavigateToGmail={() => setActiveTab('admin-gmail-connector')}
                       />
+                    )}
+
+                    {/* Live Gmail Connector for admin@gmail.com */}
+                    {activeTab === 'admin-gmail-connector' && (
+                      <AdminGmailConnectorView onTriggerToast={showToast} />
                     )}
 
                     {activeTab === 'xgboost-ml' && <XGBoostModelView />}

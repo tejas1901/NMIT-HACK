@@ -22,7 +22,9 @@ import {
   Lock,
   SquareParking,
   ShieldAlert,
-  Building2
+  Building2,
+  Mail,
+  Inbox
 } from 'lucide-react';
 import { NavTab, Role, UserProfile } from '../types';
 import { DEMO_MODE } from '../roles';
@@ -36,6 +38,7 @@ interface SidebarProps {
   bookingCount?: number;
   customerShipmentsCount?: number;
   purchasedFleetCount?: number;
+  pendingRequestsCount?: number;
   onTriggerPilotPrompt?: (prompt: string) => void;
   onSignOut?: () => void;
   currentUser?: UserProfile;
@@ -50,6 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   bookingCount = 9,
   customerShipmentsCount = 6,
   purchasedFleetCount = 3,
+  pendingRequestsCount = 4,
   onTriggerPilotPrompt,
   onSignOut,
   currentUser,
@@ -84,12 +88,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     badge?: string | number;
   }> = [
     { id: 'customer-shipments', label: 'My Shipments', icon: Package, badge: customerShipmentsCount },
-    { id: 'cargo-bookings', label: 'Company Cargo Fleets', icon: Building2, badge: '5 FLEETS' },
-    { id: 'customer-tracking', label: 'Live GPS Radar', icon: Navigation, badge: 'LIVE' },
-    { id: 'customer-book', label: 'Request Haul', icon: PlusCircle },
+    { id: 'cargo-bookings', label: 'Cargo Booking', icon: Building2, badge: '5 FLEETS' },
+    { id: 'customer-book', label: 'Haul Booking', icon: PlusCircle },
+    { id: 'marketplace', label: 'Fleet / Truck Booking', icon: Truck, badge: 'AVAILABLE' },
+    { id: 'corridor-simulation', label: 'Corridor & Simulator', icon: Navigation, badge: 'LIVE' },
+    { id: 'customer-tracking', label: 'Live GPS Radar', icon: Radio, badge: 'LIVE' },
     { id: 'qpiai-pilot', label: 'QpiAi Copilot', icon: Bot, badge: 'AI' },
-    { id: 'marketplace', label: 'Rent Trucks', icon: Truck, badge: '5 AVAILABLE' },
-    { id: 'customer-fleet', label: 'My Fleet Rentals', icon: ShoppingBag, badge: purchasedFleetCount }
+    { id: 'customer-fleet', label: 'My Rented Fleet', icon: ShoppingBag, badge: purchasedFleetCount }
   ];
 
   // ADMIN Navigation Items Grouped
@@ -99,11 +104,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     icon: React.ElementType;
     badge?: string | number;
   }> = [
+    { id: 'admin-all-requests', label: 'All Booking Requests', icon: Inbox, badge: pendingRequestsCount || 'PENDING' },
     { id: 'admin-all-shipments', label: 'All Shipments', icon: Package, badge: bookingCount },
-    { id: 'admin-fleet-radar', label: 'Fleet GPS Radar', icon: Navigation, badge: 'LIVE' },
-    { id: 'admin-haul-queue', label: 'Haul Request Queue', icon: ListOrdered, badge: '5 NEW' },
-    { id: 'admin-truck-inventory', label: 'Truck Rentals & Inventory', icon: Truck },
-    { id: 'admin-all-fleet-orders', label: 'All Fleet Rentals', icon: ShoppingBag, badge: purchasedFleetCount }
+    { id: 'admin-gmail-connector', label: 'Live Gmail Connector', icon: Mail, badge: 'LIVE' },
+    { id: 'corridor-simulation', label: 'Corridor & Simulator', icon: Navigation },
+    { id: 'admin-fleet-radar', label: 'Fleet GPS Radar', icon: Radio, badge: 'LIVE' },
+    { id: 'admin-truck-inventory', label: 'Truck Fleet Inventory', icon: Truck }
   ];
 
   const adminYardItems: Array<{
@@ -121,11 +127,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     icon: React.ElementType;
     badge?: string | number;
   }> = [
-    { id: 'cargo-bookings', label: 'Cargo Bookings', icon: Package, badge: bookingCount },
-    { id: 'corridor-simulation', label: 'Corridor & Simulation', icon: Navigation },
     { id: 'xgboost-ml', label: 'XGBoost ML Model', icon: Cpu },
     { id: 'qpiai-quantum', label: 'QpiAI Quantum', icon: Atom },
-    { id: 'qpiai-pilot', label: 'QpiAi Pilot', icon: Bot },
+    { id: 'qpiai-pilot', label: 'QpiAi Copilot', icon: Bot },
     { id: 'admin-users-roles', label: 'Users & Roles', icon: Users },
     { id: 'admin-audit-log', label: 'Audit Log', icon: FileText }
   ];

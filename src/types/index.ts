@@ -26,6 +26,8 @@ export type NavTab =
   | 'admin-users-roles'
   | 'admin-audit-log'
   | 'admin-yard-slot-map'
+  | 'admin-all-requests'
+  | 'admin-gmail-connector'
   // Admin Versions of Shared Views
   | 'admin-all-shipments'
   | 'admin-fleet-radar'
