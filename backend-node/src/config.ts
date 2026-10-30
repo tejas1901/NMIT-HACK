@@ -14,7 +14,7 @@ export const config = {
   
   // Supabase (Fallbacks ensure backend never crashes even before user configures Vercel dashboard env vars)
   supabaseUrl: process.env.SUPABASE_URL || 'https://iwcqkrzefoawlpugergc.supabase.co',
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'sb_publishable__uivHUYOrPe8_2yzD7hBhg_x6O9m85a',
   
   // ML Service (FastAPI) - supports Vercel Service binding BACKEND_ML_URL
