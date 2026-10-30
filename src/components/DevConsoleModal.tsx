@@ -35,6 +35,16 @@ export const DevConsole: React.FC<DevConsoleProps> = ({ logs, onClearLogs, onSen
               </span>
             </div>
             <div className="flex items-center gap-1.5">
+              <a
+                href="/api/health"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open Backend Health Check"
+                className="p-1 rounded-full hover:bg-white/10 text-[#34D399] text-[10px] font-mono flex items-center gap-1 px-2 border border-[#34D399]/30"
+              >
+                <span>Health</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </a>
               <button
                 onClick={onSendMockPing}
                 title="Trigger WebSocket ping"

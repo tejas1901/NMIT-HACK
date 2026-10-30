@@ -26,7 +26,8 @@ import {
   Mail,
   Inbox,
   Layers,
-  UserCheck
+  UserCheck,
+  ExternalLink
 } from 'lucide-react';
 import { NavTab, Role, UserProfile } from '../types';
 import { DEMO_MODE } from '../roles';
@@ -422,13 +423,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {/* Live System Status Capsule */}
-          <div className="px-3 py-1.5 rounded-full bg-white/60 border border-white/80 flex items-center gap-2 shadow-xs transition-all">
-            <span className="w-2 h-2 rounded-full bg-[#34D399] animate-mint-pulse shrink-0" />
-            <span className="text-[10px] font-bold text-[#08193A] truncate font-mono">
-              Live Sync: {syncStatuses[syncStatusIndex]}
-            </span>
-          </div>
+          {/* Live System Status Capsule with clickable backend health link */}
+          <a
+            href="/api/health"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Click to view live Backend Health status (/api/health)"
+            className="px-3 py-1.5 rounded-full bg-white/60 hover:bg-white/90 border border-white/80 flex items-center justify-between gap-2 shadow-xs transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-[#34D399] animate-mint-pulse shrink-0" />
+              <span className="text-[10px] font-bold text-[#08193A] truncate font-mono">
+                {syncStatuses[syncStatusIndex]}
+              </span>
+            </div>
+            <ExternalLink className="w-2.5 h-2.5 text-[#5B6B86] opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
+          </a>
 
           {/* Collapsible QpiAi Pilot Quick-Assistant (Available to both Customer & Admin) */}
           <div className="rounded-[18px] bg-white/50 border border-white/80 overflow-hidden shadow-xs transition-all">
