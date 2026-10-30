@@ -807,79 +807,150 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
       )}
 
       {/* ======================= HEADER SECTION ======================= */}
-      <header className="glass-panel p-4 sm:p-6 rounded-[28px] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-[0_12px_40px_rgba(8,25,58,0.06)] border border-white/80">
-        <div className="space-y-1.5 max-w-2xl">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#08193A]">
-              Exception Control Tower
-            </h1>
-            <AdminBadge />
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#1B3A7A]/10 text-[#1B3A7A] border border-[#1B3A7A]/20">
-              Live automated manifest stream
-            </span>
-            <div className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-white/70 text-[#08193A] border border-black/5 flex items-center gap-1.5 shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse" />
-              <span>{formattedSimulatedClock}</span>
+      <header className="glass-panel p-5 sm:p-6 rounded-[28px] flex flex-col gap-4 shadow-[0_12px_40px_rgba(8,25,58,0.06)] border border-white/80">
+        {/* Top Header Row: Title, Badges & Interactive Controls */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div className="space-y-1.5 max-w-2xl">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#08193A]">
+                Exception Control Tower
+              </h1>
+              <AdminBadge />
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#1B3A7A]/10 text-[#1B3A7A] border border-[#1B3A7A]/20">
+                Live automated manifest stream
+              </span>
+              <div className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-white/70 text-[#08193A] border border-black/5 flex items-center gap-1.5 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse" />
+                <span>{formattedSimulatedClock}</span>
+              </div>
             </div>
+            <p className="text-xs text-[#5B6B86] leading-relaxed">
+              Freight exceptions hide in emails, documents, terminal feeds and notes. This tower finds each container's blocker, proves it with evidence, assigns an owner and a deadline, and shows the money saved, before demurrage or detention starts.
+            </p>
           </div>
-          <p className="text-xs text-[#5B6B86] leading-relaxed">
-            Freight exceptions hide in emails, documents, terminal feeds and notes. This tower finds each container's blocker, proves it with evidence, assigns an owner and a deadline, and shows the money saved, before demurrage or detention starts.
-          </p>
+
+          {/* Right Action Controls */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
+            {/* Confidence Threshold Slider */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/70 border border-black/5 shadow-2xs">
+              <Sliders className="w-3.5 h-3.5 text-[#5B6B86]" />
+              <span className="text-[11px] font-mono font-bold text-[#08193A]">
+                Gate: {(confidenceThreshold * 100).toFixed(0)}%
+              </span>
+              <input
+                type="range"
+                min="0.50"
+                max="0.95"
+                step="0.05"
+                value={confidenceThreshold}
+                onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
+                className="w-16 accent-[#34D399] cursor-pointer"
+                title="Confidence threshold: anything below routes to NEEDS HUMAN REVIEW"
+              />
+            </div>
+
+            {/* Model Status Capsule (Toggleable simulation for failure testing) */}
+            <button
+              onClick={() => setIsBackendDown(!isBackendDown)}
+              title="Click to toggle Local LLM vs Rules-based Fallback for resilience testing"
+              className={`px-3 py-1.5 rounded-full text-[11px] font-mono font-bold border transition-all flex items-center gap-2 cursor-pointer ${
+                isBackendDown
+                  ? 'bg-amber-50 text-amber-800 border-amber-300'
+                  : 'bg-[#08193A] text-white border-white/20'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${isBackendDown ? 'bg-amber-500 animate-pulse' : 'bg-[#34D399] animate-ping'}`} />
+              <span>{isBackendDown ? 'Fallback: rules engine' : 'Local LLM · Ollama · llama3.1:8b'}</span>
+            </button>
+
+            {/* Process Inbox Button */}
+            <button
+              onClick={handleProcessInbox}
+              disabled={isProcessingInbox}
+              className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-[#08193A] to-[#1B3A7A] text-[#A7F3D0] hover:shadow-[0_4px_16px_rgba(8,25,58,0.25)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <Play className={`w-3.5 h-3.5 ${isProcessingInbox ? 'animate-spin' : ''}`} />
+              <span>{isProcessingInbox ? 'Extracting...' : 'Process Inbox'}</span>
+            </button>
+
+            {/* Run Evaluation Button */}
+            <button
+              onClick={handleRunEvaluation}
+              disabled={isRunningEval}
+              className="px-4 py-2 rounded-full text-xs font-bold bg-white/80 hover:bg-white text-[#08193A] border border-white shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#34D399]" />
+              <span>Run Evaluation</span>
+            </button>
+          </div>
         </div>
 
-        {/* Right Action Controls */}
-        <div className="flex flex-wrap items-center gap-3 shrink-0 w-full lg:w-auto justify-end">
-          {/* Confidence Threshold Slider */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/60 border border-white/80 shadow-2xs">
-            <Sliders className="w-3.5 h-3.5 text-[#5B6B86]" />
-            <span className="text-[11px] font-mono font-bold text-[#08193A]">
-              Gate: {(confidenceThreshold * 100).toFixed(0)}%
+        {/* Live Operational Telemetry Bento Grid (Fills empty area with relevant real-time indicators) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-black/5">
+          {/* Tile 1: Projected Demurrage Exposure */}
+          <div className="p-3.5 rounded-2xl bg-white/70 border border-white shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between text-[#5B6B86]">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-[#1B3A7A]">DEMURRAGE AT RISK</span>
+              <span className="w-2 h-2 rounded-full bg-[#34D399] animate-mint-pulse" />
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-2xl font-extrabold text-[#08193A] tracking-tight">
+                ₹{totalAvoidableCostInr.toLocaleString()}
+              </span>
+            </div>
+            <span className="text-[10px] text-[#34D399] font-bold truncate">
+              Avoidable loss if cleared before cutoffs
             </span>
-            <input
-              type="range"
-              min="0.50"
-              max="0.95"
-              step="0.05"
-              value={confidenceThreshold}
-              onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
-              className="w-16 accent-[#34D399] cursor-pointer"
-              title="Confidence threshold: anything below routes to NEEDS HUMAN REVIEW"
-            />
           </div>
 
-          {/* Model Status Capsule (Toggleable simulation for failure testing) */}
-          <button
-            onClick={() => setIsBackendDown(!isBackendDown)}
-            title="Click to toggle Local LLM vs Rules-based Fallback for resilience testing"
-            className={`px-3 py-1.5 rounded-full text-[11px] font-mono font-bold border transition-all flex items-center gap-2 cursor-pointer ${
-              isBackendDown
-                ? 'bg-amber-50 text-amber-800 border-amber-300'
-                : 'bg-[#08193A] text-white border-white/20'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${isBackendDown ? 'bg-amber-500 animate-pulse' : 'bg-[#34D399] animate-ping'}`} />
-            <span>{isBackendDown ? 'Fallback: rules engine' : 'Local LLM · Ollama · llama3.1:8b'}</span>
-          </button>
+          {/* Tile 2: Action Urgency <6h */}
+          <div className="p-3.5 rounded-2xl bg-[#F26D6D]/10 border border-[#F26D6D]/20 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between text-[#F26D6D]">
+              <span className="text-[10px] font-bold tracking-wider uppercase">ACT IN NEXT 6H</span>
+              <Flame className="w-3.5 h-3.5 text-[#F26D6D] animate-pulse" />
+            </div>
+            <div className="my-1.5 flex items-baseline gap-2">
+              <span className="font-mono text-2xl font-extrabold text-[#F26D6D]">
+                {actNowBlockers.length} Critical
+              </span>
+              <span className="text-[10px] font-bold text-[#F26D6D]">URGENT</span>
+            </div>
+            <span className="text-[10px] text-[#F26D6D]/80 font-medium truncate">
+              Immediate gate pass / duty clearance
+            </span>
+          </div>
 
-          {/* Process Inbox Button */}
-          <button
-            onClick={handleProcessInbox}
-            disabled={isProcessingInbox}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-gradient-to-r from-[#08193A] to-[#1B3A7A] text-[#A7F3D0] hover:shadow-[0_4px_16px_rgba(8,25,58,0.25)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            <Play className={`w-3.5 h-3.5 ${isProcessingInbox ? 'animate-spin' : ''}`} />
-            <span>{isProcessingInbox ? 'Extracting...' : 'Process Inbox'}</span>
-          </button>
+          {/* Tile 3: Active Blockers */}
+          <div className="p-3.5 rounded-2xl bg-white/70 border border-white shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between text-[#5B6B86]">
+              <span className="text-[10px] font-bold tracking-wider uppercase">CLEARANCE BLOCKERS</span>
+              <ShieldAlert className="w-3.5 h-3.5 text-[#1B3A7A]" />
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-2xl font-extrabold text-[#08193A]">
+                {openBlockers.length} Active <span className="text-xs font-normal text-[#5B6B86]">/ {cards.length} Total</span>
+              </span>
+            </div>
+            <span className="text-[10px] text-[#1B3A7A] font-medium truncate">
+              {reviewBlockers.length} flagged for human review
+            </span>
+          </div>
 
-          {/* Run Evaluation Button */}
-          <button
-            onClick={handleRunEvaluation}
-            disabled={isRunningEval}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-white/80 hover:bg-white text-[#08193A] border border-white shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#34D399]" />
-            <span>Run Evaluation</span>
-          </button>
+          {/* Tile 4: Inbound Document Stream */}
+          <div className="p-3.5 rounded-2xl bg-white/70 border border-white shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between text-[#5B6B86]">
+              <span className="text-[10px] font-bold tracking-wider uppercase">DOCUMENT INBOX FEED</span>
+              <FileText className="w-3.5 h-3.5 text-[#5B6B86]" />
+            </div>
+            <div className="my-1.5">
+              <span className="font-mono text-2xl font-extrabold text-[#08193A]">
+                {documents.filter(d => d.status === 'New').length} New <span className="text-xs font-normal text-[#5B6B86]">/ {documents.length} Docs</span>
+              </span>
+            </div>
+            <span className="text-[10px] text-[#5B6B86] font-medium truncate">
+              Terminal feeds, EDI & inquiries parsed
+            </span>
+          </div>
         </div>
       </header>
 
@@ -946,73 +1017,7 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
         </div>
       </section>
 
-      {/* ======================= KPI STRIP (4 Glass Tiles) ======================= */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Key Performance Indicators">
-        {/* Tile 1: OPEN BLOCKERS */}
-        <div className="glass-panel p-5 rounded-[26px] border border-white/80 shadow-[0_8px_30px_rgba(8,25,58,0.04)] flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#5B6B86]">
-            <span className="text-xs font-bold tracking-wider uppercase">OPEN BLOCKERS</span>
-            <ShieldAlert className="w-4 h-4 text-[#1B3A7A]" />
-          </div>
-          <div className="my-2">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#08193A]">
-              {openBlockers.length}
-            </span>
-          </div>
-          <span className="text-[11px] text-[#5B6B86] font-medium">
-            Active in Act Now, Today & Upcoming
-          </span>
-        </div>
 
-        {/* Tile 2: ACT IN NEXT 6 HOURS */}
-        <div className="glass-panel p-5 rounded-[26px] border border-[#F26D6D]/30 shadow-[0_8px_30px_rgba(242,109,109,0.08)] bg-gradient-to-br from-white/80 to-[#F26D6D]/5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#F26D6D]">
-            <span className="text-xs font-bold tracking-wider uppercase">ACT IN NEXT 6 HOURS</span>
-            <Flame className="w-4 h-4 text-[#F26D6D] animate-pulse" />
-          </div>
-          <div className="my-2 flex items-baseline gap-2">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#F26D6D]">
-              {actNowBlockers.length}
-            </span>
-            <span className="text-xs font-bold text-[#F26D6D]">URGENT</span>
-          </div>
-          <span className="text-[11px] text-[#F26D6D]/80 font-medium">
-            Demurrage / detention starts shortly
-          </span>
-        </div>
-
-        {/* Tile 3: NEEDS HUMAN REVIEW */}
-        <div className="glass-panel p-5 rounded-[26px] border border-white/80 shadow-[0_8px_30px_rgba(8,25,58,0.04)] flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#5B6B86]">
-            <span className="text-xs font-bold tracking-wider uppercase">NEEDS HUMAN REVIEW</span>
-            <HelpCircle className="w-4 h-4 text-[#5B6B86]" />
-          </div>
-          <div className="my-2">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#08193A]">
-              {reviewBlockers.length}
-            </span>
-          </div>
-          <span className="text-[11px] text-[#5B6B86] font-medium">
-            Ambiguous signals or low confidence
-          </span>
-        </div>
-
-        {/* Tile 4: PROJECTED AVOIDABLE COST */}
-        <div className="glass-panel p-5 rounded-[26px] border border-[#34D399]/40 shadow-[0_8px_30px_rgba(52,211,153,0.08)] bg-gradient-to-br from-white/80 to-[#34D399]/5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#08193A]">
-            <span className="text-xs font-bold tracking-wider uppercase text-[#1B3A7A]">PROJECTED AVOIDABLE COST</span>
-            <span className="w-2 h-2 rounded-full bg-[#34D399] animate-mint-pulse" />
-          </div>
-          <div className="my-2">
-            <span className="font-mono text-3xl sm:text-4xl font-extrabold text-[#08193A]">
-              ₹{totalAvoidableCostInr.toLocaleString()}
-            </span>
-          </div>
-          <span className="text-[11px] text-[#34D399] font-bold">
-            Total money saved if deadlines met
-          </span>
-        </div>
-      </section>
 
       {/* ======================= THREE-COLUMN MAIN WORKSPACE ======================= */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
