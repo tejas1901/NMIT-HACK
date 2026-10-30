@@ -5,9 +5,9 @@ export type Role = 'customer' | 'admin';
 
 export const DEMO_MODE = true;
 
-export const LOGGED_IN_CUSTOMER_COMPANY = 'Vikas Intermodal Corp';
-export const LOGGED_IN_CUSTOMER_NAME = 'Ananya Verma';
-export const LOGGED_IN_CUSTOMER_EMAIL = 'ananya.verma@vikasintermodal.in';
+export const LOGGED_IN_CUSTOMER_COMPANY = 'Registered Shipper Corp';
+export const LOGGED_IN_CUSTOMER_NAME = 'Customer Account';
+export const LOGGED_IN_CUSTOMER_EMAIL = 'customer@freightiq.in';
 
 export const ADMIN_USER_NAME = 'Admin';
 export const ADMIN_USER_EMAIL = 'admin@gmail.com';

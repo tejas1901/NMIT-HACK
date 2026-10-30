@@ -17,7 +17,7 @@ import {
 import { UserAccount } from '../types';
 import { AdminBadge } from '../components/AdminBadge';
 import { INITIAL_USERS } from '../data/mockData';
-import { getRegisteredCustomers } from '../services/customerAuth';
+import { getRegisteredCustomers, DEMO_CUSTOMER_EMAILS } from '../services/customerAuth';
 import { supabase } from '../lib/supabase';
 
 // Helper to assemble full user directory merging initial users, local registrations, active session & Supabase cloud
@@ -87,26 +87,29 @@ const compileUserDirectory = async (): Promise<UserAccount[]> => {
   });
 
   // 4. Current active session user if signed in as customer
-  if (activeSessionUser?.email) {
-    const emailKey = activeSessionUser.email.toLowerCase();
-    const isAdmin = activeSessionUser.role?.toLowerCase() === 'admin' || emailKey === 'admin@gmail.com';
-    if (!map.has(emailKey)) {
-      map.set(emailKey, {
-        id: activeSessionUser.id || `usr-active-${Date.now()}`,
-        name: activeSessionUser.full_name || emailKey.split('@')[0],
-        email: activeSessionUser.email,
-        company: activeSessionUser.company || 'Commercial Shipper Corp',
-        role: isAdmin ? 'admin' : 'customer',
-        title: isAdmin ? 'Operations Command' : 'Verified Cargo Shipper',
-        status: 'ACTIVE',
-        lastLogin: 'Just now (Active Session)',
-        accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
-      });
+    if (activeSessionUser?.email) {
+      const emailKey = activeSessionUser.email.toLowerCase();
+      if (!DEMO_CUSTOMER_EMAILS.includes(emailKey)) {
+        const isAdmin = activeSessionUser.role?.toLowerCase() === 'admin' || emailKey === 'admin@gmail.com';
+        if (!map.has(emailKey)) {
+          map.set(emailKey, {
+            id: activeSessionUser.id || `usr-active-${Date.now()}`,
+            name: activeSessionUser.full_name || emailKey.split('@')[0],
+            email: activeSessionUser.email,
+            company: activeSessionUser.company || 'Commercial Shipper Corp',
+            role: isAdmin ? 'admin' : 'customer',
+            title: isAdmin ? 'Operations Command' : 'Verified Cargo Shipper',
+            status: 'ACTIVE',
+            lastLogin: 'Just now (Active Session)',
+            accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
+          });
+        }
+      }
     }
-  }
 
-  return Array.from(map.values());
-};
+    const demoSet = new Set(DEMO_CUSTOMER_EMAILS.map(e => e.toLowerCase()));
+    return Array.from(map.values()).filter(u => !demoSet.has(u.email.toLowerCase()));
+  };
 
 export const AdminUsersRolesView: React.FC = () => {
   const [users, setUsers] = useState<UserAccount[]>(() => {
@@ -129,7 +132,8 @@ export const AdminUsersRolesView: React.FC = () => {
         accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
       });
     });
-    return Array.from(map.values());
+    const demoSet = new Set(DEMO_CUSTOMER_EMAILS.map(e => e.toLowerCase()));
+    return Array.from(map.values()).filter(u => !demoSet.has(u.email.toLowerCase()));
   });
 
   const [searchQuery, setSearchQuery] = useState('');

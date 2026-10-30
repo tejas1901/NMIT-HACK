@@ -162,8 +162,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ? currentUser.full_name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
     : (activeRole === 'admin' ? 'RG' : 'AV');
 
-  const displayName = currentUser?.full_name || (activeRole === 'admin' ? 'Admin' : 'Ananya Verma');
-  const displayCompany = currentUser?.company || (activeRole === 'admin' ? 'admin@gmail.com' : 'Vikas Intermodal Corp');
+  const displayName = currentUser?.full_name || (activeRole === 'admin' ? 'Admin' : 'Customer Account');
+  const displayCompany = currentUser?.company || (activeRole === 'admin' ? 'admin@gmail.com' : 'Commercial Shipper Client');
 
   return (
     <>

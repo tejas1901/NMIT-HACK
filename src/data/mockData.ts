@@ -745,39 +745,6 @@ export const INITIAL_USERS: UserAccount[] = [
     accessTier: 'Enterprise Admin (Root)'
   },
   {
-    id: 'usr-2',
-    name: 'Ananya Verma',
-    email: 'ananya.verma@vikasintermodal.in',
-    company: 'Vikas Intermodal Corp',
-    role: 'customer',
-    title: 'VP of Commercial Supply Chain',
-    status: 'ACTIVE',
-    lastLogin: '12 mins ago',
-    accessTier: 'Commercial Shipper (Tier A)'
-  },
-  {
-    id: 'usr-3',
-    name: 'Manish Bhatt',
-    email: 'manish@apexlogistics.in',
-    company: 'Apex Intermodal Logistics',
-    role: 'customer',
-    title: 'Fleet Operations Director',
-    status: 'ACTIVE',
-    lastLogin: '1 hour ago',
-    accessTier: 'Commercial Shipper (Tier B)'
-  },
-  {
-    id: 'usr-4',
-    name: 'Priya Sharma',
-    email: 'priya.s@summitcold.in',
-    company: 'Summit Cold-Chain Express',
-    role: 'customer',
-    title: 'Head of Cold-Chain Operations',
-    status: 'ACTIVE',
-    lastLogin: '3 hours ago',
-    accessTier: 'Commercial Shipper (Tier A)'
-  },
-  {
     id: 'usr-5',
     name: 'Dispatcher Sub-Agent AI',
     email: 'system.qpiai@freightiq.ai',

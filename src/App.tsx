@@ -2096,7 +2096,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                   <QpiAiPilotView
                     initialPrompt={pilotPrompt}
                     onClearInitialPrompt={() => setPilotPrompt(undefined)}
-                    userName={currentUser?.full_name || (activeRole === 'admin' ? 'Admin' : 'Ananya Verma')}
+                    userName={currentUser?.full_name || (activeRole === 'admin' ? 'Admin' : 'Customer Account')}
                     userRole={activeRole}
                     onInitiateCheckout={handleInitiateCheckout}
                   />

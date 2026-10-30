@@ -341,15 +341,27 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
               </div>
 
               {/* Persona Tag */}
-              <div className="p-2.5 rounded-xl bg-white/10 border border-white/10 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#34D399] text-[#08193A] font-bold text-xs flex items-center justify-center shrink-0">
-                  AV
-                </div>
-                <div className="min-w-0 text-left">
-                  <p className="text-xs font-semibold text-white truncate">Ananya Verma</p>
-                  <p className="text-[10px] text-white/50 truncate">Vikas Intermodal Logistics Corp</p>
-                </div>
-              </div>
+              {(() => {
+                let userObj: any = null;
+                try {
+                  const raw = localStorage.getItem('freightiq_user');
+                  if (raw) userObj = JSON.parse(raw);
+                } catch {}
+                const custName = (userObj?.role === 'CUSTOMER' || userObj?.role === 'customer') && userObj?.full_name ? userObj.full_name : 'Registered Customer';
+                const custCompany = (userObj?.role === 'CUSTOMER' || userObj?.role === 'customer') && userObj?.company ? userObj.company : 'Commercial Shipper Client';
+                const initials = custName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'RC';
+                return (
+                  <div className="p-2.5 rounded-xl bg-white/10 border border-white/10 flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#34D399] text-[#08193A] font-bold text-xs flex items-center justify-center shrink-0">
+                      {initials}
+                    </div>
+                    <div className="min-w-0 text-left">
+                      <p className="text-xs font-semibold text-white truncate">{custName}</p>
+                      <p className="text-[10px] text-white/50 truncate">{custCompany}</p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Capabilities checklist */}
               <div className="space-y-1.5 pt-1 text-[11px] text-white/75 font-medium">

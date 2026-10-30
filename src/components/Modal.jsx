@@ -966,8 +966,8 @@ function ForgotModal({ onClose, initialRole = 'customer', onOpenRegister }) {
   const [role, setRole] = useState(initialRole || 'customer') // 'customer' | 'admin'
   
   // Customer OTP states
-  const [phone, setPhone] = useState('+91 98201 55194')
-  const [email, setEmail] = useState('ananya.verma@vikasintermodal.in')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [customerStep, setCustomerStep] = useState(1) // 1: Send OTP, 2: Enter OTP & New Password, 3: Success
   const [generatedOtp, setGeneratedOtp] = useState('')
   const [enteredOtp, setEnteredOtp] = useState('')
@@ -1033,7 +1033,7 @@ function ForgotModal({ onClose, initialRole = 'customer', onOpenRegister }) {
         phone,
         password: newPassword,
         role: 'CUSTOMER',
-        full_name: 'Ananya Verma'
+        full_name: 'Customer Account'
       }
       localStorage.setItem('freightiq_users_db', JSON.stringify(users))
 
@@ -1208,7 +1208,7 @@ function ForgotModal({ onClose, initialRole = 'customer', onOpenRegister }) {
                   <input
                     type="email"
                     className="form-input"
-                    placeholder="ananya.verma@vikasintermodal.in"
+                    placeholder="shipper@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
