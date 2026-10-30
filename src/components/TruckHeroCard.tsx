@@ -318,95 +318,156 @@ export const TruckHeroCard: React.FC<TruckHeroCardProps> = ({
             </div>
           </div>
 
-          {/* 4. Interactive Hotspots on the Truck (Pulsing mint dots with popovers) */}
+          {/* 4. Interactive Hotspots on the Truck (Generous proximity hover hit areas + top-layer 3D overlay popovers) */}
+          
           {/* Hotspot 1: Cab (Driver Status) */}
           <div 
-            className="absolute left-[13%] top-[45%] z-30 group"
-            onMouseEnter={() => setActiveHotspot('cab')}
-            onMouseLeave={() => setActiveHotspot(null)}
+            className={`absolute left-[13%] top-[45%] ${activeHotspot === 'cab' ? 'z-[9999]' : 'z-40'}`}
+            style={{ transform: activeHotspot === 'cab' ? 'translateZ(120px)' : 'translateZ(40px)' }}
           >
-            <button
+            {/* Proximity Hit Area (w-12 h-12 centered on hotspot point for easy trigger) */}
+            <div
+              className="w-12 h-12 -ml-6 -mt-6 flex items-center justify-center cursor-pointer group"
+              onMouseEnter={() => setActiveHotspot('cab')}
+              onMouseLeave={() => setActiveHotspot(null)}
               aria-label="Cab status hotspot"
-              className="w-4 h-4 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center hover:scale-125 transition-transform cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-ping" />
-            </button>
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-8 h-8 rounded-full bg-[#34D399]/30 animate-ping pointer-events-none" />
+                <div className="w-5 h-5 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center shadow-[0_0_12px_rgba(52,211,153,0.8)] group-hover:scale-125 transition-transform">
+                  <span className="w-2 h-2 rounded-full bg-[#34D399]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Over-all Overlay Card */}
             {activeHotspot === 'cab' && (
-              <div className="absolute left-6 top-1/2 -translate-y-1/2 w-44 p-2.5 rounded-xl glass-panel-dark text-white text-xs shadow-xl border border-white/20 z-50 animate-in fade-in">
-                <p className="font-bold text-[#34D399] flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+              <div 
+                className="absolute left-8 top-1/2 -translate-y-1/2 w-52 p-3 rounded-2xl bg-[#08193A]/98 text-white text-xs shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_25px_rgba(52,211,153,0.4)] border-2 border-[#34D399] z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+                style={{ transform: 'translateZ(160px)' }}
+              >
+                <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#08193A] border-l-2 border-b-2 border-[#34D399] rotate-45" />
+                <p className="font-extrabold text-[#34D399] flex items-center gap-1.5 text-xs">
+                  <ShieldCheck className="w-4 h-4 text-[#34D399] shrink-0" />
                   <span>Driver Status: Alert</span>
                 </p>
-                <p className="text-[10px] text-white/70 mt-0.5">Biometric alertness score: 98%. Eye tracking nominal.</p>
+                <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                  Biometric alertness score: 98%. Active eye-tracking nominal.
+                </p>
               </div>
             )}
           </div>
 
-          {/* Hotspot 2: Fuel Tank */}
+          {/* Hotspot 2: Fuel Tank / Battery */}
           <div 
-            className="absolute left-[31%] top-[67%] z-30 group"
-            onMouseEnter={() => setActiveHotspot('fuel')}
-            onMouseLeave={() => setActiveHotspot(null)}
+            className={`absolute left-[31%] top-[67%] ${activeHotspot === 'fuel' ? 'z-[9999]' : 'z-40'}`}
+            style={{ transform: activeHotspot === 'fuel' ? 'translateZ(120px)' : 'translateZ(40px)' }}
           >
-            <button
+            {/* Proximity Hit Area */}
+            <div
+              className="w-12 h-12 -ml-6 -mt-6 flex items-center justify-center cursor-pointer group"
+              onMouseEnter={() => setActiveHotspot('fuel')}
+              onMouseLeave={() => setActiveHotspot(null)}
               aria-label="Fuel tank hotspot"
-              className="w-4 h-4 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center hover:scale-125 transition-transform cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-ping" />
-            </button>
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-8 h-8 rounded-full bg-[#34D399]/30 animate-ping pointer-events-none" />
+                <div className="w-5 h-5 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center shadow-[0_0_12px_rgba(52,211,153,0.8)] group-hover:scale-125 transition-transform">
+                  <span className="w-2 h-2 rounded-full bg-[#34D399]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Over-all Overlay Card */}
             {activeHotspot === 'fuel' && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-40 p-2.5 rounded-xl glass-panel-dark text-white text-xs shadow-xl border border-white/20 z-50 animate-in fade-in">
-                <p className="font-bold text-[#34D399] flex items-center gap-1.5">
-                  <Fuel className="w-3.5 h-3.5" />
+              <div 
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 w-52 p-3 rounded-2xl bg-[#08193A]/98 text-white text-xs shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_25px_rgba(52,211,153,0.4)] border-2 border-[#34D399] z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+                style={{ transform: 'translateZ(160px)' }}
+              >
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#08193A] border-r-2 border-b-2 border-[#34D399] rotate-45" />
+                <p className="font-extrabold text-[#34D399] flex items-center gap-1.5 text-xs">
+                  <Fuel className="w-4 h-4 text-[#34D399] shrink-0" />
                   <span>Fuel Level: 72%</span>
                 </p>
-                <p className="text-[10px] text-white/70 mt-0.5">Range remaining: 620 KM on low-sulfur diesel.</p>
+                <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                  Range remaining: 620 KM on low-sulfur commercial diesel.
+                </p>
               </div>
             )}
           </div>
 
-          {/* Hotspot 3: Rear Wheels (Tire Pressure) */}
+          {/* Hotspot 3: Rear Wheels (Tire Pressure TPMS) */}
           <div 
-            className="absolute left-[70%] top-[68%] z-30 group"
-            onMouseEnter={() => setActiveHotspot('wheels')}
-            onMouseLeave={() => setActiveHotspot(null)}
+            className={`absolute left-[70%] top-[68%] ${activeHotspot === 'wheels' ? 'z-[9999]' : 'z-40'}`}
+            style={{ transform: activeHotspot === 'wheels' ? 'translateZ(120px)' : 'translateZ(40px)' }}
           >
-            <button
+            {/* Proximity Hit Area */}
+            <div
+              className="w-12 h-12 -ml-6 -mt-6 flex items-center justify-center cursor-pointer group"
+              onMouseEnter={() => setActiveHotspot('wheels')}
+              onMouseLeave={() => setActiveHotspot(null)}
               aria-label="Tire pressure hotspot"
-              className="w-4 h-4 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center hover:scale-125 transition-transform cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-ping" />
-            </button>
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-8 h-8 rounded-full bg-[#34D399]/30 animate-ping pointer-events-none" />
+                <div className="w-5 h-5 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center shadow-[0_0_12px_rgba(52,211,153,0.8)] group-hover:scale-125 transition-transform">
+                  <span className="w-2 h-2 rounded-full bg-[#34D399]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Over-all Overlay Card (Elevated far above trailer and wheels) */}
             {activeHotspot === 'wheels' && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-44 p-2.5 rounded-xl glass-panel-dark text-white text-xs shadow-xl border border-white/20 z-50 animate-in fade-in">
-                <p className="font-bold text-[#34D399] flex items-center gap-1.5">
-                  <Gauge className="w-3.5 h-3.5" />
+              <div 
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 w-56 p-3 rounded-2xl bg-[#08193A]/98 text-white text-xs shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_28px_rgba(52,211,153,0.45)] border-2 border-[#34D399] z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+                style={{ transform: 'translateZ(160px)' }}
+              >
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#08193A] border-r-2 border-b-2 border-[#34D399] rotate-45" />
+                <p className="font-extrabold text-[#34D399] flex items-center gap-1.5 text-xs">
+                  <Gauge className="w-4 h-4 text-[#34D399] shrink-0" />
                   <span>Tire Pressure: 32 PSI</span>
                 </p>
-                <p className="text-[10px] text-white/70 mt-0.5">TPMS verified across all 6 trailer axles.</p>
+                <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                  TPMS verified across all 6 trailer axles. Nominal operating temperature.
+                </p>
               </div>
             )}
           </div>
 
           {/* Hotspot 4: Trailer Door (Seal Intact) */}
           <div 
-            className="absolute left-[92%] top-[45%] z-30 group"
-            onMouseEnter={() => setActiveHotspot('door')}
-            onMouseLeave={() => setActiveHotspot(null)}
+            className={`absolute left-[92%] top-[45%] ${activeHotspot === 'door' ? 'z-[9999]' : 'z-40'}`}
+            style={{ transform: activeHotspot === 'door' ? 'translateZ(120px)' : 'translateZ(40px)' }}
           >
-            <button
+            {/* Proximity Hit Area */}
+            <div
+              className="w-12 h-12 -ml-6 -mt-6 flex items-center justify-center cursor-pointer group"
+              onMouseEnter={() => setActiveHotspot('door')}
+              onMouseLeave={() => setActiveHotspot(null)}
               aria-label="Trailer door seal hotspot"
-              className="w-4 h-4 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center hover:scale-125 transition-transform cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-ping" />
-            </button>
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-8 h-8 rounded-full bg-[#34D399]/30 animate-ping pointer-events-none" />
+                <div className="w-5 h-5 rounded-full bg-[#08193A] border-2 border-[#34D399] flex items-center justify-center shadow-[0_0_12px_rgba(52,211,153,0.8)] group-hover:scale-125 transition-transform">
+                  <span className="w-2 h-2 rounded-full bg-[#34D399]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Over-all Overlay Card */}
             {activeHotspot === 'door' && (
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 w-44 p-2.5 rounded-xl glass-panel-dark text-white text-xs shadow-xl border border-white/20 z-50 animate-in fade-in">
-                <p className="font-bold text-[#34D399] flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5" />
+              <div 
+                className="absolute right-8 top-1/2 -translate-y-1/2 w-52 p-3 rounded-2xl bg-[#08193A]/98 text-white text-xs shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_25px_rgba(52,211,153,0.4)] border-2 border-[#34D399] z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+                style={{ transform: 'translateZ(160px)' }}
+              >
+                <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-[#08193A] border-r-2 border-t-2 border-[#34D399] rotate-45" />
+                <p className="font-extrabold text-[#34D399] flex items-center gap-1.5 text-xs">
+                  <CheckCircle className="w-4 h-4 text-[#34D399] shrink-0" />
                   <span>Digital Seal: Intact</span>
                 </p>
-                <p className="text-[10px] text-white/70 mt-0.5">Crypto tamper-lock verified via NFC sensor #991.</p>
+                <p className="text-[11px] text-white/90 mt-1 font-medium leading-relaxed">
+                  Crypto tamper-lock verified via NFC sensor #991.
+                </p>
               </div>
             )}
           </div>
