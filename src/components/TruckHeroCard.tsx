@@ -89,7 +89,7 @@ export const TruckHeroCard: React.FC<TruckHeroCardProps> = ({
   };
 
   return (
-    <div className="p-5 md:p-7 rounded-[32px] glass-panel relative overflow-visible shadow-[0_16px_50px_rgba(8,25,58,0.08)]">
+    <div className="p-5 md:p-7 rounded-[32px] glass-panel relative overflow-hidden shadow-[0_16px_50px_rgba(8,25,58,0.08)]">
       {/* 1. Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-black/5 relative z-20">
         <div className="flex items-center gap-3 flex-wrap">
@@ -130,9 +130,10 @@ export const TruckHeroCard: React.FC<TruckHeroCardProps> = ({
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
-        className="relative w-full max-w-[1100px] mx-auto mt-4 mb-2 rounded-[26px] p-2 md:p-4 transition-transform duration-300 ease-out"
+        className="relative w-full max-w-[1100px] mx-auto mt-4 mb-2 rounded-[26px] p-2 md:p-4 overflow-hidden transition-transform duration-300 ease-out"
         style={{
           aspectRatio: '1252 / 835',
+          minHeight: '280px',
           containerType: 'inline-size',
           background: 'linear-gradient(180deg, rgba(244, 250, 248, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%)',
           perspective: '1200px',
@@ -190,8 +191,9 @@ export const TruckHeroCard: React.FC<TruckHeroCardProps> = ({
 
           {/* 3. Telemetry Panel ON the Trailer (Percentage positioning with CSS variables + cqw font scaling) */}
           <div 
-            className="absolute rounded-[14px] glass-panel-dark text-white p-[1.8cqw] flex flex-col justify-between shadow-[0_12px_36px_rgba(8,25,58,0.45)] border border-white/15 transition-all duration-300 z-20 group/panel"
+            className="!absolute rounded-[14px] glass-panel-dark text-white p-[1.8cqw] flex flex-col justify-between shadow-[0_12px_36px_rgba(8,25,58,0.45)] border border-white/15 transition-all duration-300 z-20 group/panel"
             style={{
+              position: 'absolute',
               left: 'var(--panel-left, 33%)',
               top: 'var(--panel-top, 26%)',
               width: 'var(--panel-width, 59%)',

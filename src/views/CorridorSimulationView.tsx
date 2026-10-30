@@ -172,7 +172,7 @@ export const CorridorSimulationView: React.FC<CorridorSimulationProps> = ({
       />
 
       {/* B) AUTOMATED HIGHWAY ROUTE WEATHER FORECASTER & WAYPOINT RADAR */}
-      <div className="p-5 md:p-6 rounded-[28px] glass-panel space-y-4">
+      <div className="p-5 md:p-6 rounded-[28px] glass-panel space-y-4 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-[#08193A]/10">
           <div>
             <div className="flex items-center gap-2">
