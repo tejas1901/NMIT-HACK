@@ -419,50 +419,53 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
       {/* KPI Bento Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {/* 1. ACTIVE CARGO CONSIGNMENTS */}
-        <div className="p-4 rounded-[26px] glass-panel-dark text-white flex flex-col justify-between shadow-md min-w-0">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-white/60">
+        <div className="p-4 rounded-[26px] glass-panel-dark text-white flex flex-col justify-between shadow-md min-w-0 overflow-hidden">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-white/60 truncate">
             Active Cargo Consignments
           </span>
-          <div className="my-2">
-            <span className="text-4xl font-extrabold font-mono text-white tabular-nums">
+          <div className="my-2 min-w-0 overflow-hidden">
+            <span className="text-3xl sm:text-4xl font-extrabold font-mono text-white tabular-nums truncate block">
               {activeConsignmentsCount}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-[#A7F3D0]">
-            <span className="w-2 h-2 rounded-full bg-[#34D399] animate-mint-pulse" />
-            <span>Synced to Supabase Cloud</span>
+          <div className="flex items-center gap-1.5 text-[11px] text-[#A7F3D0] min-w-0">
+            <span className="w-2 h-2 rounded-full bg-[#34D399] animate-mint-pulse shrink-0" />
+            <span className="truncate">Synced to Supabase Cloud</span>
           </div>
         </div>
 
         {/* 2. DEMURRAGE PENALTIES MITIGATED */}
-        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
+        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0 overflow-hidden">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86] truncate">
             Demurrage Mitigated
           </span>
-          <div className="my-2">
-            <span className="text-2xl xl:text-3xl font-extrabold font-mono text-[#08193A] tabular-nums" title={formatInr(totalDemurrageAvoided)}>
-              {formatInr(totalDemurrageAvoided, { forceDecimals: true })}
+          <div className="my-2 min-w-0 overflow-hidden">
+            <span 
+              className="text-xl sm:text-2xl font-extrabold text-[#08193A] tracking-tight truncate block" 
+              title={formatInr(totalDemurrageAvoided)}
+            >
+              {formatInr(totalDemurrageAvoided)}
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-[#5B6B86] font-medium">via QpiAI Quantum QUBO</span>
-            <svg className="w-16 h-5 stroke-[#34D399] fill-none" viewBox="0 0 60 20">
+          <div className="flex items-center justify-between gap-1 min-w-0">
+            <span className="text-[11px] text-[#5B6B86] font-medium truncate">via QpiAI Quantum QUBO</span>
+            <svg className="w-12 h-4 stroke-[#34D399] fill-none shrink-0" viewBox="0 0 60 20">
               <path d="M 0 16 Q 15 4, 30 12 T 60 2" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </div>
         </div>
 
         {/* 3. PREDICTIVE ENGINE */}
-        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
+        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0 overflow-hidden">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86] truncate">
             Predictive Engine
           </span>
-          <div className="my-2 flex items-center justify-between">
-            <span className="text-2xl font-extrabold text-[#08193A]">
+          <div className="my-2 flex items-center justify-between gap-1 min-w-0">
+            <span className="text-xl sm:text-2xl font-extrabold text-[#08193A] truncate">
               XGBoost 3.2
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/30">
-              98.4% ROC-AUC
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/30 shrink-0">
+              98.4% ROC
             </span>
           </div>
           <p className="text-[11px] text-[#5B6B86] font-medium truncate">
@@ -471,15 +474,15 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
         </div>
 
         {/* 4. QUANTUM ENGINE */}
-        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
+        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0 overflow-hidden">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86] truncate">
             Quantum Allocation
           </span>
-          <div className="my-2 flex items-center justify-between">
-            <span className="text-2xl font-extrabold text-[#08193A]">
+          <div className="my-2 flex items-center justify-between gap-1 min-w-0">
+            <span className="text-xl sm:text-2xl font-extrabold text-[#08193A] truncate">
               QpiAI-QSV
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40">
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40 shrink-0">
               QUBO Solved
             </span>
           </div>
@@ -489,12 +492,12 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
         </div>
 
         {/* 5. ROUTE WEATHER SENTINEL */}
-        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
+        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0 overflow-hidden">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86] truncate">
             Route Weather Radar
           </span>
-          <div className="my-2 flex items-center gap-2">
-            <span className="text-2xl font-extrabold text-[#08193A] tabular-nums">
+          <div className="my-2 flex items-center gap-2 min-w-0">
+            <span className="text-xl sm:text-2xl font-extrabold text-[#08193A] tabular-nums truncate">
               {routeAlertsCount} Alerts
             </span>
           </div>

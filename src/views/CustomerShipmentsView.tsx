@@ -152,16 +152,16 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
           </p>
         </div>
 
-        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
+        <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between shadow-xs min-w-0 overflow-hidden">
+          <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86] truncate">
             Demurrage Avoided
           </span>
-          <div className="my-2">
-            <span className="text-2xl font-extrabold font-mono text-[#34D399]" title={formatInr(customerDemurrageAvoided)}>
-              {formatInr(customerDemurrageAvoided, { forceDecimals: true })}
+          <div className="my-2 min-w-0 overflow-hidden">
+            <span className="text-xl sm:text-2xl font-extrabold text-[#34D399] tracking-tight truncate block" title={formatInr(customerDemurrageAvoided)}>
+              {formatInr(customerDemurrageAvoided)}
             </span>
           </div>
-          <p className="text-[11px] text-[#5B6B86] font-medium">
+          <p className="text-[11px] text-[#5B6B86] font-medium truncate">
             Zero SLA Breach Penalties
           </p>
         </div>
