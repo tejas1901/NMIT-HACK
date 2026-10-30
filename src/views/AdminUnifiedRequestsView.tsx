@@ -54,8 +54,8 @@ export const AdminUnifiedRequestsView: React.FC<AdminUnifiedRequestsViewProps> =
 
   // Extract pending requests
   const pendingCargo = consignments.filter(c => c.status === 'PENDING_APPROVAL');
-  const pendingHauls = haulRequests.filter(h => h.status === 'NEW_INQUIRY' || h.status === 'QUOTED_PENDING_CUSTOMER');
-  const pendingFleet = fleetOrders.filter(o => o.status === 'PENDING');
+  const pendingHauls = haulRequests.filter(h => h.status === 'NEW' || h.status === 'QUOTED' || (h.status as any) === 'NEW_INQUIRY' || (h.status as any) === 'QUOTED_PENDING_CUSTOMER');
+  const pendingFleet = fleetOrders.filter(o => o.status === 'PROCESSING' || o.status === 'PRE-DELIVERY_INSPECTION' || (o.status as any) === 'PENDING');
 
   const totalPendingCount = pendingCargo.length + pendingHauls.length + pendingFleet.length;
 
@@ -304,7 +304,7 @@ export const AdminUnifiedRequestsView: React.FC<AdminUnifiedRequestsViewProps> =
                         STATUS: {haul.status.replace('_', ' ')}
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#34D399]/20 text-[#08193A]">
-                        {haul.companyName}
+                        {haul.customerCompany || (haul as any).companyName || 'Corporate Client'}
                       </span>
                     </div>
 
@@ -314,12 +314,12 @@ export const AdminUnifiedRequestsView: React.FC<AdminUnifiedRequestsViewProps> =
                         <span>{haul.origin} → {haul.destination}</span>
                       </div>
                       <span className="text-[#5B6B86]">
-                        {haul.cargoDescription} • {haul.weightKg.toLocaleString()} kg • Quoted: <strong>{formatInr(haul.quotedPriceInr || haul.quotedPriceUsd || 140000)}</strong>
+                        {haul.cargoCategory || (haul as any).cargoDescription || 'Cargo'} • {(haul.weightKg || 32000).toLocaleString()} kg • Quoted: <strong>{formatInr(haul.quotedPriceInr || (haul.quotedPriceUsd ? haul.quotedPriceUsd * 86.4 : 140000))}</strong>
                       </span>
                     </div>
 
                     <p className="text-[11px] text-[#5B6B86]">
-                      Special Handling: {haul.specialRequirements || 'Standard intermodal container transit.'}
+                      Special Handling: {haul.notes || (haul as any).specialRequirements || 'Standard intermodal container transit.'}
                     </p>
                   </div>
 
@@ -389,7 +389,7 @@ export const AdminUnifiedRequestsView: React.FC<AdminUnifiedRequestsViewProps> =
                         Deployment Depot: <strong>{fleet.assignedDepot || 'Nhava Sheva Terminal 3'}</strong>
                       </span>
                       <span className="font-bold text-[#1B3A7A]">
-                        Lease Value: {formatInr(fleet.purchasePriceUsd * 86.4)}
+                        Lease Value: {formatInr(fleet.amountPaidInr || (fleet.amountPaidUsd ? fleet.amountPaidUsd * 86.4 : 185000))}
                       </span>
                     </div>
                   </div>

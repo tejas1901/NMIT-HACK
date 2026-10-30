@@ -281,9 +281,21 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     return INITIAL_CONSIGNMENTS;
   });
 
+  // Real-time broadcast helper across browser tabs and windows
+  const broadcastSyncEvent = (type: string, payload: any) => {
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const bc = new BroadcastChannel('freightiq_realtime_sync');
+        bc.postMessage({ type, payload });
+        bc.close();
+      }
+    } catch {}
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem('freightiq_consignments', JSON.stringify(allConsignments));
+      broadcastSyncEvent('SYNC_CONSIGNMENTS', allConsignments);
     } catch {}
   }, [allConsignments]);
 
@@ -309,6 +321,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     try {
       localStorage.setItem('freightiq_orders_version', 'v2_rental');
       localStorage.setItem('freightiq_orders', JSON.stringify(allOrders));
+      broadcastSyncEvent('SYNC_ORDERS', allOrders);
     } catch {}
   }, [allOrders]);
   const [waypoints, setWaypoints] = useState<WaypointWeather[]>(WAYPOINTS_WEATHER);
@@ -331,8 +344,66 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   useEffect(() => {
     try {
       localStorage.setItem('freightiq_haul_requests', JSON.stringify(haulRequests));
+      broadcastSyncEvent('SYNC_HAULS', haulRequests);
     } catch {}
   }, [haulRequests]);
+
+  // Real-time multi-tab & multi-window instant synchronization listener
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        bc = new BroadcastChannel('freightiq_realtime_sync');
+        bc.onmessage = (event) => {
+          const { type, payload } = event.data || {};
+          if (type === 'SYNC_CONSIGNMENTS' && Array.isArray(payload)) {
+            setAllConsignments(payload);
+          } else if (type === 'SYNC_HAULS' && Array.isArray(payload)) {
+            setHaulRequests(payload);
+          } else if (type === 'SYNC_ORDERS' && Array.isArray(payload)) {
+            setAllOrders(payload);
+          } else if (type === 'NEW_BOOKING_NOTIFY') {
+            if (activeRole === 'admin') {
+              showToast(`🔔 Real-time: Inbound booking request from ${payload?.shipperCompany || 'Customer'}!`);
+            }
+          } else if (type === 'ORDER_ACCEPTED_NOTIFY') {
+            if (activeRole === 'customer') {
+              showToast(`✓ Carrier Admin ACCEPTED your order ${payload?.id}! Manifest locked.`);
+            }
+          } else if (type === 'ORDER_REJECTED_NOTIFY') {
+            if (activeRole === 'customer') {
+              showToast(`⚠️ Carrier Admin declined order ${payload?.id}.`);
+            }
+          }
+        };
+      }
+    } catch (err) {
+      console.warn('Cross-tab broadcast init notice:', err);
+    }
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (!e.newValue) return;
+      try {
+        if (e.key === 'freightiq_consignments') {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setAllConsignments(parsed);
+        } else if (e.key === 'freightiq_haul_requests') {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setHaulRequests(parsed);
+        } else if (e.key === 'freightiq_orders') {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setAllOrders(parsed);
+        }
+      } catch {}
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      if (bc) bc.close();
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [activeRole]);
 
   // Modals & Panels
   const [checkoutItem, setCheckoutItem] = useState<CheckoutItem | null>(null);
@@ -932,6 +1003,25 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
     setAllConsignments((prev) => [fullBooking, ...prev]);
 
+    // Also automatically create corresponding Haul Request for Admin requests tab
+    const newHaulReq: HaulRequest = {
+      id: `REQ-${fullBooking.id.replace('CRG-BK-', '').replace('CRG-', '')}`,
+      customerCompany: shipperCo,
+      customerName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME,
+      origin: fullBooking.origin,
+      destination: fullBooking.destination,
+      cargoCategory: fullBooking.department,
+      weightKg: Math.round(fullBooking.weightLbs * 0.453592),
+      declaredValueUsd: fullBooking.valueUsd,
+      serviceTier: fullBooking.mode === 'ROAD_EXPEDITED' ? 'ACCELERATED' : 'QUANTUM_EXPRESS',
+      status: 'NEW',
+      createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16) + ' IST',
+      suggestedQpiAiCarrier: carrier,
+      notes: fullBooking.notes || `Order from ${shipperCo} awaiting ${carrier} Admin acceptance.`
+    };
+    setHaulRequests((prev) => [newHaulReq, ...prev]);
+    broadcastSyncEvent('NEW_BOOKING_NOTIFY', { id: fullBooking.id, shipperCompany: shipperCo });
+
     if (fullBooking.status === 'PENDING_APPROVAL') {
       showToast(`✓ Order ${fullBooking.id} submitted! Request sent to ${carrier} Admin for approval.`);
       handleWriteAuditLog('CARGO_ORDER_REQUESTED', 'ASSIGNMENT', `Customer ${shipperCo} (${shipperPh}) requested cargo haul with ${carrier}. Status: PENDING_APPROVAL`);
@@ -975,6 +1065,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         return c;
       })
     );
+    const rawId = bookingId.replace('CRG-BK-', '').replace('CRG-', '');
+    setHaulRequests((prev) =>
+      prev.map((h) => (h.id === `REQ-${rawId}` || h.id.includes(rawId) ? { ...h, status: 'APPROVED' } : h))
+    );
+    broadcastSyncEvent('ORDER_ACCEPTED_NOTIFY', { id: bookingId, status: 'CONFIRMED' });
     showToast(`✓ Order ${bookingId} ACCEPTED! Manifest confirmed and driver notified.`);
     handleWriteAuditLog('ADMIN_ACCEPT_ORDER', 'ASSIGNMENT', `Admin accepted cargo order ${bookingId} for customer ${targetBooking?.shipperCompany || 'Shipper'}`);
     try {
@@ -992,6 +1087,11 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     setAllConsignments((prev) =>
       prev.map((c) => (c.id === bookingId ? { ...c, status: 'REJECTED', eta: 'Order Declined' } : c))
     );
+    const rawId = bookingId.replace('CRG-BK-', '').replace('CRG-', '');
+    setHaulRequests((prev) =>
+      prev.map((h) => (h.id === `REQ-${rawId}` || h.id.includes(rawId) ? { ...h, status: 'REJECTED' } : h))
+    );
+    broadcastSyncEvent('ORDER_REJECTED_NOTIFY', { id: bookingId, status: 'REJECTED' });
     showToast(`Order ${bookingId} declined by Admin.`);
     handleWriteAuditLog('ADMIN_REJECT_ORDER', 'ASSIGNMENT', `Admin declined cargo order ${bookingId}`);
     try {
@@ -1123,6 +1223,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       notes: `Commercial client booking via portal. Real-time QpiAI route optimized.`
     };
     setHaulRequests((prev) => [newHaulReq, ...prev]);
+    broadcastSyncEvent('NEW_BOOKING_NOTIFY', { id: newConsignment.id, shipperCompany: withCompany.customerCompany });
 
     showToast(`✓ Consignment ${newConsignment.id} submitted! Sent to Admin Haul Queue & Supabase.`);
     setActiveTab('customer-shipments');
@@ -1186,16 +1287,17 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     setHaulRequests((prev) =>
       prev.map((r) => (r.id === requestId ? { ...r, status: 'APPROVED' } : r))
     );
-    const ref = requestId.replace('REQ-', 'CRG-');
+    const rawRef = requestId.replace('REQ-', '');
     setAllConsignments((prev) =>
       prev.map((c) =>
-        c.id === ref || c.id === requestId
+        c.id.includes(rawRef) || c.id === requestId
           ? { ...c, status: 'CONFIRMED' }
           : c
       )
     );
+    broadcastSyncEvent('ORDER_ACCEPTED_NOTIFY', { id: requestId, status: 'CONFIRMED' });
     try {
-      await supabase.from('cargo_bookings').update({ status: 'CONFIRMED' }).or(`booking_ref.eq.${ref},booking_ref.eq.${requestId}`);
+      await supabase.from('cargo_bookings').update({ status: 'CONFIRMED' }).or(`booking_ref.ilike.%${rawRef}%`);
     } catch {}
     showToast(`Request ${requestId} approved and locked in dispatch manifest.`);
   };
@@ -1204,6 +1306,15 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     setHaulRequests((prev) =>
       prev.map((r) => (r.id === requestId ? { ...r, status: 'REJECTED' } : r))
     );
+    const rawRef = requestId.replace('REQ-', '');
+    setAllConsignments((prev) =>
+      prev.map((c) =>
+        c.id.includes(rawRef) || c.id === requestId
+          ? { ...c, status: 'REJECTED' }
+          : c
+      )
+    );
+    broadcastSyncEvent('ORDER_REJECTED_NOTIFY', { id: requestId, status: 'REJECTED' });
     showToast(`Request ${requestId} marked as rejected.`);
   };
 
@@ -1415,8 +1526,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           purchasedFleetCount={roleOrders.length}
           pendingRequestsCount={
             allConsignments.filter(c => c.status === 'PENDING_APPROVAL').length +
-            haulRequests.filter(h => h.status === 'NEW_INQUIRY').length +
-            allOrders.filter(o => o.status === 'PENDING').length
+            haulRequests.filter(h => h.status === 'NEW' || h.status === 'QUOTED' || (h.status as any) === 'NEW_INQUIRY').length +
+            allOrders.filter(o => o.status === 'PROCESSING' || o.status === 'PRE-DELIVERY_INSPECTION' || (o.status as any) === 'PENDING').length
           }
           onTriggerPilotPrompt={(prompt) => {
             setActiveTab('qpiai-pilot');
