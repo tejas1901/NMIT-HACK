@@ -157,63 +157,125 @@ export function sanitizeShipmentForCustomer(shipment: ExtendedConsignment): Cons
 
 /**
  * Data selector: retrieves shipments for a given role.
- * For role = 'customer', ONLY returns records belonging to Vance Intermodal Corp,
- * with all admin-only fields stripped.
+ * For role = 'customer', ONLY returns records belonging to the logged-in customer's email/company,
+ * with all admin-only fields stripped. New customers start from 0.
  */
 export function getShipmentsForRole(
-  allShipments: ExtendedConsignment[],
+  allShipments: (ExtendedConsignment | Consignment)[],
   role: Role,
+  currentUser?: { email?: string; company?: string; full_name?: string } | null,
   customerFilter?: string
-): ExtendedConsignment[] | Consignment[] {
+): (ExtendedConsignment | Consignment)[] {
   if (role === 'admin') {
     if (customerFilter && customerFilter !== 'ALL') {
-      return allShipments.filter(s => s.customerCompany === customerFilter);
+      return allShipments.filter(s => (s as any).customerCompany === customerFilter);
     }
     return allShipments;
   }
 
-  // Customer role: strictly filter by Vance Intermodal Corp and sanitize
+  // Customer role: strictly isolate by THIS customer's email or company
+  const email = currentUser?.email?.trim().toLowerCase();
+  const company = currentUser?.company?.trim().toLowerCase();
+
+  if (!email && !company) return [];
+
   return allShipments
-    .filter(s => s.customerCompany === LOGGED_IN_CUSTOMER_COMPANY)
-    .map(s => sanitizeShipmentForCustomer(s) as ExtendedConsignment);
+    .filter(s => {
+      const sAny = s as any;
+      const matchEmail = (sAny.shipperEmail && sAny.shipperEmail.toLowerCase() === email) ||
+                         (sAny.customerEmail && sAny.customerEmail.toLowerCase() === email);
+      const matchCompany = company && (
+        (sAny.shipperCompany && sAny.shipperCompany.toLowerCase() === company) ||
+        (sAny.customerCompany && sAny.customerCompany.toLowerCase() === company)
+      );
+      return matchEmail || matchCompany;
+    })
+    .map(s => sanitizeShipmentForCustomer(s as ExtendedConsignment));
 }
 
 /**
  * Data selector for a single shipment.
  */
 export function getShipmentForRole(
-  allShipments: ExtendedConsignment[],
+  allShipments: (ExtendedConsignment | Consignment)[],
   id: string,
-  role: Role
+  role: Role,
+  currentUser?: { email?: string; company?: string; full_name?: string } | null
 ): ExtendedConsignment | Consignment | null {
   const found = allShipments.find(s => s.id === id);
   if (!found) return null;
 
   if (role === 'admin') {
-    return found;
+    return found as ExtendedConsignment;
   }
 
   // Check ownership
-  if (found.customerCompany !== LOGGED_IN_CUSTOMER_COMPANY) {
+  const email = currentUser?.email?.trim().toLowerCase();
+  const company = currentUser?.company?.trim().toLowerCase();
+  const sAny = found as any;
+
+  const matchEmail = (sAny.shipperEmail && sAny.shipperEmail.toLowerCase() === email) ||
+                     (sAny.customerEmail && sAny.customerEmail.toLowerCase() === email);
+  const matchCompany = company && (
+    (sAny.shipperCompany && sAny.shipperCompany.toLowerCase() === company) ||
+    (sAny.customerCompany && sAny.customerCompany.toLowerCase() === company)
+  );
+
+  if (!matchEmail && !matchCompany) {
     return null; // Not allowed to access other customer's record
   }
 
-  return sanitizeShipmentForCustomer(found);
+  return sanitizeShipmentForCustomer(found as ExtendedConsignment);
 }
 
 /**
  * Data selector for fleet orders.
  * Admin sees all orders across all customers.
- * Customer sees ONLY orders purchased by Vance Intermodal Corp.
+ * Customer sees ONLY orders purchased by their own account.
  */
 export function getOrdersForRole(
   allOrders: PurchasedTruckOrder[],
-  role: Role
+  role: Role,
+  currentUser?: { email?: string; company?: string; full_name?: string } | null
 ): PurchasedTruckOrder[] {
   if (role === 'admin') {
     return allOrders;
   }
-  return allOrders.filter(o => o.buyerCompany === LOGGED_IN_CUSTOMER_COMPANY);
+  const email = currentUser?.email?.trim().toLowerCase();
+  const company = currentUser?.company?.trim().toLowerCase();
+  if (!email && !company) return [];
+
+  return allOrders.filter(o => {
+    const oAny = o as any;
+    const matchEmail = oAny.buyerEmail && oAny.buyerEmail.toLowerCase() === email;
+    const matchCompany = company && o.buyerCompany && o.buyerCompany.toLowerCase() === company;
+    return matchEmail || matchCompany;
+  });
+}
+
+/**
+ * Data selector for haul requests.
+ * Admin sees all haul requests.
+ * Customer sees ONLY haul requests submitted by their account.
+ */
+export function getHaulsForRole(
+  allHauls: any[],
+  role: Role,
+  currentUser?: { email?: string; company?: string; full_name?: string } | null
+): any[] {
+  if (role === 'admin') {
+    return allHauls;
+  }
+  const email = currentUser?.email?.trim().toLowerCase();
+  const company = currentUser?.company?.trim().toLowerCase();
+  if (!email && !company) return [];
+
+  return allHauls.filter(h => {
+    const matchEmail = (h.shipperEmail && h.shipperEmail.toLowerCase() === email) ||
+                       (h.customerEmail && h.customerEmail.toLowerCase() === email);
+    const matchCompany = company && h.customerCompany && h.customerCompany.toLowerCase() === company;
+    return matchEmail || matchCompany;
+  });
 }
 
 /**

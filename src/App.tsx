@@ -31,6 +31,7 @@ import {
   DEMO_MODE, 
   getShipmentsForRole, 
   getOrdersForRole, 
+  getHaulsForRole,
   getUnitsForRole, 
   canAccess, 
   RoleGate,
@@ -807,9 +808,19 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     return () => clearInterval(interval);
   }, [activeRole]);
 
-  // DATA SANITIZATION SELECTORS
-  const roleShipments = getShipmentsForRole(allConsignments as any, activeRole);
-  const roleOrders = getOrdersForRole(allOrders, activeRole);
+  // DATA SANITIZATION SELECTORS: Isolate data per customer, Admin retains full enterprise state
+  const roleShipments = useMemo(() => {
+    return getShipmentsForRole(allConsignments as any, activeRole, currentUser);
+  }, [allConsignments, activeRole, currentUser]);
+
+  const roleOrders = useMemo(() => {
+    return getOrdersForRole(allOrders, activeRole, currentUser);
+  }, [allOrders, activeRole, currentUser]);
+
+  const roleHauls = useMemo(() => {
+    return getHaulsForRole(haulRequests, activeRole, currentUser);
+  }, [haulRequests, activeRole, currentUser]);
+
   const roleUnits = getUnitsForRole(units, activeRole);
 
   // Admin Truck Intelligence Open
@@ -993,6 +1004,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       shipperPhone: shipperPh,
       shipperName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME,
       shipperEmail: currentUser?.email || LOGGED_IN_CUSTOMER_EMAIL,
+      customerEmail: currentUser?.email || LOGGED_IN_CUSTOMER_EMAIL,
       circuitFile: newBooking.circuitFile || 'qpiai_circuit_1793229999.qasm',
       netSavings: newBooking.netSavings || 3400,
       status: isCustomer ? 'PENDING_APPROVAL' : (newBooking.status || 'CONFIRMED'),
@@ -1009,6 +1021,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       id: `REQ-${fullBooking.id.replace('CRG-BK-', '').replace('CRG-', '')}`,
       customerCompany: shipperCo,
       customerName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME,
+      customerEmail: currentUser?.email,
       origin: fullBooking.origin,
       destination: fullBooking.destination,
       cargoCategory: fullBooking.department,
@@ -1202,7 +1215,9 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const handleCustomerBookingConfirmed = async (newConsignment: Consignment) => {
     const withCompany = {
       ...newConsignment,
-      customerCompany: currentUser?.company || LOGGED_IN_CUSTOMER_COMPANY,
+      customerEmail: currentUser?.email,
+      shipperEmail: currentUser?.email || newConsignment.shipperEmail,
+      customerCompany: currentUser?.company || newConsignment.shipperCompany || LOGGED_IN_CUSTOMER_COMPANY,
       customerName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME
     };
     setAllConsignments((prev) => [withCompany, ...prev]);
@@ -1212,6 +1227,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       id: `REQ-${newConsignment.id.replace('CRG-', '')}`,
       customerCompany: withCompany.customerCompany,
       customerName: withCompany.customerName,
+      customerEmail: currentUser?.email,
       origin: newConsignment.origin,
       destination: newConsignment.destination,
       cargoCategory: newConsignment.department,
@@ -1522,7 +1538,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           onOpenRoleSwitcher={() => setRoleSwitcherModalOpen(true)}
           activeTab={activeTab}
           onSelectTab={setActiveTab}
-          bookingCount={allConsignments.length}
+          bookingCount={activeRole === 'admin' ? allConsignments.length : roleShipments.length}
           customerShipmentsCount={roleShipments.filter(c => c.status !== 'DELIVERED').length}
           purchasedFleetCount={roleOrders.length}
           pendingRequestsCount={
@@ -1655,7 +1671,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                       activeTab === 'marketplace' ? 'FLEET' : 
                       activeTab === 'customer-book' ? 'HAUL' : 'CARGO'
                     }
-                    consignments={allConsignments}
+                    consignments={activeRole === 'admin' ? allConsignments : roleShipments}
                     onSelectConsignment={setSelectedConsignment}
                     onOpenNewBookingModal={(carrier) => {
                       if (carrier) setSelectedCarrierCompany(carrier);
@@ -1878,6 +1894,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         onClose={() => setPaymentModalOpen(false)}
         onPaymentSuccess={handlePaymentSuccess}
         userRole={activeRole}
+        currentUser={currentUser}
       />
 
       {/* Slide-In Master-Detail Drawer for Selected Consignment */}

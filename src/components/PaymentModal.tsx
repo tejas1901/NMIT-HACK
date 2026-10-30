@@ -27,6 +27,7 @@ interface PaymentModalProps {
   onClose: () => void;
   onPaymentSuccess: (order: PurchasedTruckOrder | null, metadata?: Record<string, any>) => void;
   userRole?: 'admin' | 'customer';
+  currentUser?: UserProfile;
 }
 
 type PaymentMethod = 'CARD' | 'UPI' | 'CRYPTO_ESCROW';
@@ -37,7 +38,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   item,
   onClose,
   onPaymentSuccess,
-  userRole = 'customer'
+  userRole = 'customer',
+  currentUser
 }) => {
   if (!isOpen || !item) return null;
 
@@ -128,8 +130,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         status: 'PRE-DELIVERY_INSPECTION',
         vin: generatedVin,
         assignedDepot: 'JNPT Intermodal Port Hub #4',
-        buyerName: cardName || (userRole === 'admin' ? 'Operations Admin' : 'Customer'),
-        buyerCompany: userRole === 'admin' ? 'FreightIQ Enterprise Fleet Operations' : 'Vikas Intermodal Logistics Corp',
+        buyerName: cardName || currentUser?.full_name || (userRole === 'admin' ? 'Operations Admin' : 'Customer'),
+        buyerCompany: currentUser?.company || (userRole === 'admin' ? 'FreightIQ Enterprise Fleet Operations' : 'Commercial Shipper'),
+        buyerEmail: currentUser?.email,
         invoiceNumber: generatedInvoice
       } : null;
 

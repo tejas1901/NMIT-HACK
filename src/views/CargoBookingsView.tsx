@@ -603,7 +603,24 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/70">
-                {filteredConsignments.map((item) => (
+                {filteredConsignments.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-12 text-center text-[#5B6B86]">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Package className="w-10 h-10 text-[#5B6B86]/40" />
+                        <p className="font-bold text-[#08193A] text-sm">No cargo bookings yet</p>
+                        <p className="text-xs max-w-sm">Your customer workspace starts fresh at 0. Click "Book New Cargo" to create your first shipment.</p>
+                        <button
+                          onClick={() => onOpenNewBookingModal()}
+                          className="mt-2 px-4 py-1.5 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all cursor-pointer shadow-xs"
+                        >
+                          + Book New Cargo
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredConsignments.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => onSelectConsignment(item)}
@@ -663,9 +680,21 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
                       <ArrowUpRight className="w-4 h-4 text-[#5B6B86] opacity-0 group-hover:opacity-100 transition-opacity" />
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
+          </div>
+        ) : filteredConsignments.length === 0 ? (
+          <div className="p-8 rounded-2xl bg-white/60 border border-white/80 text-center text-[#5B6B86] space-y-2">
+            <Package className="w-10 h-10 text-[#5B6B86]/40 mx-auto" />
+            <p className="font-bold text-[#08193A] text-sm">No cargo bookings yet</p>
+            <p className="text-xs">Your customer workspace starts fresh at 0. Click "Book New Cargo" to start.</p>
+            <button
+              onClick={() => onOpenNewBookingModal()}
+              className="mt-2 px-4 py-1.5 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all cursor-pointer shadow-xs"
+            >
+              + Book New Cargo
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

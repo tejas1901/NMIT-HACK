@@ -203,6 +203,7 @@ export interface PurchasedTruckOrder {
   assignedDepot: string;
   buyerName: string;
   buyerCompany: string;
+  buyerEmail?: string;
   invoiceNumber: string;
 }
 

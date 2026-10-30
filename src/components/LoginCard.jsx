@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { authenticateCustomer, registerCustomer, validatePasswordStrength } from '../services/customerAuth'
 
 /* Professional SVG Icons (No Emojis) */
 const UserIcon = () => (
@@ -97,7 +98,10 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     if (!regForm.name.trim()) e.name = 'Full name is required.'
     if (!regForm.company.trim()) e.company = 'Company / Organization name is required.'
     if (!regForm.email.includes('@')) e.email = 'Please enter a valid work email.'
-    if (regForm.password.length < 4) e.password = 'Password must be at least 4 characters.'
+    const pwCheck = validatePasswordStrength(regForm.password)
+    if (!pwCheck.valid) {
+      e.password = pwCheck.error || 'Password must be at least 8 characters and contain both letters and numbers.'
+    }
     return e
   }
 
@@ -140,91 +144,43 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
       }
     }
 
+    // 2. Customer Database Credential Check
     try {
-      // 2. Gateway API endpoint
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, role: role.toUpperCase() })
-        })
-        const data = await res.json()
+      const authResult = await authenticateCustomer(normalizedEmail, password);
 
-        if (res.ok && data.success) {
-          const userObj = {
-            ...data.user,
-            role: role.toUpperCase(),
-            role_label: role === 'admin' ? 'Master Administrator' : 'Verified Customer'
-          }
-          setSuccess(`Authenticated as ${userObj.role_label}. Launching workspace...`)
-          localStorage.setItem('freightiq_user', JSON.stringify(userObj))
-          localStorage.setItem('freightiq_token', data.access_token || '')
-          setTimeout(() => {
-            if (onLoginSuccess) onLoginSuccess(userObj)
-          }, 300)
-          return
-        }
-      } catch (gatewayErr) {
-        console.warn('Gateway auth notice:', gatewayErr)
+      if (authResult.success && authResult.user) {
+        setSuccess(`Authenticated as ${authResult.user.full_name} (${authResult.user.company}). Launching workspace...`);
+        localStorage.setItem('freightiq_user', JSON.stringify(authResult.user));
+        localStorage.setItem('freightiq_token', 'freightiq-jwt-' + Date.now());
+        localStorage.setItem('freightiq_active_role', 'customer');
+        sessionStorage.setItem('freightiq_active_role', 'customer');
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(authResult.user);
+        }, 300);
+        return;
       }
 
-      // 3. Direct Supabase authentication fallback
-      try {
-        const { data: sbData, error: sbErr } = await supabase.auth.signInWithPassword({ email, password })
-        if (!sbErr && sbData.user) {
-          const u = {
-            id: sbData.user.id,
-            email: sbData.user.email,
-            full_name: email.split('@')[0],
-            role: role.toUpperCase(),
-            role_label: role === 'admin' ? 'Master Administrator' : 'Verified Customer'
-          }
-          setSuccess(`Authenticated as ${u.role_label}. Launching workspace...`)
-          localStorage.setItem('freightiq_user', JSON.stringify(u))
-          setTimeout(() => {
-            if (onLoginSuccess) onLoginSuccess(u)
-          }, 300)
-          return
-        }
-      } catch (sbEx) {
-        console.warn('Supabase auth notice:', sbEx)
+      if (authResult.notFound) {
+        // User does NOT exist in database -> Pop message and automatically redirect to register page!
+        setErrors({ general: 'No customer account found with this email. Redirecting to registration page...' });
+        setRegForm((prev) => ({ ...prev, email: normalizedEmail }));
+        setTimeout(() => {
+          setViewMode('register');
+        }, 800);
+        return;
       }
 
-      // 4. Fallback demonstration user for smooth testing
-      const fallbackUser = {
-        id: role === 'admin' ? 'usr-admin' : 'usr-customer-demo',
-        email,
-        full_name: role === 'admin' ? 'Admin' : (email.split('@')[0] || 'Ananya Verma'),
-        company: role === 'admin' ? 'FreightIQ Command' : 'Vikas Intermodal Corp',
-        role: role.toUpperCase(),
-        role_label: role === 'admin' ? 'Master Administrator' : 'Verified Customer'
-      }
-      localStorage.setItem('freightiq_user', JSON.stringify(fallbackUser))
-      setSuccess(`Signed in as ${fallbackUser.role_label}. Launching workspace...`)
-      setTimeout(() => {
-        if (onLoginSuccess) onLoginSuccess(fallbackUser)
-      }, 300)
-    } catch {
-      // Secure local session fallback for demonstration
-      const fallbackUser = {
-        id: role === 'admin' ? 'usr-admin' : 'usr-customer-demo',
-        email,
-        full_name: role === 'admin' ? 'Admin' : (email.split('@')[0] || 'Ananya Verma'),
-        company: role === 'admin' ? 'FreightIQ Command' : 'Vikas Intermodal Corp',
-        role: role.toUpperCase(),
-        role_label: role === 'admin' ? 'Master Administrator' : 'Verified Customer'
-      }
-      localStorage.setItem('freightiq_user', JSON.stringify(fallbackUser))
-      setSuccess(`Signed in as ${fallbackUser.role_label}. Launching workspace...`)
-      setTimeout(() => {
-        if (onLoginSuccess) onLoginSuccess(fallbackUser)
-      }, 300)
+      // Password mismatch or credentials invalid
+      setErrors({ general: authResult.error || 'Invalid credentials. Please verify your email and password.' });
+    } catch (authErr) {
+      console.warn('Customer auth error:', authErr);
+      setErrors({ general: 'Authentication service encountered an error. Please try again.' });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  // Handle Customer Registration Submit (Customer CAN create accounts)
+  // Handle Customer Registration Submit
   const handleRegisterSubmit = async (ev) => {
     ev.preventDefault()
     if (role === 'admin') {
@@ -238,136 +194,50 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     setLoading(true)
 
     try {
-      // 1. Real backend registration via Vercel Gateway
-      let backendSuccess = false;
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: regForm.email,
-            password: regForm.password,
-            full_name: regForm.name,
-            company: regForm.company,
-            corridor: regForm.corridor,
-            role: 'CUSTOMER'
-          })
-        })
-        const data = await res.json()
-
-        if (res.ok && data.success) {
-          backendSuccess = true;
-          const u = { 
-            ...data.user, 
-            phone: regForm.phone || '+91 98201 55194',
-            gstin: regForm.gstin || '27AABCV1234F1Z5',
-            role: 'CUSTOMER', 
-            role_label: 'Verified Customer' 
-          }
-          try {
-            await supabase.from('profiles').upsert({
-              id: u.id,
-              email: regForm.email,
-              full_name: regForm.name,
-              company: regForm.company,
-              phone: u.phone,
-              gstin: u.gstin,
-              corridor: regForm.corridor,
-              role: 'CUSTOMER',
-              role_label: 'Verified Customer'
-            });
-          } catch {}
-          setSuccess(`Account registered successfully for ${regForm.name}. Entering workspace...`)
-          localStorage.setItem('freightiq_user', JSON.stringify(u))
-          localStorage.setItem('freightiq_token', data.access_token || '')
-          setTimeout(() => {
-            if (onLoginSuccess) onLoginSuccess(u)
-          }, 600)
-          return
-        }
-      } catch (beErr) {
-        console.warn('Backend register notice:', beErr);
-      }
-
-      // 2. Direct Supabase Registration & Persistent Profiles Database Sync
-      let registeredUser = null;
-      try {
-        const { data: sbData, error: sbError } = await supabase.auth.signUp({
-          email: regForm.email,
-          password: regForm.password,
-          options: {
-            data: {
-              full_name: regForm.name,
-              company: regForm.company,
-              phone: regForm.phone,
-              gstin: regForm.gstin,
-              corridor: regForm.corridor,
-              role: 'CUSTOMER'
-            }
-          }
-        })
-        if (!sbError && sbData?.user) {
-          registeredUser = sbData.user;
-        }
-      } catch (authErr) {
-        console.warn('Supabase auth signUp notice:', authErr);
-      }
-
-      const u = {
-        id: registeredUser?.id || `usr-${Date.now().toString().slice(-6)}`,
+      const regResult = await registerCustomer({
         email: regForm.email,
+        password: regForm.password,
         full_name: regForm.name,
         company: regForm.company,
-        phone: regForm.phone || '+91 98201 55194',
-        gstin: regForm.gstin || '27AABCV1234F1Z5',
-        corridor: regForm.corridor,
-        role: 'CUSTOMER',
-        role_label: 'Verified Customer'
+        phone: regForm.phone,
+        gstin: regForm.gstin,
+        corridor: regForm.corridor
+      });
+
+      if (!regResult.success) {
+        if (regResult.code === 'USER_EXISTS') {
+          // Email already exists -> pop message and redirect to sign in!
+          setErrors({ general: 'User exists with this email address. Please sign in instead.' });
+          setEmail(regForm.email.trim());
+          setViewMode('login');
+          return;
+        }
+
+        if (regResult.code === 'WEAK_PASSWORD') {
+          setErrors({ password: regResult.error || 'Password must be at least 8 characters long and contain both letters and numbers.' });
+          return;
+        }
+
+        setErrors({ general: regResult.error || 'Registration failed. Please try again.' });
+        return;
       }
 
-      // Store in Supabase profiles database table directly
-      try {
-        await supabase.from('profiles').upsert({
-          id: u.id,
-          email: u.email,
-          full_name: u.full_name,
-          company: u.company,
-          phone: u.phone,
-          gstin: u.gstin,
-          corridor: u.corridor,
-          role: 'CUSTOMER',
-          role_label: 'Verified Customer',
-          created_at: new Date().toISOString()
-        });
-      } catch (dbErr) {
-        console.warn('Direct Supabase profiles write notice:', dbErr);
+      // Successful Registration
+      if (regResult.user) {
+        setSuccess(`Customer account created successfully for ${regResult.user.full_name}! Launching your fresh workspace...`);
+        localStorage.setItem('freightiq_user', JSON.stringify(regResult.user));
+        localStorage.setItem('freightiq_token', 'freightiq-jwt-' + Date.now());
+        localStorage.setItem('freightiq_active_role', 'customer');
+        sessionStorage.setItem('freightiq_active_role', 'customer');
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(regResult.user);
+        }, 600);
       }
-
-      setSuccess(`Customer account registered for ${regForm.name} and synced to Supabase. Entering workspace...`)
-      localStorage.setItem('freightiq_user', JSON.stringify(u))
-      setTimeout(() => {
-        if (onLoginSuccess) onLoginSuccess(u)
-      }, 600)
-    } catch {
-      // Offline fallback
-      const u = {
-        id: `usr-${Date.now().toString().slice(-6)}`,
-        email: regForm.email,
-        full_name: regForm.name,
-        company: regForm.company,
-        phone: regForm.phone || '+91 98201 55194',
-        gstin: regForm.gstin || '27AABCV1234F1Z5',
-        corridor: regForm.corridor,
-        role: 'CUSTOMER',
-        role_label: 'Verified Customer'
-      }
-      localStorage.setItem('freightiq_user', JSON.stringify(u))
-      setSuccess(`Customer profile initialized for ${regForm.name}. Entering workspace...`)
-      setTimeout(() => {
-        if (onLoginSuccess) onLoginSuccess(u)
-      }, 600)
+    } catch (regErr) {
+      console.warn('Registration error:', regErr);
+      setErrors({ general: 'Registration service encountered an error. Please try again.' });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -522,12 +392,12 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">Password (Min 8 chars, letters & numbers)</label>
             <div className="input-wrap">
               <input
                 type={showPw ? 'text' : 'password'}
                 className={`form-input${errors.password ? ' is-error' : ''}`}
-                placeholder="Minimum 4 characters"
+                placeholder="Min 8 chars with letters & numbers (e.g. Acme2026)"
                 value={regForm.password}
                 onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
                 style={{ paddingRight: '2.5rem' }}
