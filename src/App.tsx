@@ -694,7 +694,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-token': token,
+          'x-admin-token': token || '',
         },
       })
         .then((res) => (res.ok ? res.json() : null))
@@ -815,7 +815,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   // Write to Audit Log (Tamper-evident record)
   const handleWriteAuditLog = (
     action: string,
-    category: 'OVERRIDE' | 'PRICING' | 'TELEMETRY' | 'SECURITY' | 'ASSIGNMENT',
+    category: AuditLogEntry['category'],
     details: string
   ) => {
     const newEntry: AuditLogEntry = {

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 
-export const LiquidBackground: React.FC = () => {
+export const LiquidBackground: React.FC = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000 });
 
@@ -16,20 +16,23 @@ export const LiquidBackground: React.FC = () => {
 
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      const newW = window.innerWidth;
+      const newH = window.innerHeight;
+      // Only resize canvas if window viewport actually changed to prevent buffer clearing flicker
+      if (canvas.width !== newW || canvas.height !== newH) {
+        width = canvas.width = newW;
+        height = canvas.height = newH;
+      }
     };
 
-    window.addEventListener('resize', handleResize);
-    const ro = new ResizeObserver(() => handleResize());
-    ro.observe(document.body);
+    window.addEventListener('resize', handleResize, { passive: true });
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = e.clientX;
       mouseRef.current.targetY = e.clientY;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     // Particle nodes for subtle constellation / freight routing grid
     const PARTICLE_COUNT = Math.min(48, Math.floor((width * height) / 28000));
@@ -124,7 +127,6 @@ export const LiquidBackground: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
-      ro.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -160,4 +162,4 @@ export const LiquidBackground: React.FC = () => {
       <canvas ref={canvasRef} className="absolute inset-0 opacity-65" />
     </div>
   );
-};
+});

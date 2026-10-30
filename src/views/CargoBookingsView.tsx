@@ -18,7 +18,8 @@ import {
   Clock,
   ShieldCheck,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  Package
 } from 'lucide-react';
 import { Consignment, RiskLevel } from '../types';
 import { formatInr } from '../lib/currency';

@@ -18,7 +18,7 @@ import {
   Sparkles,
   RefreshCw
 } from 'lucide-react';
-import { CheckoutItem, PurchasedTruckOrder } from '../types';
+import { CheckoutItem, PurchasedTruckOrder, UserProfile } from '../types';
 import { formatInr } from '../lib/currency';
 
 interface PaymentModalProps {

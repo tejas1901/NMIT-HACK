@@ -245,13 +245,15 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
           subject: `[Gmail: ${m.company}] ${m.subject}`,
           text: `FROM: ${m.senderName} <${m.senderEmail}> (${m.company}, Tel: ${m.phone})\nCONTAINER: ${m.containerId || 'N/A'}\nREF: ${m.relatedRef || 'N/A'}\n\n${m.body}`,
           answerKey: {
-            disposition: 'EXTRACT' as DocumentDisposition,
+            disposition: 'ESCALATE' as DocumentDisposition,
             blockers: [
               {
                 containerId: m.containerId || 'MSCU-LIVE',
-                blockerType: (m.category === 'CUSTOMS_DISPUTE' ? 'CUSTOMS_DUTY_UNPAID' : 'DEMURRAGE_RISK') as ExceptionBlockerType,
+                type: (m.category === 'CUSTOMS_DISPUTE' ? 'CUSTOMS_HOLD' : 'FREE_TIME_EXPIRING') as ExceptionBlockerType,
                 evidenceQuote: m.body.slice(0, 120),
-                deadlineHoursBeforePenalty: 4
+                penaltyStart: 'Thu 29 Oct 18:00',
+                actionDeadline: 'Thu 29 Oct 16:30',
+                owner: 'Operations Lead (Admin)'
               }
             ],
             note: `Ingested live from admin@gmail.com Google Mail inbox.`
@@ -282,8 +284,8 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
   // Promote inbound email to live blocker card
   const handleIngestEmailAsBlocker = (msg: typeof gmailMessages[0]) => {
     const blockerType: ExceptionBlockerType = 
-      msg.category === 'CUSTOMS_DISPUTE' ? 'CUSTOMS_DUTY_UNPAID' : 
-      msg.category === 'FLEET_RENTAL' ? 'GATE_PASS_MISSING' : 'DEMURRAGE_RISK';
+      msg.category === 'CUSTOMS_DISPUTE' ? 'CUSTOMS_HOLD' : 
+      msg.category === 'FLEET_RENTAL' ? 'MISSING_DOCUMENT' : 'FREE_TIME_EXPIRING';
 
     const newCard: BlockerCardItem = {
       id: `card-${msg.id.toLowerCase()}-${Date.now().toString().slice(-4)}`,
@@ -307,11 +309,16 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
       avoidableCostInr: msg.estimatedRiskInr,
       costFormula: `Avoidable loss: ₹${msg.estimatedRiskInr.toLocaleString()} penalty averted by immediate admin action`,
       lane: 'ACT_NOW',
+      disposition: 'ESCALATE',
+      rawDocumentText: msg.body,
+      maskedCount: 0,
       activityLog: [
         {
+          id: `act-${Date.now()}`,
           timestamp: 'Just now',
           actor: 'Google Mail Ingestion Engine',
-          action: `Promoted inbound customer inquiry from ${msg.senderEmail} into Act Now queue.`
+          action: `Promoted inbound customer inquiry from ${msg.senderEmail} into Act Now queue.`,
+          details: 'Direct ingestion from Gmail API'
         }
       ]
     };

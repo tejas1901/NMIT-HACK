@@ -14,7 +14,8 @@ import {
   DollarSign, 
   Leaf, 
   Zap,
-  Info
+  Info,
+  AlertTriangle
 } from 'lucide-react';
 import { CheckoutItem, Consignment } from '../types';
 import { formatInr } from '../lib/currency';

@@ -99,6 +99,7 @@ export interface Consignment {
   notes?: string;
   customerCompany?: string;
   customerName?: string;
+  customerEmail?: string;
   shipperCompany?: string;
   shipperAddress?: string;
   shipperPhone?: string;
@@ -220,6 +221,7 @@ export interface TruckListing {
   vinPrefix: string;
   reservationStatus?: 'AVAILABLE' | 'RESERVED' | 'SOLD';
   reservedBy?: string;
+  outOfStock?: boolean;
 }
 
 export interface PurchasedTruckOrder {
@@ -256,6 +258,7 @@ export interface HaulRequest {
   id: string; // e.g. REQ-9014
   customerCompany: string;
   customerName: string;
+  customerEmail?: string;
   origin: string;
   destination: string;
   cargoCategory: string;
@@ -291,7 +294,7 @@ export interface AuditLogEntry {
   actorEmail: string;
   actorRole: 'admin' | 'customer' | 'system';
   action: string;
-  category: 'OVERRIDE' | 'PRICING' | 'TELEMETRY' | 'SECURITY' | 'ASSIGNMENT';
+  category: 'OVERRIDE' | 'PRICING' | 'TELEMETRY' | 'SECURITY' | 'ASSIGNMENT' | 'INVENTORY' | 'FLEET';
   details: string;
   ipAddress: string;
   severity: 'INFO' | 'WARNING' | 'CRITICAL';

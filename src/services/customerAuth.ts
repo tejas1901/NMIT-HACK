@@ -285,14 +285,20 @@ export async function authenticateCustomer(
       // Also cache in local registry for instant future sessions
       const currentList = getRegisteredCustomers();
       if (!currentList.some((c) => c.email.toLowerCase() === normalized)) {
-        saveRegisteredCustomers([
-          ...currentList,
-          {
-            ...userProfile,
-            password,
-            created_at: new Date().toISOString()
-          }
-        ]);
+        const newCustomer: RegisteredCustomer = {
+          id: userProfile.id,
+          email: userProfile.email,
+          full_name: userProfile.full_name,
+          company: userProfile.company,
+          phone: userProfile.phone || '+91 98201 55194',
+          gstin: userProfile.gstin || '',
+          corridor: userProfile.corridor || 'NH-48',
+          role: 'CUSTOMER',
+          role_label: 'Verified Customer',
+          password,
+          created_at: new Date().toISOString()
+        };
+        saveRegisteredCustomers([...currentList, newCustomer]);
       }
 
       return {
