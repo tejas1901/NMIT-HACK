@@ -4,8 +4,9 @@ import LoginCard from '../components/LoginCard';
 import Modal from '../components/Modal';
 import '../App.css';
 
-export function LoginPage({ onNavigateLanding, onLoginSuccess, initialRole = 'customer' }) {
+export function LoginPage({ onNavigateLanding, onLoginSuccess, initialRole = 'customer', initialViewMode = 'login' }) {
   const [modal, setModal] = useState(null);
+  const [currentViewMode, setCurrentViewMode] = useState(initialViewMode);
 
   return (
     <div className="login-page">
@@ -105,9 +106,11 @@ export function LoginPage({ onNavigateLanding, onLoginSuccess, initialRole = 'cu
         </div>
 
         {/* Dual Role Professional Login card */}
-        <div className="login-card-wrap">
+        <div className={`login-card-wrap ${currentViewMode === 'register' ? 'is-register' : ''}`}>
           <LoginCard
             initialRole={initialRole}
+            initialViewMode={initialViewMode}
+            onViewModeChange={setCurrentViewMode}
             onLoginSuccess={onLoginSuccess}
             onCreateAccount={(r) => setModal({ type: 'register', role: r || 'customer' })}
             onForgotPassword={(r) => setModal({ type: 'forgot', role: r || 'customer' })}

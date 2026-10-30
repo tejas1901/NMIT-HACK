@@ -45,9 +45,17 @@ const EyeIcon = ({ open }) =>
     </svg>
   )
 
-export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSuccess, initialRole = 'customer' }) {
+export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSuccess, initialRole = 'customer', initialViewMode = 'login', onViewModeChange }) {
   const [role, setRole] = useState(initialRole || 'customer') // 'customer' | 'admin'
-  const [viewMode, setViewMode] = useState('login') // 'login' | 'register' (customer only)
+  const [viewMode, setViewMode] = useState(initialViewMode || 'login') // 'login' | 'register' (customer only)
+  
+  useEffect(() => {
+    if (initialViewMode) setViewMode(initialViewMode);
+  }, [initialViewMode]);
+
+  useEffect(() => {
+    if (onViewModeChange) onViewModeChange(viewMode);
+  }, [viewMode, onViewModeChange]);
   
   // Login fields (Empty by default — NEVER show/pre-fill admin credentials)
   const [email, setEmail] = useState('')
@@ -242,7 +250,7 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
   }
 
   return (
-    <div className="login-card">
+    <div className={`login-card ${role === 'customer' && viewMode === 'register' ? 'card-register-view' : ''}`}>
       {/* Decorative ambient background */}
       <div className="card-deco">
         <svg viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -323,72 +331,92 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
       {/* ───────────────── VIEW MODE: CUSTOMER REGISTRATION ───────────────── */}
       {role === 'customer' && viewMode === 'register' ? (
         <form onSubmit={handleRegisterSubmit} noValidate className="register-form">
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <div className="input-wrap">
-              <input
-                type="text"
-                className={`form-input${errors.name ? ' is-error' : ''}`}
-                placeholder="Ramesh Kumar"
-                value={regForm.name}
-                onChange={(e) => setRegForm({ ...regForm, name: e.target.value })}
-              />
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Full Name</label>
+              <div className="input-wrap">
+                <input
+                  type="text"
+                  className={`form-input${errors.name ? ' is-error' : ''}`}
+                  placeholder="Ramesh Kumar"
+                  value={regForm.name}
+                  onChange={(e) => setRegForm({ ...regForm, name: e.target.value })}
+                />
+              </div>
+              {errors.name && <span className="field-error">{errors.name}</span>}
             </div>
-            {errors.name && <span className="field-error">{errors.name}</span>}
+
+            <div className="form-group">
+              <label className="form-label">Company / Shipper</label>
+              <div className="input-wrap">
+                <input
+                  type="text"
+                  className={`form-input${errors.company ? ' is-error' : ''}`}
+                  placeholder="Deccan Logistics Ltd"
+                  value={regForm.company}
+                  onChange={(e) => setRegForm({ ...regForm, company: e.target.value })}
+                />
+              </div>
+              {errors.company && <span className="field-error">{errors.company}</span>}
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Company / Shipper Name</label>
-            <div className="input-wrap">
-              <input
-                type="text"
-                className={`form-input${errors.company ? ' is-error' : ''}`}
-                placeholder="Deccan Precision Logistics Ltd"
-                value={regForm.company}
-                onChange={(e) => setRegForm({ ...regForm, company: e.target.value })}
-              />
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Phone (+91)</label>
+              <div className="input-wrap">
+                <input
+                  type="tel"
+                  className="form-input"
+                  placeholder="+91 98201 55194"
+                  value={regForm.phone}
+                  onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+                />
+              </div>
             </div>
-            {errors.company && <span className="field-error">{errors.company}</span>}
+
+            <div className="form-group">
+              <label className="form-label">GSTIN / Tax ID (Optional)</label>
+              <div className="input-wrap">
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="27AABCV1234F1Z5"
+                  value={regForm.gstin}
+                  onChange={(e) => setRegForm({ ...regForm, gstin: e.target.value.toUpperCase() })}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Phone Number (+91)</label>
-            <div className="input-wrap">
-              <input
-                type="tel"
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label className="form-label">Work Email Address</label>
+              <div className="input-wrap">
+                <input
+                  type="email"
+                  className={`form-input${errors.email ? ' is-error' : ''}`}
+                  placeholder="client@company.com"
+                  value={regForm.email}
+                  onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
+                />
+              </div>
+              {errors.email && <span className="field-error">{errors.email}</span>}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Primary Cargo Corridor</label>
+              <select
                 className="form-input"
-                placeholder="+91 98201 55194"
-                value={regForm.phone}
-                onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
-              />
+                value={regForm.corridor}
+                onChange={(e) => setRegForm({ ...regForm, corridor: e.target.value })}
+              >
+                <option value="NH-48 (Bengaluru - Mumbai JNPT)">NH-48 (Bengaluru - Mumbai JNPT)</option>
+                <option value="NH-44 (Bengaluru - Hyderabad)">NH-44 (Bengaluru - Hyderabad)</option>
+                <option value="Chennai Port Corridors">Chennai Port Corridors</option>
+                <option value="Mundra Intermodal Maritime">Mundra Maritime Hub</option>
+              </select>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">GSTIN / Tax ID (Optional)</label>
-            <div className="input-wrap">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="27AABCV1234F1Z5"
-                value={regForm.gstin}
-                onChange={(e) => setRegForm({ ...regForm, gstin: e.target.value.toUpperCase() })}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Work Email Address</label>
-            <div className="input-wrap">
-              <input
-                type="email"
-                className={`form-input${errors.email ? ' is-error' : ''}`}
-                placeholder="client@company.com"
-                value={regForm.email}
-                onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-              />
-            </div>
-            {errors.email && <span className="field-error">{errors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -414,21 +442,7 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
             {errors.password && <span className="field-error">{errors.password}</span>}
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Primary Cargo Corridor</label>
-            <select
-              className="form-input"
-              value={regForm.corridor}
-              onChange={(e) => setRegForm({ ...regForm, corridor: e.target.value })}
-            >
-              <option value="NH-48 (Bengaluru - Mumbai JNPT)">NH-48 (Bengaluru - Mumbai JNPT)</option>
-              <option value="NH-44 (Bengaluru - Hyderabad)">NH-44 (Bengaluru - Hyderabad)</option>
-              <option value="Chennai Port Corridors">Chennai Port Intermodal Corridors</option>
-              <option value="Mundra Intermodal Maritime">Mundra Maritime Hub</option>
-            </select>
-          </div>
-
-          <button type="submit" className="btn-login" disabled={loading}>
+          <button type="submit" className="btn-login" disabled={loading} style={{ marginTop: '0.25rem' }}>
             {loading ? 'Creating Account…' : 'Register Customer Account →'}
           </button>
 

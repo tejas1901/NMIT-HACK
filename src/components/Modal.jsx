@@ -717,7 +717,12 @@ function RegisterModal({ onClose, onRegisterSuccess }) {
     if (!form.name.trim()) e.name = 'Full name is required.'
     if (!form.company.trim()) e.company = 'Company name is required.'
     if (!form.email.includes('@')) e.email = 'Please enter a valid email address.'
-    if (form.password.length < 4) e.password = 'Password must be at least 4 characters.'
+    const pw = form.password || ''
+    const hasAlpha = /[a-zA-Z]/.test(pw)
+    const hasNum = /[0-9]/.test(pw)
+    if (pw.length < 8 || !hasAlpha || !hasNum) {
+      e.password = 'Password must be at least 8 characters and include both letters and numbers.'
+    }
     return e
   }
 
@@ -849,56 +854,74 @@ function RegisterModal({ onClose, onRegisterSuccess }) {
       {errors.general && <span className="field-error" style={{ display: 'block', marginBottom: '0.75rem' }}>{errors.general}</span>}
 
       <form onSubmit={handleSubmit} noValidate>
-        <div className="form-group">
-          <label className="form-label">Full Name</label>
-          <div className="input-wrap">
-            <input
-              type="text"
-              className={`form-input${errors.name ? ' is-error' : ''}`}
-              placeholder="Ramesh Kumar"
-              value={form.name}
-              onChange={set('name')}
-            />
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label className="form-label">Full Name</label>
+            <div className="input-wrap">
+              <input
+                type="text"
+                className={`form-input${errors.name ? ' is-error' : ''}`}
+                placeholder="Ramesh Kumar"
+                value={form.name}
+                onChange={set('name')}
+              />
+            </div>
+            {errors.name && <span className="field-error">{errors.name}</span>}
           </div>
-          {errors.name && <span className="field-error">{errors.name}</span>}
+
+          <div className="form-group">
+            <label className="form-label">Company / Shipper</label>
+            <div className="input-wrap">
+              <input
+                type="text"
+                className={`form-input${errors.company ? ' is-error' : ''}`}
+                placeholder="Deccan Precision Tools Ltd"
+                value={form.company}
+                onChange={set('company')}
+              />
+            </div>
+            {errors.company && <span className="field-error">{errors.company}</span>}
+          </div>
+        </div>
+
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label className="form-label">Work Email</label>
+            <div className="input-wrap">
+              <input
+                type="email"
+                className={`form-input${errors.email ? ' is-error' : ''}`}
+                placeholder="client@company.com"
+                value={form.email}
+                onChange={set('email')}
+                autoComplete="email"
+              />
+            </div>
+            {errors.email && <span className="field-error">{errors.email}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Primary Cargo Corridor</label>
+            <select
+              className="form-input"
+              value={form.corridor}
+              onChange={set('corridor')}
+            >
+              <option value="NH-48 (Bengaluru - Mumbai JNPT)">NH-48 (Bengaluru - Mumbai JNPT)</option>
+              <option value="NH-44 (Bengaluru - Hyderabad)">NH-44 (Bengaluru - Hyderabad)</option>
+              <option value="Chennai Port Corridors">Chennai Port Corridors</option>
+              <option value="Mundra Intermodal Maritime">Mundra Maritime Hub</option>
+            </select>
+          </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label">Company / Shipper Name</label>
-          <div className="input-wrap">
-            <input
-              type="text"
-              className={`form-input${errors.company ? ' is-error' : ''}`}
-              placeholder="Deccan Precision Tools Ltd"
-              value={form.company}
-              onChange={set('company')}
-            />
-          </div>
-          {errors.company && <span className="field-error">{errors.company}</span>}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Customer Work Email</label>
-          <div className="input-wrap">
-            <input
-              type="email"
-              className={`form-input${errors.email ? ' is-error' : ''}`}
-              placeholder="client@company.com"
-              value={form.email}
-              onChange={set('email')}
-              autoComplete="email"
-            />
-          </div>
-          {errors.email && <span className="field-error">{errors.email}</span>}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Password</label>
+          <label className="form-label">Password (Min 8 chars, letters & numbers)</label>
           <div className="input-wrap">
             <input
               type={showPw ? 'text' : 'password'}
               className={`form-input${errors.password ? ' is-error' : ''}`}
-              placeholder="Minimum 4 characters"
+              placeholder="Min 8 chars with letters & numbers"
               value={form.password}
               onChange={set('password')}
               autoComplete="new-password"
@@ -914,20 +937,6 @@ function RegisterModal({ onClose, onRegisterSuccess }) {
             </button>
           </div>
           {errors.password && <span className="field-error">{errors.password}</span>}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Primary Cargo Corridor</label>
-          <select
-            className="form-input"
-            value={form.corridor}
-            onChange={set('corridor')}
-          >
-            <option value="NH-48 (Bengaluru - Mumbai JNPT)">NH-48 (Bengaluru - Mumbai JNPT)</option>
-            <option value="NH-44 (Bengaluru - Hyderabad)">NH-44 (Bengaluru - Hyderabad)</option>
-            <option value="Chennai Port Corridors">Chennai Port Intermodal Corridors</option>
-            <option value="Mundra Intermodal Maritime">Mundra Maritime Hub</option>
-          </select>
         </div>
 
         <button type="submit" className="btn-modal-primary" disabled={loading} style={{ marginTop: '0.5rem' }}>

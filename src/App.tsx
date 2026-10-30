@@ -191,6 +191,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const initialUrlPage = searchParams?.get('page') || 'landing';
   const [page, setPage] = useState<string>(initialUrlPage);
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(initialRole);
+  const [loginViewMode, setLoginViewMode] = useState<'login' | 'register'>('login');
 
   // Initial login role tracking (Only users who initially authenticated as admin can switch roles)
   const [initialLoginRole, setInitialLoginRole] = useState<'admin' | 'customer'>(() => {
@@ -1663,8 +1664,9 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     return (
       <Suspense fallback={<div className="min-h-screen bg-[#f5f0e8]" />}>
         <LandingPage
-          onNavigateLogin={(role: any) => {
+          onNavigateLogin={(role: any, viewMode?: 'login' | 'register') => {
             setLoginRole(role === 'admin' ? 'admin' : 'customer');
+            setLoginViewMode(viewMode || 'login');
             setPage('login');
           }}
           onLoginSuccess={(u: any) => {
@@ -1718,6 +1720,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       <Suspense fallback={<div className="min-h-screen bg-[#f5f0e8]" />}>
         <LoginPage
           initialRole={loginRole}
+          initialViewMode={loginViewMode}
           onNavigateLanding={() => setPage('landing')}
           onLoginSuccess={(u: any) => {
             const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase() === 'admin@gmail.com';
