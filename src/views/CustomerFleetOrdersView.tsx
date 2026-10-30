@@ -25,7 +25,7 @@ interface CustomerFleetOrdersViewProps {
 }
 
 export const CustomerFleetOrdersView: React.FC<CustomerFleetOrdersViewProps> = ({
-  purchasedOrders,
+  purchasedOrders = [],
   onNavigateToMarketplace,
   currency
 }) => {

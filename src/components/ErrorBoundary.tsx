@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, RotateCcw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -29,6 +29,15 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.reload();
   };
 
+  public handleResetSession = () => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {}
+    this.setState({ hasError: false, error: null });
+    window.location.href = '/';
+  };
+
   public render() {
     if (this.state.hasError) {
       return (
@@ -42,16 +51,30 @@ export class ErrorBoundary extends Component<Props, State> {
                 Workspace Recovery Active
               </h2>
               <p className="text-xs text-white/70 leading-relaxed">
-                A telemetry render interruption was intercepted. Your freight session and local state have been safely preserved.
+                A telemetry render interruption was intercepted. Click below to resume your session or perform a clean start.
               </p>
+              {this.state.error && (
+                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-[11px] font-mono text-rose-300 text-left max-h-24 overflow-y-auto">
+                  {this.state.error.message || String(this.state.error)}
+                </div>
+              )}
             </div>
-            <button
-              onClick={this.handleReload}
-              className="w-full py-3 rounded-full text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span>Resume Operations</span>
-            </button>
+            <div className="space-y-2.5 pt-2">
+              <button
+                onClick={this.handleReload}
+                className="w-full py-3 rounded-full text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Resume Operations</span>
+              </button>
+              <button
+                onClick={this.handleResetSession}
+                className="w-full py-2.5 rounded-full text-xs font-bold bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4 text-emerald-300" />
+                <span>Clear Cache & Fresh Start</span>
+              </button>
+            </div>
           </div>
         </div>
       );

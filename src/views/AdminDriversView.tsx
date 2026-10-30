@@ -28,7 +28,7 @@ interface AdminDriversViewProps {
 }
 
 export const AdminDriversView: React.FC<AdminDriversViewProps> = ({
-  drivers,
+  drivers = [],
   onCallDriver,
   onChatDriver,
   onAssignDriver

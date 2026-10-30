@@ -33,21 +33,50 @@ interface CustomerTrackingViewProps {
 const ROUTE_PATH_DATA = "M 60 140 C 180 150, 260 60, 380 90 C 490 120, 580 70, 640 60";
 
 export const CustomerTrackingView: React.FC<CustomerTrackingViewProps> = ({
-  consignments,
+  consignments = [],
   selectedConsignmentId,
   onOpenDriverCall,
   onOpenDriverChat,
   onNavigateToShipments
 }) => {
+  const fallbackConsignment: Consignment = {
+    id: 'CRG-24551',
+    origin: 'Bengaluru Logistics Park, Hub #01',
+    destination: 'Mumbai JNPT Port Terminal, CFS 3',
+    department: 'Commercial Freight',
+    weightLbs: 14200,
+    valueUsd: 85000,
+    mode: 'First Class High Speed',
+    delayRiskLevel: 'LOW',
+    delayRiskPercent: 12,
+    demurrageRisk: 0,
+    carrierName: 'FreightIQ Logistics Carrier',
+    circuitFile: 'circuits/qcloud_opt.qasm',
+    netSavings: 4200,
+    status: 'CONFIRMED',
+    eta: 'Tomorrow, 14:00 IST',
+    driverName: 'Vikram Malhotra',
+    driverPhone: '+91 98201 55194',
+    driverLicense: 'KA-05-2018-0098412',
+    driverRating: 4.92,
+    truckUnitId: 'Unit #4021',
+    vehicleModel: 'Volvo FM420 6x4 Heavy Puller',
+    vehiclePlate: 'KA-01-MJ-4021',
+    vehicleVin: 'YV2RT40C8MA491023',
+    vehicleCapacity: '40 Metric Tons'
+  };
+
+  const safeConsignments = Array.isArray(consignments) && consignments.length > 0 ? consignments : [fallbackConsignment];
+
   const activeConsignment = 
-    consignments.find(c => c.id === selectedConsignmentId) || 
-    consignments.find(c => c.status === 'CONFIRMED' || c.status === 'DISPATCHED' || c.status === 'AT RISK') || 
-    consignments[0];
+    safeConsignments.find(c => c.id === selectedConsignmentId) || 
+    safeConsignments.find(c => c.status === 'CONFIRMED' || c.status === 'DISPATCHED' || c.status === 'AT RISK') || 
+    safeConsignments[0];
 
   const [activeShipmentId, setActiveShipmentId] = useState<string>(activeConsignment?.id || 'CRG-24551');
   const [copiedText, setCopiedText] = useState(false);
 
-  const currentItem = consignments.find(c => c.id === activeShipmentId) || activeConsignment;
+  const currentItem = safeConsignments.find(c => c.id === activeShipmentId) || activeConsignment;
 
   // Driver details fallback
   const driverName = currentItem?.driverName || 'Vikram Malhotra';
@@ -364,7 +393,7 @@ CAN-Bus Telemetry: Active (L-Band GPS Lock)
                 <span>Payload Weight</span>
               </div>
               <p className="font-mono text-lg font-bold text-white">
-                {currentItem?.weightLbs.toLocaleString()} lbs
+                {(currentItem?.weightLbs || 14200).toLocaleString()} lbs
               </p>
               <span className="text-[10px] text-white/50">{vehicleCapacity} rated</span>
             </div>

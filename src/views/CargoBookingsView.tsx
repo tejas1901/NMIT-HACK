@@ -98,34 +98,35 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
     return true;
   });
 
-  const getRiskPill = (level: RiskLevel, percent: number) => {
+  const getRiskPill = (level: RiskLevel, percent: number = 0) => {
+    const num = typeof percent === 'number' && !isNaN(percent) ? percent : 0;
     switch (level) {
       case 'CRITICAL':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F26D6D]/15 text-[#F26D6D] border border-[#F26D6D]/30">
             <span className="w-1.5 h-1.5 rounded-full bg-[#F26D6D]" />
-            CRITICAL {percent.toFixed(1)}%
+            CRITICAL {num.toFixed(1)}%
           </span>
         );
       case 'HIGH':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F59E5B]/15 text-[#F59E5B] border border-[#F59E5B]/30">
             <span className="w-1.5 h-1.5 rounded-full bg-[#F59E5B]" />
-            HIGH {percent.toFixed(1)}%
+            HIGH {num.toFixed(1)}%
           </span>
         );
       case 'MODERATE':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F6C65B]/15 text-[#F6C65B] border border-[#F6C65B]/30">
             <span className="w-1.5 h-1.5 rounded-full bg-[#F6C65B]" />
-            MODERATE {percent.toFixed(1)}%
+            MODERATE {num.toFixed(1)}%
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/30">
             <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
-            LOW {percent.toFixed(1)}%
+            LOW {num.toFixed(1)}%
           </span>
         );
     }

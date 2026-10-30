@@ -44,7 +44,7 @@ interface CustomerUnifiedBookingViewProps {
 
 export const CustomerUnifiedBookingView: React.FC<CustomerUnifiedBookingViewProps> = ({
   initialSubTab = 'CARGO',
-  consignments,
+  consignments = [],
   onSelectConsignment,
   onOpenNewBookingModal,
   onForceWeatherRefresh,
@@ -57,7 +57,7 @@ export const CustomerUnifiedBookingView: React.FC<CustomerUnifiedBookingViewProp
   onInitiatePayment,
   onBookingConfirmed,
   onInitiateCheckout,
-  purchasedOrders,
+  purchasedOrders = [],
   onViewPurchasedOrders
 }) => {
   const [subTab, setSubTab] = useState<BookingSubTab>(initialSubTab);

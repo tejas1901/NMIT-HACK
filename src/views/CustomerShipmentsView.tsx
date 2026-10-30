@@ -28,7 +28,7 @@ interface CustomerShipmentsViewProps {
 }
 
 export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
-  consignments,
+  consignments = [],
   onSelectConsignmentForTracking,
   onNavigateToBook,
   onOpenDriverCall,
@@ -73,7 +73,7 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
 
   const totalConsignmentsCount = Math.max(1, consignments.length);
   const onTimeCount = consignments.filter(c => c.delayRiskLevel === 'LOW' || c.status === 'DELIVERED').length;
-  const onTimeSla = ((onTimeCount / totalConsignmentsCount) * 100).toFixed(1);
+  const onTimeSla = consignments.length > 0 ? ((onTimeCount / totalConsignmentsCount) * 100).toFixed(1) : '100.0';
 
   return (
     <div className="space-y-6 pb-16">

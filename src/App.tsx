@@ -1664,7 +1664,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         notification={bookingNotification}
         onDismiss={() => setBookingNotification(null)}
         onViewTracking={(orderId) => {
-          setSelectedConsignmentId(orderId);
+          setSelectedTrackingConsignmentId(orderId);
           setActiveTab('customer-tracking');
         }}
       />
