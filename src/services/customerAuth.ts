@@ -56,6 +56,45 @@ export const INITIAL_REGISTERED_CUSTOMERS: RegisteredCustomer[] = [
     role: 'CUSTOMER',
     role_label: 'Verified Customer',
     created_at: '2026-01-01T00:00:00Z'
+  },
+  {
+    id: 'usr-cust-demo-4',
+    email: 'manish@apexlogistics.in',
+    password: 'Password@123',
+    full_name: 'Manish Bhatt',
+    company: 'Apex Intermodal Logistics',
+    phone: '+91 98210 44102',
+    gstin: '29AABCA5512B1Z3',
+    corridor: 'NH-44 (Bengaluru - Hyderabad)',
+    role: 'CUSTOMER',
+    role_label: 'Verified Customer',
+    created_at: '2026-01-01T00:00:00Z'
+  },
+  {
+    id: 'usr-cust-demo-5',
+    email: 'priya.s@summitcold.in',
+    password: 'Password@123',
+    full_name: 'Priya Sharma',
+    company: 'Summit Cold-Chain Express',
+    phone: '+91 97412 88390',
+    gstin: '27AABCS9910D1Z8',
+    corridor: 'NH-48 (Bengaluru - Pune Reefer Corridor)',
+    role: 'CUSTOMER',
+    role_label: 'Verified Customer',
+    created_at: '2026-01-01T00:00:00Z'
+  },
+  {
+    id: 'usr-cust-demo-6',
+    email: 'suresh.rao@biocon.in',
+    password: 'Password@123',
+    full_name: 'Dr. Suresh Rao',
+    company: 'Biocon Pharma Intermodal',
+    phone: '+91 98450 88219',
+    gstin: '29AABCB1001P1Z2',
+    corridor: 'Bengaluru - JNPT Nhava Sheva Cold Corridor',
+    role: 'CUSTOMER',
+    role_label: 'Verified Customer',
+    created_at: '2026-01-01T00:00:00Z'
   }
 ];
 
