@@ -7,6 +7,7 @@ export interface UserProfile {
   full_name: string;
   company: string;
   phone?: string;
+  address?: string;
   corridor?: string;
   gstin?: string;
   depot?: string;
@@ -54,13 +55,19 @@ export interface Consignment {
   carrierName: string;
   circuitFile: string;
   netSavings: number;
-  status: 'CONFIRMED' | 'DELIVERED' | 'DISPATCHED' | 'AT RISK';
+  status: 'CONFIRMED' | 'DELIVERED' | 'DISPATCHED' | 'AT RISK' | 'PENDING_APPROVAL' | 'REJECTED';
   eta: string;
   driverName?: string;
   driverPhone?: string;
   notes?: string;
   customerCompany?: string;
   customerName?: string;
+  shipperCompany?: string;
+  shipperAddress?: string;
+  shipperPhone?: string;
+  shipperName?: string;
+  shipperEmail?: string;
+  carrierCompany?: string;
   marginPercent?: number;
   carrierCostUsd?: number;
   internalNotes?: string;

@@ -52,7 +52,7 @@ export const AdminAuditLogView: React.FC<AdminAuditLogViewProps> = ({ logs: prop
             FREIGHTIQ TAMPER-EVIDENT SYSTEM AUDIT LOG
 ========================================================================
 EXPORT TIMESTAMP:    ${new Date().toISOString()}
-ACTOR:               Rajathgowda (Enterprise Admin)
+ACTOR:               Admin (Enterprise Admin)
 TOTAL RECORDS:       ${filtered.length}
 CRYPTOGRAPHIC HASH:  SHA256-880194A2B99C71D04812EF
 ------------------------------------------------------------------------

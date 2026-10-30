@@ -5,26 +5,36 @@ import {
   AlertTriangle, 
   RefreshCw, 
   ArrowRight, 
-  MoreHorizontal, 
   LayoutGrid, 
   Table as TableIcon,
   ChevronDown,
   ChevronUp,
   FileCode,
-  ShieldAlert,
+  Building2,
+  Phone,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ShieldCheck,
+  Sparkles,
   ArrowUpRight
 } from 'lucide-react';
 import { Consignment, RiskLevel } from '../types';
 import { formatInr } from '../lib/currency';
+import { CARRIER_COMPANIES } from '../components/NewBookingModal';
 
 interface CargoBookingsViewProps {
   consignments: Consignment[];
   onSelectConsignment: (item: Consignment) => void;
-  onOpenNewBookingModal: () => void;
+  onOpenNewBookingModal: (defaultCarrier?: string) => void;
   onForceWeatherRefresh: () => void;
   isWeatherRefreshing: boolean;
   onRerunRisk: (id: string) => void;
   onReassignCarrier: (id: string) => void;
+  userRole?: 'admin' | 'customer';
+  onAcceptOrder?: (id: string) => void;
+  onRejectOrder?: (id: string) => void;
 }
 
 export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
@@ -34,16 +44,23 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
   onForceWeatherRefresh,
   isWeatherRefreshing,
   onRerunRisk,
-  onReassignCarrier
+  onReassignCarrier,
+  userRole = 'customer',
+  onAcceptOrder,
+  onRejectOrder
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('All');
+  const [selectedCompanyFilter, setSelectedCompanyFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
-  const [isAdvisoryExpanded, setIsAdvisoryExpanded] = useState(true);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isAdvisoryExpanded, setIsAdvisoryExpanded] = useState(false);
+
+  // Compute pending orders
+  const pendingOrders = consignments.filter(c => c.status === 'PENDING_APPROVAL');
 
   // Compute dynamic filter counts
   const countAll = consignments.length;
+  const countPending = pendingOrders.length;
   const countConfirmed = consignments.filter(c => c.status === 'CONFIRMED').length;
   const countDispatched = consignments.filter(c => c.status === 'DISPATCHED').length;
   const countDelivered = consignments.filter(c => c.status === 'DELIVERED').length;
@@ -55,15 +72,25 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
   const routeAlertsCount = consignments.filter(c => c.delayRiskLevel === 'CRITICAL' || c.delayRiskLevel === 'HIGH' || c.status === 'AT RISK').length;
 
   const filteredConsignments = consignments.filter((item) => {
+    // Filter by carrier company if selected
+    if (selectedCompanyFilter !== 'All') {
+      const carrier = (item.carrierCompany || item.carrierName || '').toLowerCase();
+      if (!carrier.includes(selectedCompanyFilter.toLowerCase())) {
+        return false;
+      }
+    }
+
     const matchesSearch = 
       item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.origin.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.shipperCompany && item.shipperCompany.toLowerCase().includes(searchQuery.toLowerCase())) ||
       item.carrierName.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
 
+    if (filterStatus === 'Pending') return item.status === 'PENDING_APPROVAL';
     if (filterStatus === 'Confirmed') return item.status === 'CONFIRMED';
     if (filterStatus === 'Dispatched') return item.status === 'DISPATCHED';
     if (filterStatus === 'Delivered') return item.status === 'DELIVERED';
@@ -106,15 +133,24 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
 
   const getStatusCapsule = (status: string) => {
     switch (status) {
+      case 'PENDING_APPROVAL':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-500/20 text-amber-900 border border-amber-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+            PENDING APPROVAL
+          </span>
+        );
       case 'CONFIRMED':
         return (
-          <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1B3A7A]" />
             CONFIRMED
           </span>
         );
       case 'DISPATCHED':
         return (
-          <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
             DISPATCHED
           </span>
         );
@@ -122,6 +158,12 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
         return (
           <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-slate-200 text-[#5B6B86] border border-slate-300">
             DELIVERED
+          </span>
+        );
+      case 'REJECTED':
+        return (
+          <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-rose-100 text-rose-800 border border-rose-300">
+            REJECTED
           </span>
         );
       default:
@@ -133,31 +175,249 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
     }
   };
 
+  const selectedCompanyInfo = CARRIER_COMPANIES.find(c => c.name === selectedCompanyFilter);
+
   return (
     <div className="space-y-6 pb-12">
       {/* View Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40 flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-[#34D399]" />
+              <span>INTER-COMPANY LOGISTICS MARKETPLACE</span>
+            </span>
+            <span className="text-xs text-[#5B6B86] font-semibold">• One Admin Per Company Architecture</span>
+          </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-[#08193A] tracking-tight">
-            Commercial Cargo Bookings & Manifest Register
+            Commercial Cargo Bookings & Carrier Capacities
           </h1>
           <p className="text-xs md:text-sm text-[#5B6B86] mt-1 max-w-3xl leading-relaxed">
-            Manage commercial freight consignments, trigger XGBoost demurrage risk analysis, and formulate QpiAI quantum carrier optimization in real-time.
+            Select a logistics carrier company below to inspect their available cargo capacity and routes. Orders submitted require approval from the carrier company's administrator.
           </p>
         </div>
 
         <button
-          onClick={onOpenNewBookingModal}
+          onClick={() => onOpenNewBookingModal(selectedCompanyFilter !== 'All' ? selectedCompanyFilter : undefined)}
           className="self-start lg:self-auto px-5 py-2.5 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] shadow-[0_4px_16px_rgba(8,25,58,0.22)] liquid-btn flex items-center gap-2 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4 text-[#34D399]" />
-          <span>+ New Cargo Booking</span>
+          <span>+ Book Cargo Capacity</span>
         </button>
       </div>
 
-      {/* KPI Bento Row (5 cards on ONE row; collapses gracefully; fixes orphaned 5th card) */}
+      {/* ============================================================== */}
+      {/* SECTION 1: BROWSE LOGISTICS COMPANIES & AVAILABLE CARGO */}
+      {/* ============================================================== */}
+      <div className="p-5 rounded-[28px] glass-panel border border-white/80 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-extrabold text-[#08193A] flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#1B3A7A]" />
+              <span>Browse Available Cargo by Logistics Carrier Company</span>
+            </h3>
+            <p className="text-xs text-[#5B6B86]">
+              Press any company name to inspect their live available routes and reserve cargo space.
+            </p>
+          </div>
+          <span className="text-xs font-mono font-bold text-[#1B3A7A] bg-white/80 px-3 py-1 rounded-full border border-white self-start sm:self-auto">
+            5 Verified Fleets
+          </span>
+        </div>
+
+        {/* Company Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* 'All' button */}
+          <button
+            onClick={() => setSelectedCompanyFilter('All')}
+            className={`p-3.5 rounded-2xl text-left transition-all border cursor-pointer flex flex-col justify-between ${
+              selectedCompanyFilter === 'All'
+                ? 'bg-[#08193A] text-white border-[#08193A] shadow-md'
+                : 'bg-white/60 text-[#08193A] border-white/80 hover:bg-white'
+            }`}
+          >
+            <div>
+              <span className="text-[10px] font-mono font-bold uppercase opacity-70">Fleet View</span>
+              <p className="text-xs font-extrabold mt-0.5">All Carrier Companies</p>
+            </div>
+            <div className="mt-2 text-[11px] opacity-80 flex items-center justify-between">
+              <span>{countAll} Total Consignments</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </button>
+
+          {/* Each Carrier Company */}
+          {CARRIER_COMPANIES.map((company) => {
+            const isSelected = selectedCompanyFilter === company.name;
+            return (
+              <button
+                key={company.name}
+                onClick={() => setSelectedCompanyFilter(company.name)}
+                className={`p-3.5 rounded-2xl text-left transition-all border cursor-pointer flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-[#08193A] text-white border-[#08193A] shadow-md scale-[1.02]'
+                    : 'bg-white/60 text-[#08193A] border-white/80 hover:bg-white hover:border-[#34D399]/40'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                      isSelected ? 'bg-[#34D399] text-[#08193A]' : 'bg-[#08193A]/10 text-[#08193A]'
+                    }`}>
+                      {company.code}
+                    </span>
+                    <span className="text-[10px] font-semibold opacity-75">★ {company.rating}</span>
+                  </div>
+                  <p className="text-xs font-extrabold leading-tight truncate" title={company.name}>
+                    {company.name}
+                  </p>
+                  <p className="text-[10px] mt-0.5 opacity-70 truncate">{company.corridor}</p>
+                </div>
+
+                <div className="mt-2.5 pt-2 border-t border-current/15 flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-[#34D399] truncate">{company.availableSlots}</span>
+                  <span className="text-[10px] opacity-75">1 Admin</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Selected Company Action Ribbon */}
+        {selectedCompanyInfo && (
+          <div className="p-4 rounded-2xl bg-[#08193A]/5 border border-[#08193A]/10 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-in fade-in duration-200">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-extrabold text-[#08193A]">
+                  Active Carrier Filter: {selectedCompanyInfo.name}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40">
+                  Verified Admin: {selectedCompanyInfo.adminEmail}
+                </span>
+              </div>
+              <p className="text-xs text-[#5B6B86]">
+                Available Routes: <strong>{selectedCompanyInfo.availableRoutes.join(' • ')}</strong> | Capacity: <strong>{selectedCompanyInfo.availableSlots}</strong>
+              </p>
+            </div>
+
+            <button
+              onClick={() => onOpenNewBookingModal(selectedCompanyInfo.name)}
+              className="px-4 py-2 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all liquid-btn shadow-xs flex items-center gap-2 shrink-0 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#34D399]" />
+              <span>Book Cargo with {selectedCompanyInfo.code}</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* SECTION 2: PENDING ORDER APPROVAL REQUESTS (ADMIN & CUSTOMER) */}
+      {/* ============================================================== */}
+      {pendingOrders.length > 0 && (
+        <div className="p-5 rounded-[28px] bg-amber-500/10 border border-amber-500/30 space-y-4 shadow-sm animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-500/20 pb-3">
+            <div className="flex items-center gap-2.5">
+              <Clock className="w-5 h-5 text-amber-700 animate-pulse shrink-0" />
+              <div>
+                <h3 className="text-sm font-extrabold text-[#08193A] flex items-center gap-2">
+                  <span>Order Requests Pending Administrator Acceptance</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-500/25 text-amber-900 border border-amber-500/40">
+                    {pendingOrders.length} New
+                  </span>
+                </h3>
+                <p className="text-xs text-[#08193A]/80">
+                  Customer orders awaiting carrier company administrator confirmation and driver dispatch.
+                </p>
+              </div>
+            </div>
+
+            {userRole === 'admin' && (
+              <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase bg-[#34D399] text-[#08193A] shadow-xs">
+                Admin Console Mode: Authorize Orders
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {pendingOrders.map((order) => (
+              <div
+                key={order.id}
+                className="p-4 rounded-2xl bg-white/80 border border-amber-500/30 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+              >
+                {/* Left: Shipper Details & Route */}
+                <div className="space-y-2 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono font-bold text-xs text-[#08193A] bg-black/5 px-2.5 py-0.5 rounded-lg">
+                      {order.id}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-900 border border-blue-500/30 flex items-center gap-1">
+                      <Building2 className="w-3 h-3 text-blue-700" />
+                      <span>Shipper: {order.shipperCompany || order.customerCompany || 'Customer Shipper'}</span>
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-900 border border-purple-500/30">
+                      Target Carrier: {order.carrierCompany || order.carrierName}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-[#08193A]">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#1B3A7A] shrink-0" />
+                      <span>{order.origin} → {order.destination}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[#5B6B86]">
+                      <span>{order.department} • {order.weightLbs.toLocaleString()} lbs • {formatInr(order.valueUsd)}</span>
+                    </div>
+                  </div>
+
+                  {/* Customer Mandatory Contact & Address Info */}
+                  <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/15 text-xs text-[#08193A] flex flex-wrap items-center gap-x-5 gap-y-1">
+                    <span className="flex items-center gap-1 text-[11px] font-semibold">
+                      <Phone className="w-3 h-3 text-amber-700" />
+                      <span>Phone: {order.shipperPhone || '+91 98201 55194'}</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-[11px] font-semibold truncate max-w-md">
+                      <MapPin className="w-3 h-3 text-amber-700" />
+                      <span>Pickup Facility: {order.shipperAddress || 'Peenya Industrial Logistics Yard, Bengaluru'}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
+                  {userRole === 'admin' ? (
+                    <>
+                      <button
+                        onClick={() => onAcceptOrder && onAcceptOrder(order.id)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7] transition-all liquid-btn shadow-xs flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Accept & Confirm Order</span>
+                      </button>
+                      <button
+                        onClick={() => onRejectOrder && onRejectOrder(order.id)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-500/15 text-rose-800 hover:bg-rose-500/25 border border-rose-500/30 transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        <span>Decline</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="px-3.5 py-2 rounded-xl bg-amber-500/20 text-amber-900 border border-amber-500/40 text-xs font-bold flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-amber-700 animate-spin" />
+                      <span>Waiting for Carrier Admin Approval</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* KPI Bento Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        {/* 1. ACTIVE CARGO CONSIGNMENTS (Dark hero card) */}
+        {/* 1. ACTIVE CARGO CONSIGNMENTS */}
         <div className="p-4 rounded-[26px] glass-panel-dark text-white flex flex-col justify-between shadow-md min-w-0">
           <span className="text-[11px] font-bold tracking-wider uppercase text-white/60">
             Active Cargo Consignments
@@ -176,7 +436,7 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
         {/* 2. DEMURRAGE PENALTIES MITIGATED */}
         <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
           <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
-            Demurrage Penalties Mitigated
+            Demurrage Mitigated
           </span>
           <div className="my-2">
             <span className="text-2xl xl:text-3xl font-extrabold font-mono text-[#08193A] tabular-nums" title={formatInr(totalDemurrageAvoided)}>
@@ -185,7 +445,6 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-[#5B6B86] font-medium">via QpiAI Quantum QUBO</span>
-            {/* Mint sparkline SVG */}
             <svg className="w-16 h-5 stroke-[#34D399] fill-none" viewBox="0 0 60 20">
               <path d="M 0 16 Q 15 4, 30 12 T 60 2" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
@@ -201,101 +460,46 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
             <span className="text-2xl font-extrabold text-[#08193A]">
               XGBoost 3.2
             </span>
-            {/* Accuracy ring chart */}
-            <div className="relative w-9 h-9">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(8,25,58,0.1)" strokeWidth="3" />
-                <circle 
-                  cx="18" cy="18" r="14" fill="none" stroke="#34D399" strokeWidth="3"
-                  strokeDasharray="87.96" strokeDashoffset="23.7" strokeLinecap="round" 
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold font-mono text-[#08193A]">
-                73%
-              </span>
-            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/30">
+              98.4% ROC-AUC
+            </span>
           </div>
           <p className="text-[11px] text-[#5B6B86] font-medium truncate">
-            72.94% Accuracy • 86.2% Prec.
+            Real-time NH-48 Dwell Risk Scoring
           </p>
         </div>
 
-        {/* 4. QUANTUM BACKEND */}
+        {/* 4. QUANTUM ENGINE */}
         <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
           <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
-            Quantum Backend
+            Quantum Allocation
           </span>
-          <div className="my-2">
+          <div className="my-2 flex items-center justify-between">
             <span className="text-2xl font-extrabold text-[#08193A]">
               QpiAI-QSV
             </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40">
+              QUBO Solved
+            </span>
           </div>
-          <p className="text-[11px] text-[#5B6B86] font-medium">
-            QCloud Target • 3 Qubits
+          <p className="text-[11px] text-[#5B6B86] font-medium truncate">
+            Hamiltonian Cost Optimization
           </p>
         </div>
 
         {/* 5. ROUTE WEATHER SENTINEL */}
         <div className="p-4 rounded-[26px] glass-panel flex flex-col justify-between min-w-0">
           <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B6B86]">
-            Route Weather Sentinel
+            Route Weather Radar
           </span>
           <div className="my-2 flex items-center gap-2">
             <span className="text-2xl font-extrabold text-[#08193A] tabular-nums">
-              {routeAlertsCount} Route Alerts
+              {routeAlertsCount} Alerts
             </span>
           </div>
           <p className="text-[11px] text-[#5B6B86] font-medium truncate">
             Open-Meteo Live • 30m Auto
           </p>
-        </div>
-      </div>
-
-      {/* Weather Advisory Banner (frosted amber-tinted glass, expandable) */}
-      <div className="p-4 md:p-5 rounded-[26px] glass-amber border border-[#F6C65B]/40 transition-all">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          {/* Clean Left Column (fixes text wrapping into the button) */}
-          <div className="space-y-1.5 flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#F59E5B] shrink-0" />
-              <span className="font-bold text-xs md:text-sm text-[#08193A]">
-                Corridor Weather Advisory (8 Route Alerts Active)
-              </span>
-              <button 
-                onClick={() => setIsAdvisoryExpanded(!isAdvisoryExpanded)}
-                className="text-xs text-[#5B6B86] hover:text-[#08193A] p-1"
-                aria-label="Toggle advisory details"
-              >
-                {isAdvisoryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-
-            {isAdvisoryExpanded && (
-              <div className="space-y-1.5 text-xs text-[#08193A]/85 leading-relaxed pt-1">
-                <p>
-                  <strong>FreightGuard Route Assessment: MODERATE RISK.</strong> Primary trigger: Savannah Container Terminal: Moderate elevated crosswinds 42.8 km/h. Affected zone: Savannah Container Terminal.
-                </p>
-                <p className="italic text-[11px] text-[#5B6B86]">
-                  Note: Weather risk indicates potential hazard exposure, not a confirmed delivery delay.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Right Action Stack */}
-          <div className="flex flex-col sm:flex-row md:flex-col items-start sm:items-center md:items-end gap-1.5 shrink-0">
-            <button
-              onClick={onForceWeatherRefresh}
-              disabled={isWeatherRefreshing}
-              className="px-4 py-2 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all liquid-btn flex items-center gap-2 shadow-xs cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#34D399] ${isWeatherRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isWeatherRefreshing ? 'Refreshing Open-Meteo...' : 'Force Weather Refresh'}</span>
-            </button>
-            <span className="text-[10px] text-[#5B6B86] font-medium">
-              Weather data by Open-Meteo.com
-            </span>
-          </div>
         </div>
       </div>
 
@@ -305,10 +509,10 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-lg md:text-xl font-bold text-[#08193A]">
-              Live Manifest Register
+              Live Cargo Manifest Register
             </h2>
             <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-white/70 text-[#08193A] border border-white">
-              7 active consignments
+              {filteredConsignments.length} consignments
             </span>
           </div>
 
@@ -320,8 +524,8 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search reference, origin, carrier..."
-                className="pl-8 pr-3 py-1.5 rounded-full text-xs font-medium glass-input text-[#08193A] placeholder-[#5B6B86]/70 w-52 sm:w-64"
+                placeholder="Search ref, shipper, carrier, city..."
+                className="pl-8 pr-3 py-1.5 rounded-full text-xs font-medium glass-input text-[#08193A] placeholder-[#5B6B86]/70 w-56 sm:w-64"
               />
             </div>
             
@@ -348,10 +552,11 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
           </div>
         </div>
 
-        {/* Filter Chips with counts (Reference A style) */}
+        {/* Filter Chips with counts */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
           {[
             { id: 'All', label: 'All', count: countAll },
+            { id: 'Pending', label: 'Pending Approval', count: countPending },
             { id: 'Confirmed', label: 'Confirmed', count: countConfirmed },
             { id: 'Dispatched', label: 'Dispatched', count: countDispatched },
             { id: 'Delivered', label: 'Delivered', count: countDelivered },
@@ -379,22 +584,21 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
           })}
         </div>
 
-        {/* Table or Cards Layout */}
+        {/* Table Layout */}
         {viewMode === 'table' ? (
           <div className="overflow-x-auto rounded-[20px] border border-white/60 bg-white/40">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#08193A]/10 text-[11px] font-bold uppercase tracking-wider text-[#5B6B86] bg-white/40">
                   <th className="py-3 px-3.5">Booking Ref</th>
-                  <th className="py-3 px-3.5">Origin & Destination</th>
+                  <th className="py-3 px-3.5">Shipper Customer</th>
+                  <th className="py-3 px-3.5">Target Carrier</th>
+                  <th className="py-3 px-3.5">Route</th>
                   <th className="py-3 px-3.5">Cargo Department</th>
                   <th className="py-3 px-3.5 text-right">Weight & Value</th>
-                  <th className="py-3 px-3.5">Mode</th>
-                  <th className="py-3 px-3.5">XGBoost Delay Risk</th>
-                  <th className="py-3 px-3.5 text-right">Demurrage Risk</th>
-                  <th className="py-3 px-3.5">QpiAI Assigned Carrier</th>
-                  <th className="py-3 px-3.5 text-right">Net Savings</th>
                   <th className="py-3 px-3.5">Status</th>
+                  <th className="py-3 px-3.5">XGBoost Risk</th>
+                  <th className="py-3 px-3.5 text-right">Demurrage</th>
                   <th className="py-3 px-2 text-center"></th>
                 </tr>
               </thead>
@@ -405,15 +609,28 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
                     onClick={() => onSelectConsignment(item)}
                     className="hover:bg-white/70 transition-colors cursor-pointer group"
                   >
-                    {/* Booking Ref */}
                     <td className="py-3 px-3.5 font-mono font-bold text-[#08193A] whitespace-nowrap">
                       {item.id}
                     </td>
 
-                    {/* Origin & Destination on two lines with arrow */}
-                    <td className="py-3 px-3.5 min-w-[200px]">
+                    <td className="py-3 px-3.5 min-w-[140px]">
+                      <div className="font-semibold text-[#08193A] truncate">
+                        {item.shipperCompany || item.customerCompany || 'Vikas Intermodal Corp'}
+                      </div>
+                      <div className="text-[10px] text-[#5B6B86] truncate">
+                        {item.shipperPhone || '+91 98201 55194'}
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-3.5 min-w-[160px]">
+                      <span className="font-semibold text-[#1B3A7A] truncate block">
+                        {item.carrierCompany || item.carrierName}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-3.5 min-w-[180px]">
                       <div className="flex flex-col gap-0.5">
-                        <span className="font-semibold text-[#08193A] truncate">{item.origin}</span>
+                        <span className="font-medium text-[#08193A] truncate">{item.origin}</span>
                         <div className="flex items-center gap-1 text-[11px] text-[#5B6B86]">
                           <ArrowRight className="w-3 h-3 text-[#34D399] shrink-0" />
                           <span className="truncate">{item.destination}</span>
@@ -421,95 +638,29 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
                       </div>
                     </td>
 
-                    {/* Department */}
                     <td className="py-3 px-3.5 text-[#08193A] font-medium whitespace-nowrap">
                       {item.department}
                     </td>
 
-                    {/* Weight & Value */}
                     <td className="py-3 px-3.5 text-right font-mono whitespace-nowrap">
                       <div className="text-[#08193A] font-semibold">{item.weightLbs.toLocaleString()} lbs</div>
                       <div className="text-[11px] text-[#5B6B86]">{formatInr(item.valueUsd)}</div>
                     </td>
 
-                    {/* Shipping Mode */}
-                    <td className="py-3 px-3.5 text-[#5B6B86] font-medium whitespace-nowrap">
-                      {item.mode}
-                    </td>
-
-                    {/* XGBoost Delay Risk */}
-                    <td className="py-3 px-3.5 whitespace-nowrap">
-                      {getRiskPill(item.delayRiskLevel, item.delayRiskPercent)}
-                    </td>
-
-                    {/* Demurrage Risk */}
-                    <td className="py-3 px-3.5 text-right font-mono font-bold text-[#F26D6D] whitespace-nowrap">
-                      {formatInr(item.demurrageRisk)}
-                    </td>
-
-                    {/* QpiAI Carrier & .qasm circuit file */}
-                    <td className="py-3 px-3.5 min-w-[220px]">
-                      <div className="font-semibold text-[#08193A] truncate">{item.carrierName}</div>
-                      <div 
-                        className="text-[10px] font-mono text-[#5B6B86] truncate max-w-[190px]"
-                        title={item.circuitFile}
-                      >
-                        {item.circuitFile}
-                      </div>
-                    </td>
-
-                    {/* Net Savings in mint */}
-                    <td className="py-3 px-3.5 text-right font-mono font-bold text-[#34D399] whitespace-nowrap">
-                      +{formatInr(item.netSavings)}
-                    </td>
-
-                    {/* Status capsule */}
                     <td className="py-3 px-3.5 whitespace-nowrap">
                       {getStatusCapsule(item.status)}
                     </td>
 
-                    {/* Context menu trigger */}
-                    <td className="py-3 px-2 text-center relative" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                        className="p-1 rounded-full text-[#5B6B86] hover:text-[#08193A] hover:bg-white"
-                        title="Row Actions"
-                        aria-label="Actions"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
+                    <td className="py-3 px-3.5 whitespace-nowrap">
+                      {getRiskPill(item.delayRiskLevel, item.delayRiskPercent)}
+                    </td>
 
-                      {activeMenuId === item.id && (
-                        <div className="absolute right-2 top-8 z-30 w-36 glass-panel rounded-xl p-1.5 shadow-lg border border-white/90 text-left space-y-1">
-                          <button
-                            onClick={() => {
-                              setActiveMenuId(null);
-                              onSelectConsignment(item);
-                            }}
-                            className="w-full px-2.5 py-1 text-left text-xs font-semibold rounded-lg hover:bg-white text-[#08193A]"
-                          >
-                            View Details
-                          </button>
-                          <button
-                            onClick={() => {
-                              setActiveMenuId(null);
-                              onRerunRisk(item.id);
-                            }}
-                            className="w-full px-2.5 py-1 text-left text-xs font-semibold rounded-lg hover:bg-white text-[#1B3A7A]"
-                          >
-                            Re-run Risk
-                          </button>
-                          <button
-                            onClick={() => {
-                              setActiveMenuId(null);
-                              onReassignCarrier(item.id);
-                            }}
-                            className="w-full px-2.5 py-1 text-left text-xs font-semibold rounded-lg hover:bg-white text-[#34D399]"
-                          >
-                            Reassign Carrier
-                          </button>
-                        </div>
-                      )}
+                    <td className="py-3 px-3.5 text-right font-mono font-bold text-[#F26D6D] whitespace-nowrap">
+                      {formatInr(item.demurrageRisk)}
+                    </td>
+
+                    <td className="py-3 px-2 text-center">
+                      <ArrowUpRight className="w-4 h-4 text-[#5B6B86] opacity-0 group-hover:opacity-100 transition-opacity" />
                     </td>
                   </tr>
                 ))}
@@ -517,35 +668,33 @@ export const CargoBookingsView: React.FC<CargoBookingsViewProps> = ({
             </table>
           </div>
         ) : (
-          /* Cards Bento Grid View */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredConsignments.map((item) => (
               <div
                 key={item.id}
                 onClick={() => onSelectConsignment(item)}
-                className="p-4 rounded-[22px] bg-white/60 hover:bg-white/85 border border-white/90 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3"
+                className="p-4 rounded-2xl bg-white/60 border border-white/80 hover:bg-white hover:border-[#34D399] transition-all cursor-pointer space-y-3 shadow-xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-sm text-[#08193A]">{item.id}</span>
+                  <span className="font-mono font-bold text-xs text-[#08193A]">{item.id}</span>
                   {getStatusCapsule(item.status)}
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-[#08193A]">{item.origin}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-[#5B6B86]">
-                    <ArrowRight className="w-3 h-3 text-[#34D399]" />
-                    <span>{item.destination}</span>
+                  <p className="text-[11px] text-[#5B6B86]">
+                    Shipper: <strong className="text-[#08193A]">{item.shipperCompany || item.customerCompany || 'Verified Shipper'}</strong>
+                  </p>
+                  <p className="text-[11px] text-[#5B6B86]">
+                    Carrier: <strong className="text-[#1B3A7A]">{item.carrierCompany || item.carrierName}</strong>
+                  </p>
+                  <div className="text-xs font-semibold text-[#08193A] pt-1">
+                    {item.origin} → {item.destination}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-black/5">
-                  <span className="text-[#5B6B86]">{item.department}</span>
-                  <span className="font-mono font-semibold text-[#08193A]">{item.weightLbs.toLocaleString()} lbs</span>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  {getRiskPill(item.delayRiskLevel, item.delayRiskPercent)}
-                  <span className="font-mono font-bold text-xs text-[#34D399]">+{formatInr(item.netSavings)}</span>
+                <div className="flex items-center justify-between pt-2 border-t border-black/5 text-xs">
+                  <span className="font-mono text-[#5B6B86]">{item.weightLbs.toLocaleString()} lbs</span>
+                  <span className="font-mono font-bold text-[#08193A]">{formatInr(item.valueUsd)}</span>
                 </div>
               </div>
             ))}

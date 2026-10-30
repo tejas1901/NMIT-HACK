@@ -29,6 +29,12 @@ export const CustomerBookShipmentView: React.FC<CustomerBookShipmentViewProps> =
   onBookingConfirmed
 }) => {
   // Wizard state
+  const [carrierCompany, setCarrierCompany] = useState('FreightIQ Intermodal Command');
+  const [shipperCompany, setShipperCompany] = useState('Vikas Intermodal Corp');
+  const [shipperAddress, setShipperAddress] = useState('Plot 42, Peenya Industrial Area, Phase 3, Bengaluru - 560058');
+  const [shipperPhone, setShipperPhone] = useState('+91 98201 55194');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const [origin, setOrigin] = useState('Nhava Sheva (JNPT) Port, Mumbai');
   const [destination, setDestination] = useState('Whitefield Technology Park, Bangalore');
   const [cargoType, setCargoType] = useState('Precision Automotive Components');
@@ -48,11 +54,30 @@ export const CustomerBookShipmentView: React.FC<CustomerBookShipmentViewProps> =
   const totalInr = Math.round((baseRateInr + weightSurchargeInr) * tierMultiplier + insuranceFeeInr + carbonOffsetInr);
   const totalUsd = Math.round(totalInr / 86.4);
 
+  const validateCustomerInputs = () => {
+    if (!shipperCompany.trim()) {
+      setValidationError('Customer Company Name is strictly required before booking.');
+      return false;
+    }
+    if (!shipperAddress.trim() || shipperAddress.trim().length < 5) {
+      setValidationError('Customer Physical Address is strictly required before booking.');
+      return false;
+    }
+    if (!shipperPhone.trim() || shipperPhone.trim().length < 8) {
+      setValidationError('Customer Contact Phone Number is strictly required before booking.');
+      return false;
+    }
+    setValidationError(null);
+    return true;
+  };
+
   const handleInstantCheckout = () => {
+    if (!validateCustomerInputs()) return;
+
     const checkoutItem: CheckoutItem = {
       type: 'CONSIGNMENT',
       title: `Freight Haul: ${origin.split(',')[0]} → ${destination.split(',')[0]}`,
-      subtitle: `${cargoType} • ${weightKg.toLocaleString()} kg (${Math.round(weightKg * 2.20462).toLocaleString()} lbs)`,
+      subtitle: `${cargoType} • ${weightKg.toLocaleString()} kg (${carrierCompany})`,
       referenceId: `CRG-BK-${Math.floor(10000 + Math.random() * 90000)}`,
       priceUsd: totalInr,
       priceInr: totalInr,
@@ -62,6 +87,10 @@ export const CustomerBookShipmentView: React.FC<CustomerBookShipmentViewProps> =
         Cargo: cargoType,
         Weight: `${weightKg} kg`,
         ServiceTier: serviceTier,
+        CarrierCompany: carrierCompany,
+        ShipperCompany: shipperCompany,
+        ShipperAddress: shipperAddress,
+        ShipperPhone: shipperPhone,
         Insurance: '100% Guaranteed SLA'
       }
     };
@@ -69,8 +98,10 @@ export const CustomerBookShipmentView: React.FC<CustomerBookShipmentViewProps> =
   };
 
   const handleCreateConsignment = () => {
+    if (!validateCustomerInputs()) return;
+
     const newConsignment: Consignment = {
-      id: `CRG-${Math.floor(20000 + Math.random() * 80000)}`,
+      id: `CRG-BK-${Math.floor(20000 + Math.random() * 80000)}`,
       origin: origin,
       destination: destination,
       department: cargoType.split(' ')[0].toUpperCase(),
@@ -80,14 +111,18 @@ export const CustomerBookShipmentView: React.FC<CustomerBookShipmentViewProps> =
       delayRiskLevel: 'LOW',
       delayRiskPercent: 4.8,
       demurrageRisk: 0,
-      carrierName: 'FreightIQ Autonomous Logistics',
+      carrierName: carrierCompany,
+      carrierCompany: carrierCompany,
+      shipperCompany: shipperCompany.trim(),
+      shipperAddress: shipperAddress.trim(),
+      shipperPhone: shipperPhone.trim(),
       circuitFile: 'qpi_intermodal_corridor_v4.qasm',
       netSavings: Math.round(totalInr * 0.18),
-      status: 'CONFIRMED',
-      eta: serviceTier === 'QUANTUM_EXPRESS' ? 'Tomorrow, 14:00 IST' : 'In 2 Days, 18:00 IST',
-      driverName: 'Rohan Deshmukh',
-      driverPhone: '+91 98200 44192',
-      notes: notes
+      status: 'PENDING_APPROVAL',
+      eta: 'Awaiting Admin Approval',
+      driverName: 'Carrier Assigned Upon Acceptance',
+      driverPhone: shipperPhone.trim(),
+      notes: `Order submitted by ${shipperCompany} (${shipperPhone}). Awaiting approval from ${carrierCompany} Admin.`
     };
     onBookingConfirmed(newConsignment);
   };
@@ -114,6 +149,87 @@ export const CustomerBookShipmentView: React.FC<CustomerBookShipmentViewProps> =
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Booking Parameters */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Card 0: Mandatory Shipper Identification & Target Carrier */}
+          <div className="p-6 rounded-[30px] glass-panel space-y-4 shadow-sm border border-white/80 bg-amber-500/5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#08193A] flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-700" />
+                <span>Customer Verification & Target Carrier (Mandatory)</span>
+              </h3>
+              <span className="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                Admin Approval Flow
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-[#5B6B86]">
+                Target Carrier Company (Order Recipient)
+              </label>
+              <select
+                value={carrierCompany}
+                onChange={(e) => setCarrierCompany(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-2xl glass-input text-xs font-bold text-[#08193A]"
+              >
+                <option value="FreightIQ Intermodal Command">FreightIQ Intermodal Command (NH-48 Mumbai - Bengaluru)</option>
+                <option value="Vikas Intermodal Logistics">Vikas Intermodal Logistics (Western Freight Corridor)</option>
+                <option value="Blue Dart Express Freight">Blue Dart Express Freight (Southern Trunk Corridor)</option>
+                <option value="Container Corp of India (CONCOR)">Container Corp of India (CONCOR Rail Quad)</option>
+                <option value="Navata Road Transport">Navata Road Transport (Deccan Highway Fleet)</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-[#5B6B86] mb-1.5">
+                  Your Company Name *
+                </label>
+                <input
+                  type="text"
+                  value={shipperCompany}
+                  onChange={(e) => setShipperCompany(e.target.value)}
+                  placeholder="e.g. Apex Industrial Corp"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-2xl glass-input text-xs font-semibold text-[#08193A]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#5B6B86] mb-1.5">
+                  Contact Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  value={shipperPhone}
+                  onChange={(e) => setShipperPhone(e.target.value)}
+                  placeholder="+91 98201 55194"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-2xl glass-input text-xs font-semibold text-[#08193A]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#5B6B86] mb-1.5">
+                Pickup / Facility Physical Address *
+              </label>
+              <textarea
+                rows={2}
+                value={shipperAddress}
+                onChange={(e) => setShipperAddress(e.target.value)}
+                placeholder="Complete industrial address, gate number, and pincode..."
+                required
+                className="w-full px-3.5 py-2 rounded-2xl glass-input text-xs font-medium text-[#08193A]"
+              />
+            </div>
+
+            {validationError && (
+              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-800 text-xs font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{validationError}</span>
+              </div>
+            )}
+          </div>
+
           {/* Card 1: Route & Origin/Destination */}
           <div className="p-6 rounded-[30px] glass-panel space-y-5 shadow-sm border border-white/80">
             <h3 className="text-sm font-extrabold text-[#08193A] flex items-center gap-2">

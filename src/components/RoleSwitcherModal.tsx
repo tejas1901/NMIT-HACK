@@ -51,8 +51,8 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
     setIsVerifying(true);
     setErrorMessage(null);
 
-    const validAdminKeys = ['1234567890', 'Admin#FreightIQ2026!', 'admin', 'admin123', 'admin@123', 'Admin123'];
-    const isMasterKey = validAdminKeys.includes(trimmed);
+    // Strict Admin Password Authorization: ONLY admin@123 allowed
+    const isMasterKey = trimmed === 'admin@123';
 
     // Immediate master elevation if password matches admin credentials
     if (isMasterKey) {
@@ -71,43 +71,9 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
       return;
     }
 
-    try {
-      const response = await fetch('/api/auth/admin-elevate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          password: trimmed,
-          userId: 'rajathgowda',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        setErrorMessage(data.error || 'Incorrect password');
-        setIsVerifying(false);
-        return;
-      }
-
-      // Elevation successful! Store token in api service & sessionStorage
-      const token = data.token || 'freightiq-admin-master-elevation-token';
-      setElevationToken(token);
-      try {
-        sessionStorage.setItem('freightiq_admin_token', token);
-        sessionStorage.setItem('freightiq_active_role', 'admin');
-        localStorage.setItem('freightiq_active_role', 'admin');
-      } catch {}
-      setIsVerifying(false);
-      setAdminPassword('');
-      setShowPasswordPrompt(false);
-      onSelectRole('admin');
-      onClose();
-    } catch {
-      setErrorMessage('Unable to connect to authorization gateway');
-      setIsVerifying(false);
-    }
+    // Reject all other passwords strictly
+    setErrorMessage('Invalid admin password. Only authorized admin credentials allowed.');
+    setIsVerifying(false);
   };
 
   const handleChoose = (role: UserRole) => {
@@ -208,11 +174,11 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
               {/* Persona Tag */}
               <div className="p-2.5 rounded-xl bg-white/10 border border-white/10 flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-[#34D399] text-[#08193A] font-bold text-xs flex items-center justify-center shrink-0">
-                  RG
+                  AD
                 </div>
                 <div className="min-w-0 text-left">
-                  <p className="text-xs font-semibold text-white truncate">Rajathgowda</p>
-                  <p className="text-[10px] text-white/50 truncate">rajathgowda@gmail.com</p>
+                  <p className="text-xs font-semibold text-white truncate">Admin</p>
+                  <p className="text-[10px] text-white/50 truncate">admin@gmail.com</p>
                 </div>
               </div>
 

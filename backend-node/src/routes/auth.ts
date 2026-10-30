@@ -223,9 +223,9 @@ router.post('/admin-elevate', async (req: Request, res: Response, next: NextFunc
       });
     }
 
-    // Verify against bcrypt hash stored in environment or standard demo master keys
+    // Verify strictly against admin@123 or bcrypt hash
     const adminHash = config.adminPasswordHash;
-    const isMatch = (adminHash && bcrypt.compareSync(password, adminHash)) || password === '1234567890' || password === 'Admin#FreightIQ2026!';
+    const isMatch = password === 'admin@123' || (adminHash && bcrypt.compareSync(password, adminHash));
 
     if (!isMatch) {
       tracker.attempts += 1;

@@ -21,7 +21,8 @@ import {
   Repeat, 
   Lock,
   SquareParking,
-  ShieldAlert
+  ShieldAlert,
+  Building2
 } from 'lucide-react';
 import { NavTab, Role, UserProfile } from '../types';
 import { DEMO_MODE } from '../roles';
@@ -83,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     badge?: string | number;
   }> = [
     { id: 'customer-shipments', label: 'My Shipments', icon: Package, badge: customerShipmentsCount },
+    { id: 'cargo-bookings', label: 'Company Cargo Fleets', icon: Building2, badge: '5 FLEETS' },
     { id: 'customer-tracking', label: 'Live GPS Radar', icon: Navigation, badge: 'LIVE' },
     { id: 'customer-book', label: 'Request Haul', icon: PlusCircle },
     { id: 'qpiai-pilot', label: 'QpiAi Copilot', icon: Bot, badge: 'AI' },
@@ -153,8 +155,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ? currentUser.full_name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase()
     : (activeRole === 'admin' ? 'RG' : 'AV');
 
-  const displayName = currentUser?.full_name || (activeRole === 'admin' ? 'Rajathgowda' : 'Ananya Verma');
-  const displayCompany = currentUser?.company || (activeRole === 'admin' ? 'rajathgowda@gmail.com' : 'Vikas Intermodal Corp');
+  const displayName = currentUser?.full_name || (activeRole === 'admin' ? 'Admin' : 'Ananya Verma');
+  const displayCompany = currentUser?.company || (activeRole === 'admin' ? 'admin@gmail.com' : 'Vikas Intermodal Corp');
 
   return (
     <>

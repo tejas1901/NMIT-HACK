@@ -110,33 +110,33 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     setLoading(true)
 
     const normalizedEmail = email.trim().toLowerCase();
-    const isAdminAccount = role === 'admin' || normalizedEmail.includes('rajath') || normalizedEmail.includes('admin');
+    const isAdminAccount = role === 'admin' || normalizedEmail === 'admin@gmail.com';
 
-    // 1. Master Admin Authentication
+    // 1. Strict Master Admin Authentication (ONLY admin@gmail.com and admin@123)
     if (isAdminAccount) {
-      const validAdminKeys = ['1234567890', 'Admin#FreightIQ2026!', 'admin', 'admin123', 'admin@123', 'Admin123'];
-      const isKeyMatch = validAdminKeys.includes(password.trim());
-
-      // If valid master key or password >= 4 characters
-      if (isKeyMatch || password.trim().length >= 4) {
+      if (normalizedEmail === 'admin@gmail.com' && password.trim() === 'admin@123') {
         const adminUser = {
-          id: 'usr-admin-rajath',
-          email: email.trim() || 'rajathgowda@gmail.com',
-          full_name: 'Rajathgowda',
+          id: 'usr-admin',
+          email: 'admin@gmail.com',
+          full_name: 'Admin',
           company: 'FreightIQ Command',
           role: 'ADMIN',
           role_label: 'Master Administrator'
-        }
-        setSuccess(`Authenticated as Master Administrator. Launching Admin Command...`)
-        localStorage.setItem('freightiq_user', JSON.stringify(adminUser))
-        localStorage.setItem('freightiq_token', 'freightiq-admin-master-elevation-token')
-        localStorage.setItem('freightiq_active_role', 'admin')
-        sessionStorage.setItem('freightiq_active_role', 'admin')
-        sessionStorage.setItem('freightiq_admin_token', 'freightiq-admin-master-elevation-token')
+        };
+        setSuccess(`Authenticated as Master Administrator. Launching Admin Command...`);
+        localStorage.setItem('freightiq_user', JSON.stringify(adminUser));
+        localStorage.setItem('freightiq_token', 'freightiq-admin-master-elevation-token');
+        localStorage.setItem('freightiq_active_role', 'admin');
+        sessionStorage.setItem('freightiq_active_role', 'admin');
+        sessionStorage.setItem('freightiq_admin_token', 'freightiq-admin-master-elevation-token');
         setTimeout(() => {
-          if (onLoginSuccess) onLoginSuccess(adminUser)
-        }, 200)
-        return
+          if (onLoginSuccess) onLoginSuccess(adminUser);
+        }, 200);
+        return;
+      } else {
+        setErrors({ general: 'Invalid administrator credentials. Authorized admin email is admin@gmail.com with password admin@123.' });
+        setLoading(false);
+        return;
       }
     }
 
@@ -192,9 +192,9 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
 
       // 4. Fallback demonstration user for smooth testing
       const fallbackUser = {
-        id: role === 'admin' ? 'usr-admin-rajath' : 'usr-customer-demo',
+        id: role === 'admin' ? 'usr-admin' : 'usr-customer-demo',
         email,
-        full_name: role === 'admin' ? 'Rajathgowda' : (email.split('@')[0] || 'Ananya Verma'),
+        full_name: role === 'admin' ? 'Admin' : (email.split('@')[0] || 'Ananya Verma'),
         company: role === 'admin' ? 'FreightIQ Command' : 'Vikas Intermodal Corp',
         role: role.toUpperCase(),
         role_label: role === 'admin' ? 'Master Administrator' : 'Verified Customer'
@@ -207,9 +207,9 @@ export default function LoginCard({ onCreateAccount, onForgotPassword, onLoginSu
     } catch {
       // Secure local session fallback for demonstration
       const fallbackUser = {
-        id: role === 'admin' ? 'usr-admin-rajath' : 'usr-customer-demo',
+        id: role === 'admin' ? 'usr-admin' : 'usr-customer-demo',
         email,
-        full_name: role === 'admin' ? 'Rajathgowda' : (email.split('@')[0] || 'Ananya Verma'),
+        full_name: role === 'admin' ? 'Admin' : (email.split('@')[0] || 'Ananya Verma'),
         company: role === 'admin' ? 'FreightIQ Command' : 'Vikas Intermodal Corp',
         role: role.toUpperCase(),
         role_label: role === 'admin' ? 'Master Administrator' : 'Verified Customer'

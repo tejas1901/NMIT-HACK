@@ -124,6 +124,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   const ALL_CUSTOMER_ROUTES: NavTab[] = [
     'customer-shipments',
+    'cargo-bookings',
     'customer-tracking',
     'customer-book',
     'qpiai-pilot',
@@ -334,6 +335,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const [currency, setCurrency] = useState<'USD' | 'INR'>('INR');
   const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
   const [newBookingModalOpen, setNewBookingModalOpen] = useState(false);
+  const [selectedCarrierCompany, setSelectedCarrierCompany] = useState<string>('FreightIQ Intermodal Command');
   const [isWeatherRefreshing, setIsWeatherRefreshing] = useState(false);
   const [pilotPrompt, setPilotPrompt] = useState<string | undefined>(undefined);
   const [selectedTrackingConsignmentId, setSelectedTrackingConsignmentId] = useState<string | undefined>(undefined);
@@ -504,7 +506,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     if (activeRole === 'admin') {
       const token = getElevationToken();
       if (!token) {
-        if (currentUser.role?.toLowerCase() === 'admin' || currentUser.email?.toLowerCase().includes('rajath')) {
+        if (currentUser.role?.toLowerCase() === 'admin' || currentUser.email?.toLowerCase().includes('admin')) {
           setElevationToken('freightiq-admin-master-elevation-token');
         } else {
           setActiveRole('customer');
@@ -548,7 +550,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     const interval = setInterval(async () => {
       const token = getElevationToken();
       if (!token) {
-        if (currentUser.role?.toLowerCase() === 'admin' || currentUser.email?.toLowerCase().includes('rajath')) {
+        if (currentUser.role?.toLowerCase() === 'admin' || currentUser.email?.toLowerCase().includes('admin')) {
           setElevationToken('freightiq-admin-master-elevation-token');
           return;
         }
@@ -616,9 +618,9 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       const masterToken = 'freightiq-admin-master-elevation-token';
       setElevationToken(masterToken);
       const adminUser: UserProfile = {
-        id: 'usr-admin-rajath',
-        email: 'rajathgowda@gmail.com',
-        full_name: 'Rajathgowda',
+        id: 'usr-admin',
+        email: 'admin@gmail.com',
+        full_name: 'Admin',
         company: 'FreightIQ Command',
         phone: '+91 98201 55194',
         gstin: '27AABCV1234F1Z5',
@@ -650,7 +652,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       id: `AUD-${Date.now().toString().slice(-4)}`,
       timestamp: `${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} IST`,
       actorName: ADMIN_USER_NAME,
-      actorEmail: 'rajathgowda@gmail.com',
+      actorEmail: 'admin@gmail.com',
       actorRole: 'admin',
       action,
       category,
@@ -888,31 +890,50 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     showToast(`Internal note saved for ${id}`);
   };
 
-  // New Booking Submit (Admin)
+  // New Booking Submit (Customer / Admin)
   const handleNewBookingSubmit = async (newBooking: Partial<Consignment>) => {
+    const isCustomer = activeRole === 'customer';
+    const carrier = newBooking.carrierCompany || newBooking.carrierName || selectedCarrierCompany || 'FreightIQ Intermodal Command';
+    const shipperCo = newBooking.shipperCompany || currentUser?.company || LOGGED_IN_CUSTOMER_COMPANY;
+    const shipperPh = newBooking.shipperPhone || currentUser?.phone || '+91 98201 55194';
+    const shipperAddr = newBooking.shipperAddress || currentUser?.address || 'Plot 42, Peenya Industrial Area, Phase 3, Bengaluru - 560058';
+
     const fullBooking: Consignment = {
-      id: `CRG-${Math.floor(25000 + Math.random() * 5000)}`,
+      id: `CRG-BK-${Math.floor(25000 + Math.random() * 50000)}`,
       origin: newBooking.origin || 'Mumbai Nhava Sheva (JNPT)',
-      destination: newBooking.destination || 'Pune Chakan Industrial Hub',
+      destination: newBooking.destination || 'Bengaluru Peenya Logistics Park',
       department: newBooking.department || 'Industrial Goods',
       weightLbs: newBooking.weightLbs || 38000,
       valueUsd: newBooking.valueUsd || 140000,
-      mode: newBooking.mode || 'First Class',
-      delayRiskLevel: newBooking.delayRiskLevel || 'MODERATE',
-      delayRiskPercent: newBooking.delayRiskPercent || 18.4,
+      mode: newBooking.mode || 'First Class Intermodal',
+      delayRiskLevel: newBooking.delayRiskLevel || 'LOW',
+      delayRiskPercent: newBooking.delayRiskPercent || 14.5,
       demurrageRisk: newBooking.demurrageRisk || 0,
-      carrierName: newBooking.carrierName || 'Expedited Regional Express',
+      carrierName: carrier,
+      carrierCompany: carrier,
+      shipperCompany: shipperCo,
+      shipperAddress: shipperAddr,
+      shipperPhone: shipperPh,
+      shipperName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME,
+      shipperEmail: currentUser?.email || LOGGED_IN_CUSTOMER_EMAIL,
       circuitFile: newBooking.circuitFile || 'qpiai_circuit_1793229999.qasm',
       netSavings: newBooking.netSavings || 3400,
-      status: 'CONFIRMED',
-      eta: newBooking.eta || '07h 45m',
-      notes: newBooking.notes,
-      customerCompany: currentUser?.company || LOGGED_IN_CUSTOMER_COMPANY,
+      status: isCustomer ? 'PENDING_APPROVAL' : (newBooking.status || 'CONFIRMED'),
+      eta: isCustomer ? 'Awaiting Admin Acceptance' : '07h 45m',
+      notes: newBooking.notes || `Order from ${shipperCo} (${shipperPh}) awaiting ${carrier} Admin acceptance.`,
+      customerCompany: shipperCo,
       customerName: currentUser?.full_name || LOGGED_IN_CUSTOMER_NAME
     };
 
     setAllConsignments((prev) => [fullBooking, ...prev]);
-    showToast(`✓ Consignment ${fullBooking.id} created and synced live to Supabase`);
+
+    if (fullBooking.status === 'PENDING_APPROVAL') {
+      showToast(`✓ Order ${fullBooking.id} submitted! Request sent to ${carrier} Admin for approval.`);
+      handleWriteAuditLog('CARGO_ORDER_REQUESTED', 'ASSIGNMENT', `Customer ${shipperCo} (${shipperPh}) requested cargo haul with ${carrier}. Status: PENDING_APPROVAL`);
+    } else {
+      showToast(`✓ Consignment ${fullBooking.id} confirmed for ${carrier}.`);
+      handleWriteAuditLog('CARGO_ORDER_CONFIRMED', 'ASSIGNMENT', `Consignment ${fullBooking.id} confirmed for ${carrier}`);
+    }
 
     try {
       await supabase.from('cargo_bookings').insert({
@@ -920,20 +941,61 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         user_email: currentUser?.email || 'operations@freightiq.in',
         origin: fullBooking.origin,
         destination: fullBooking.destination,
-        cargo_type: fullBooking.department,
+        cargo_type: `${fullBooking.department} | Shipper: ${shipperCo} | Phone: ${shipperPh}`,
         weight_lbs: fullBooking.weightLbs,
         declared_value_usd: fullBooking.valueUsd,
-        shipping_mode: fullBooking.mode,
+        shipping_mode: `${fullBooking.mode} • Carrier: ${carrier}`,
         scheduled_delivery: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
         status: fullBooking.status,
         delay_risk_pct: fullBooking.delayRiskPercent,
         risk_tier: fullBooking.delayRiskLevel,
         demurrage_penalty_usd: fullBooking.demurrageRisk,
-        quantum_carrier_assigned: fullBooking.carrierName,
+        quantum_carrier_assigned: carrier,
         net_savings_usd: fullBooking.netSavings
       });
     } catch (e) {
       console.warn('Live Supabase insert notice:', e);
+    }
+  };
+
+  // Admin Acceptance of Customer Orders
+  const handleAcceptBookingOrder = async (bookingId: string) => {
+    let targetBooking: Consignment | undefined;
+    setAllConsignments((prev) =>
+      prev.map((c) => {
+        if (c.id === bookingId) {
+          targetBooking = c;
+          return { ...c, status: 'CONFIRMED', eta: 'Tomorrow, 14:00 IST' };
+        }
+        return c;
+      })
+    );
+    showToast(`✓ Order ${bookingId} ACCEPTED! Manifest confirmed and driver notified.`);
+    handleWriteAuditLog('ADMIN_ACCEPT_ORDER', 'ASSIGNMENT', `Admin accepted cargo order ${bookingId} for customer ${targetBooking?.shipperCompany || 'Shipper'}`);
+    try {
+      await supabase
+        .from('cargo_bookings')
+        .update({ status: 'CONFIRMED' })
+        .eq('booking_ref', bookingId);
+    } catch (e) {
+      console.warn('Supabase order accept sync notice:', e);
+    }
+  };
+
+  // Admin Rejection of Customer Orders
+  const handleRejectBookingOrder = async (bookingId: string) => {
+    setAllConsignments((prev) =>
+      prev.map((c) => (c.id === bookingId ? { ...c, status: 'REJECTED', eta: 'Order Declined' } : c))
+    );
+    showToast(`Order ${bookingId} declined by Admin.`);
+    handleWriteAuditLog('ADMIN_REJECT_ORDER', 'ASSIGNMENT', `Admin declined cargo order ${bookingId}`);
+    try {
+      await supabase
+        .from('cargo_bookings')
+        .update({ status: 'REJECTED' })
+        .eq('booking_ref', bookingId);
+    } catch (e) {
+      console.warn('Supabase order reject sync notice:', e);
     }
   };
 
@@ -1245,7 +1307,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             setPage('login');
           }}
           onLoginSuccess={(u: any) => {
-            const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase().includes('rajath') || u?.email?.toLowerCase().includes('admin');
+            const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase() === 'admin@gmail.com';
             const r: Role = isAdmin ? 'admin' : 'customer';
             if (isAdmin) {
               setElevationToken('freightiq-admin-master-elevation-token');
@@ -1260,8 +1322,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             if (u) {
               const fullUser: UserProfile = {
                 id: u.id || `usr-${Date.now().toString().slice(-6)}`,
-                email: u.email || (isAdmin ? 'rajathgowda@gmail.com' : LOGGED_IN_CUSTOMER_EMAIL),
-                full_name: u.full_name || u.name || (isAdmin ? 'Rajathgowda' : LOGGED_IN_CUSTOMER_NAME),
+                email: u.email || (isAdmin ? 'admin@gmail.com' : LOGGED_IN_CUSTOMER_EMAIL),
+                full_name: u.full_name || u.name || (isAdmin ? 'Admin' : LOGGED_IN_CUSTOMER_NAME),
                 company: u.company || (isAdmin ? 'FreightIQ Command' : LOGGED_IN_CUSTOMER_COMPANY),
                 phone: u.phone || '+91 98201 55194',
                 gstin: u.gstin || '27AABCV1234F1Z5',
@@ -1291,7 +1353,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           initialRole={loginRole}
           onNavigateLanding={() => setPage('landing')}
           onLoginSuccess={(u: any) => {
-            const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase().includes('rajath') || u?.email?.toLowerCase().includes('admin');
+            const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase() === 'admin@gmail.com';
             const r: Role = isAdmin ? 'admin' : 'customer';
             if (isAdmin) {
               setElevationToken('freightiq-admin-master-elevation-token');
@@ -1306,8 +1368,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             if (u) {
               const fullUser: UserProfile = {
                 id: u.id || `usr-${Date.now().toString().slice(-6)}`,
-                email: u.email || (isAdmin ? 'rajathgowda@gmail.com' : LOGGED_IN_CUSTOMER_EMAIL),
-                full_name: u.full_name || u.name || (isAdmin ? 'Rajathgowda' : LOGGED_IN_CUSTOMER_NAME),
+                email: u.email || (isAdmin ? 'admin@gmail.com' : LOGGED_IN_CUSTOMER_EMAIL),
+                full_name: u.full_name || u.name || (isAdmin ? 'Admin' : LOGGED_IN_CUSTOMER_NAME),
                 company: u.company || (isAdmin ? 'FreightIQ Command' : LOGGED_IN_CUSTOMER_COMPANY),
                 phone: u.phone || '+91 98201 55194',
                 gstin: u.gstin || '27AABCV1234F1Z5',
@@ -1464,6 +1526,25 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                   />
                 )}
 
+                {/* Shared Cargo Bookings & Carrier Capacities Marketplace */}
+                {activeTab === 'cargo-bookings' && (
+                  <CargoBookingsView
+                    consignments={allConsignments}
+                    onSelectConsignment={setSelectedConsignment}
+                    onOpenNewBookingModal={(carrier) => {
+                      if (carrier) setSelectedCarrierCompany(carrier);
+                      setNewBookingModalOpen(true);
+                    }}
+                    onForceWeatherRefresh={handleForceWeatherRefresh}
+                    isWeatherRefreshing={isWeatherRefreshing}
+                    onRerunRisk={handleRerunRisk}
+                    onReassignCarrier={handleReassignCarrier}
+                    userRole={activeRole}
+                    onAcceptOrder={handleAcceptBookingOrder}
+                    onRejectOrder={handleRejectBookingOrder}
+                  />
+                )}
+
                 {activeTab === 'customer-tracking' && (
                   <CustomerTrackingView
                     consignments={roleShipments}
@@ -1503,7 +1584,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                   <QpiAiPilotView
                     initialPrompt={pilotPrompt}
                     onClearInitialPrompt={() => setPilotPrompt(undefined)}
-                    userName={currentUser?.full_name || (activeRole === 'admin' ? 'Rajathgowda' : 'Ananya Verma')}
+                    userName={currentUser?.full_name || (activeRole === 'admin' ? 'Admin' : 'Ananya Verma')}
                     userRole={activeRole}
                     onInitiateCheckout={handleInitiateCheckout}
                   />
@@ -1576,18 +1657,6 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                     )}
 
                     {/* Admin-Only Existing Modules */}
-                    {activeTab === 'cargo-bookings' && (
-                      <CargoBookingsView
-                        consignments={allConsignments}
-                        onSelectConsignment={setSelectedConsignment}
-                        onOpenNewBookingModal={() => setNewBookingModalOpen(true)}
-                        onForceWeatherRefresh={handleForceWeatherRefresh}
-                        isWeatherRefreshing={isWeatherRefreshing}
-                        onRerunRisk={handleRerunRisk}
-                        onReassignCarrier={handleReassignCarrier}
-                      />
-                    )}
-
                     {activeTab === 'corridor-simulation' && (
                       <CorridorSimulationView
                         waypoints={waypoints}
@@ -1692,6 +1761,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         isOpen={newBookingModalOpen}
         onClose={() => setNewBookingModalOpen(false)}
         onSubmit={handleNewBookingSubmit}
+        defaultCarrierCompany={selectedCarrierCompany}
+        currentUser={currentUser}
       />
 
       {/* Modal for User Profile & Organization Dashboard */}

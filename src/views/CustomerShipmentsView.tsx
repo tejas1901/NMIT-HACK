@@ -48,12 +48,14 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
 
     if (statusFilter === 'In Transit') return c.status === 'DISPATCHED' || c.status === 'AT RISK';
     if (statusFilter === 'Confirmed') return c.status === 'CONFIRMED';
+    if (statusFilter === 'Pending') return c.status === 'PENDING_APPROVAL';
     if (statusFilter === 'Delivered') return c.status === 'DELIVERED';
     return true;
   });
 
   const getProgressPercent = (status: string) => {
     switch (status) {
+      case 'PENDING_APPROVAL': return 10;
       case 'CONFIRMED': return 25;
       case 'DISPATCHED': return 65;
       case 'AT RISK': return 60;
@@ -179,7 +181,7 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 text-xs">
-          {['All', 'In Transit', 'Confirmed', 'Delivered'].map((status) => {
+          {['All', 'Pending', 'In Transit', 'Confirmed', 'Delivered'].map((status) => {
             const isActive = statusFilter === status;
             return (
               <button
@@ -215,11 +217,18 @@ export const CustomerShipmentsView: React.FC<CustomerShipmentsViewProps> = ({
                   <span className="font-mono font-extrabold text-base md:text-lg text-[#08193A]">
                     {shipment.id}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/25">
-                    {shipment.department}
-                  </span>
+                  {shipment.status === 'PENDING_APPROVAL' ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-amber-500/20 text-amber-900 border border-amber-500/40 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+                      <span>Awaiting {shipment.carrierCompany || 'Carrier'} Admin Approval</span>
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#1B3A7A]/15 text-[#1B3A7A] border border-[#1B3A7A]/25">
+                      {shipment.department}
+                    </span>
+                  )}
                   <span className="text-xs font-medium text-[#5B6B86]">
-                    • {shipment.mode}
+                    • Carrier: {shipment.carrierCompany || shipment.carrierName}
                   </span>
                 </div>
 

@@ -260,7 +260,7 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
               {
                 id: `ACT-${Date.now()}-done`,
                 timestamp: formattedSimulatedClock,
-                actor: 'Rajathgowda (Admin)',
+                actor: 'Admin',
                 action: 'MARKED_DONE',
                 details: 'Blocker confirmed resolved; demurrage clock terminated.'
               }
@@ -330,7 +330,7 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
               {
                 id: `ACT-${Date.now()}-reassign`,
                 timestamp: formattedSimulatedClock,
-                actor: 'Rajathgowda (Admin)',
+                actor: 'Admin',
                 action: 'REASSIGNED_OWNER',
                 details: `Owner manually changed from ${c.ownerName} to ${newOwnerSelection}`
               }
@@ -369,7 +369,7 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
               {
                 id: `ACT-${Date.now()}-false-alarm`,
                 timestamp: formattedSimulatedClock,
-                actor: 'Rajathgowda (Admin)',
+                actor: 'Admin',
                 action: 'REJECTED_FALSE_ALARM',
                 details: `False alarm rejected with reason: ${falseAlarmReason}`
               }

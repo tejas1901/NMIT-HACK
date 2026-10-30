@@ -12,6 +12,33 @@ import {
 } from '../types';
 
 export const INITIAL_CONSIGNMENTS: Consignment[] = [
+  // Pending Customer Order (Awaiting Carrier Company Admin Acceptance)
+  {
+    id: 'CRG-BK-49210',
+    origin: 'Peenya Industrial Logistics Hub, Bengaluru',
+    destination: 'JNPT Nhava Sheva Terminal 3, Mumbai',
+    department: 'Pharmaceuticals (Cold-Chain)',
+    weightLbs: 34500,
+    valueUsd: 14500000,
+    mode: 'First Class Intermodal',
+    delayRiskLevel: 'LOW',
+    delayRiskPercent: 12.4,
+    demurrageRisk: 0,
+    carrierName: 'FreightIQ Intermodal Command',
+    carrierCompany: 'FreightIQ Intermodal Command',
+    shipperCompany: 'Biocon Pharma Intermodal',
+    shipperAddress: 'Plot 20, Phase 2, Electronics City, Bengaluru - 560100',
+    shipperPhone: '+91 98450 88219',
+    shipperName: 'Dr. Suresh Rao',
+    shipperEmail: 'suresh.rao@biocon.in',
+    circuitFile: 'qpiai_circuit_1793229811.qasm',
+    netSavings: 5400,
+    status: 'PENDING_APPROVAL',
+    eta: 'Awaiting Admin Acceptance',
+    notes: 'Urgent cold-chain vaccines. Requires Carrier Admin acceptance and refrigerated tractor.',
+    customerCompany: 'Biocon Pharma Intermodal',
+    customerName: 'Dr. Suresh Rao'
+  },
   // Customer 1: Vikas Intermodal Corp (Ananya Verma) - 6 Shipments
   {
     id: 'CRG-24551',

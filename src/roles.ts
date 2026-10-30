@@ -9,9 +9,9 @@ export const LOGGED_IN_CUSTOMER_COMPANY = 'Vikas Intermodal Corp';
 export const LOGGED_IN_CUSTOMER_NAME = 'Ananya Verma';
 export const LOGGED_IN_CUSTOMER_EMAIL = 'ananya.verma@vikasintermodal.in';
 
-export const ADMIN_USER_NAME = 'Rajathgowda';
-export const ADMIN_USER_EMAIL = 'rajathgowda@gmail.com';
-export const ADMIN_USER_ROLE_TITLE = 'Operations Lead';
+export const ADMIN_USER_NAME = 'Admin';
+export const ADMIN_USER_EMAIL = 'admin@gmail.com';
+export const ADMIN_USER_ROLE_TITLE = 'Master Administrator';
 
 /**
  * FEATURE REGISTRY: Single source of truth for permission access.
@@ -33,8 +33,8 @@ export const FEATURE_REGISTRY = {
   'nav.all_fleet_orders': { access: 'admin', description: 'All corporate truck orders' },
   'nav.my_fleet_orders': { access: 'shared', description: 'Purchased fleet inventory' },
   
-  // Admin-only specialized modules
-  'nav.cargo_bookings': { access: 'admin', description: 'Manifest register & demurrage overrides' },
+  // Shared carrier fleet marketplace & manifest
+  'nav.cargo_bookings': { access: 'shared', description: 'Company cargo browser, bookings & approvals' },
   'nav.corridor_simulation': { access: 'admin', description: 'NH-48 simulation & backhaul matching' },
   'nav.xgboost_ml': { access: 'admin', description: 'XGBoost 3.2 model metrics & feature weights' },
   'nav.qpiai_quantum': { access: 'admin', description: 'QpiAI QUBO quantum carrier allocation' },

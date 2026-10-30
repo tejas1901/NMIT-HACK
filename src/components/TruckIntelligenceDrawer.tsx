@@ -726,7 +726,7 @@ DRIVER PROFILE:
                   </div>
                   <div className="pt-1.5 flex justify-between">
                     <span>08:12 IST • Speed governor override requested by Dispatcher</span>
-                    <span className="text-[#34D399]">ADMIN: Rajathgowda</span>
+                    <span className="text-[#34D399]">ADMIN: Admin Command</span>
                   </div>
                   <div className="pt-1.5 flex justify-between">
                     <span>06:00 IST • Pre-trip digital vehicle inspection cleared</span>
