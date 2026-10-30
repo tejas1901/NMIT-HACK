@@ -45,6 +45,7 @@ interface SidebarProps {
   onSignOut?: () => void;
   currentUser?: UserProfile;
   onOpenProfile?: () => void;
+  canSwitchRole?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -59,7 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onTriggerPilotPrompt,
   onSignOut,
   currentUser,
-  onOpenProfile
+  onOpenProfile,
+  canSwitchRole = true
 }) => {
   const [pilotDrawerOpen, setPilotDrawerOpen] = useState(false);
   const [quickInput, setQuickInput] = useState('');
@@ -406,7 +408,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Bottom Section: Demo Switcher + Rotating Live Sync */}
         <div className="flex flex-col gap-2 pt-2 shrink-0 border-t border-black/5">
           {/* Operating Console Access Tier Switcher */}
-          {DEMO_MODE && (
+          {DEMO_MODE && canSwitchRole && (
             <div className="p-1.5 rounded-xl bg-white/50 border border-white/80 flex items-center justify-between text-[10px]">
               <span className="text-[#5B6B86] font-medium">Access Tier:</span>
               <button
@@ -507,7 +509,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
 
-        {DEMO_MODE && (
+        {DEMO_MODE && canSwitchRole && (
           <button
             onClick={onOpenRoleSwitcher}
             className="flex flex-col items-center justify-center p-2 rounded-full text-[#08193A]"

@@ -23,6 +23,7 @@ import { TRUCK_CATALOG } from '../data/truckCatalogData';
 import { formatInr } from '../lib/currency';
 
 interface TruckMarketplaceViewProps {
+  catalog?: TruckListing[];
   onInitiateCheckout: (item: CheckoutItem) => void;
   purchasedOrders: PurchasedTruckOrder[];
   onViewPurchasedOrders: () => void;
@@ -30,6 +31,7 @@ interface TruckMarketplaceViewProps {
 }
 
 export const TruckMarketplaceView: React.FC<TruckMarketplaceViewProps> = ({
+  catalog = TRUCK_CATALOG,
   onInitiateCheckout,
   purchasedOrders,
   onViewPurchasedOrders,
@@ -42,7 +44,9 @@ export const TruckMarketplaceView: React.FC<TruckMarketplaceViewProps> = ({
 
   const categories = ['All', 'Heavy Haul', 'Electric Semi', 'Cold-Chain Reefer', 'Urban Drayage', 'Intermodal Prime'];
 
-  const filteredTrucks = TRUCK_CATALOG.filter((truck) => {
+  const activeCatalog = Array.isArray(catalog) && catalog.length > 0 ? catalog : TRUCK_CATALOG;
+
+  const filteredTrucks = activeCatalog.filter((truck) => {
     const matchesCategory = selectedCategory === 'All' || truck.category === selectedCategory;
     const matchesSearch = 
       truck.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -199,8 +203,8 @@ export const TruckMarketplaceView: React.FC<TruckMarketplaceViewProps> = ({
                 </span>
 
                 <span className="text-[11px] font-mono font-semibold text-[#5B6B86] flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${truck.inStock > 2 ? 'bg-[#34D399]' : 'bg-[#F59E5B]'}`} />
-                  <span>{truck.inStock} in stock</span>
+                  <span className={`w-2 h-2 rounded-full ${truck.inStock <= 0 || truck.outOfStock ? 'bg-rose-500' : truck.inStock > 2 ? 'bg-[#34D399]' : 'bg-[#F59E5B]'}`} />
+                  <span>{truck.inStock <= 0 || truck.outOfStock ? '0 in stock (Booked)' : `${truck.inStock} in stock`}</span>
                 </span>
               </div>
 
@@ -310,15 +314,21 @@ export const TruckMarketplaceView: React.FC<TruckMarketplaceViewProps> = ({
                   <SlidersHorizontal className="w-4 h-4" />
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleBuyTruck(truck)}
-                  className="px-4 py-2.5 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] shadow-[0_4px_16px_rgba(8,25,58,0.22)] liquid-btn flex items-center gap-1.5 cursor-pointer shrink-0"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5 text-[#34D399]" />
-                  <span>Rent Rig</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                {truck.inStock <= 0 || truck.outOfStock ? (
+                  <span className="px-3.5 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-500 border border-slate-300">
+                    Fully Booked
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleBuyTruck(truck)}
+                    className="px-4 py-2.5 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] shadow-[0_4px_16px_rgba(8,25,58,0.22)] liquid-btn flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-[#34D399]" />
+                    <span>Rent Rig</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

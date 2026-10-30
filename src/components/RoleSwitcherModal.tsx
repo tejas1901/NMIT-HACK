@@ -21,13 +21,15 @@ interface RoleSwitcherModalProps {
   onClose: () => void;
   activeRole: UserRole;
   onSelectRole: (role: UserRole) => void;
+  canSwitchRole?: boolean;
 }
 
 export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
   isOpen,
   onClose,
   activeRole,
-  onSelectRole
+  onSelectRole,
+  canSwitchRole = true
 }) => {
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -42,17 +44,23 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
       e.preventDefault();
       e.stopPropagation();
     }
+
+    if (!canSwitchRole) {
+      setErrorMessage('Role switching is restricted. Only users who logged in as Administrator can switch roles.');
+      return;
+    }
+
     const trimmed = adminPassword.trim();
     if (!trimmed) {
-      setErrorMessage('Admin password is required');
+      setErrorMessage('Admin password is required (Password@123)');
       return;
     }
 
     setIsVerifying(true);
     setErrorMessage(null);
 
-    // Strict Admin Password Authorization: ONLY admin@123 allowed
-    const isMasterKey = trimmed === 'admin@123';
+    // Strict Admin Password Authorization: Password@123 (or admin@123)
+    const isMasterKey = trimmed === 'Password@123' || trimmed === 'admin@123';
 
     // Immediate master elevation if password matches admin credentials
     if (isMasterKey) {
@@ -72,7 +80,7 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
     }
 
     // Reject all other passwords strictly
-    setErrorMessage('Invalid admin password. Only authorized admin credentials allowed.');
+    setErrorMessage('Invalid admin password. Enter Password@123 to verify Admin authorization.');
     setIsVerifying(false);
   };
 
@@ -85,6 +93,11 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
       onClose();
     } else {
       // Switching to Admin
+      if (!canSwitchRole) {
+        setShowPasswordPrompt(true);
+        setErrorMessage('Role switching is restricted. Only users who logged in as Administrator can switch roles.');
+        return;
+      }
       if (activeRole === 'admin') {
         onClose();
       } else {
@@ -211,15 +224,18 @@ export const RoleSwitcherModal: React.FC<RoleSwitcherModalProps> = ({
                   onClick={(e) => e.stopPropagation()} 
                   className="pt-2 space-y-2.5 animate-in fade-in duration-150"
                 >
-                  <label className="text-[11px] font-bold text-[#A7F3D0] flex items-center gap-1.5">
-                    <KeyRound className="w-3 h-3 text-[#34D399]" />
-                    <span>Admin Elevation Passcode</span>
+                  <label className="text-[11px] font-bold text-[#A7F3D0] flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <KeyRound className="w-3 h-3 text-[#34D399]" />
+                      <span>Admin Elevation Passcode</span>
+                    </span>
+                    <span className="text-[10px] text-white/50 font-mono">Req: Password@123</span>
                   </label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       autoFocus
-                      placeholder="Enter administrator password..."
+                      placeholder="Enter Password@123..."
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
                       className="w-full px-3.5 py-2 pr-9 rounded-xl text-xs bg-black/40 border border-white/20 text-white placeholder-white/40 focus:outline-hidden focus:border-[#34D399] transition-all"

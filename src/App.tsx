@@ -192,6 +192,19 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const [page, setPage] = useState<string>(initialUrlPage);
   const [loginRole, setLoginRole] = useState<'customer' | 'admin'>(initialRole);
 
+  // Initial login role tracking (Only users who initially authenticated as admin can switch roles)
+  const [initialLoginRole, setInitialLoginRole] = useState<'admin' | 'customer'>(() => {
+    try {
+      const stored = sessionStorage.getItem('freightiq_initial_login_role') || localStorage.getItem('freightiq_initial_login_role');
+      if (stored === 'admin') return 'admin';
+      if (stored === 'customer') return 'customer';
+    } catch {}
+    if (user?.role?.toLowerCase() === 'admin' || initialRole === 'admin') return 'admin';
+    return 'customer';
+  });
+
+  const canSwitchRole = initialLoginRole === 'admin';
+
   // Dual-Panel Role State ('admin' | 'customer')
   const [activeRole, setActiveRole] = useState<Role>(initialRole);
   const [roleSwitcherModalOpen, setRoleSwitcherModalOpen] = useState(false);
@@ -336,7 +349,23 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const [backhauls, setBackhauls] = useState<BackhaulPairing[]>(BACKHAUL_ROWS);
   const [exceptions, setExceptions] = useState<FreightException[]>(FREIGHT_EXCEPTIONS);
   const [devLogs, setDevLogs] = useState<DevLogMessage[]>(INITIAL_DEV_LOGS);
-  const [truckCatalog, setTruckCatalog] = useState<TruckListing[]>(TRUCK_CATALOG);
+  const [truckCatalog, setTruckCatalog] = useState<TruckListing[]>(() => {
+    try {
+      const saved = localStorage.getItem('freightiq_truck_catalog');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return TRUCK_CATALOG;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('freightiq_truck_catalog', JSON.stringify(truckCatalog));
+      broadcastSyncEvent('SYNC_TRUCK_CATALOG', truckCatalog);
+    } catch {}
+  }, [truckCatalog]);
   const [haulRequests, setHaulRequests] = useState<HaulRequest[]>(() => {
     try {
       const saved = localStorage.getItem('freightiq_haul_requests');
@@ -407,6 +436,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             setAllOrders(payload);
           } else if (type === 'SYNC_DRIVERS' && Array.isArray(payload)) {
             setFleetDrivers(payload);
+          } else if (type === 'SYNC_TRUCK_CATALOG' && Array.isArray(payload)) {
+            setTruckCatalog(payload);
           } else if (type === 'NEW_BOOKING_NOTIFY') {
             if (activeRole === 'admin') {
               showToast(`🔔 Real-time: Inbound booking request from ${payload?.shipperCompany || 'Customer'}!`);
@@ -730,17 +761,18 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const handleSelectRole = (newRole: Role) => {
     if (newRole === 'customer') {
       clearElevationToken();
+      // Keep credentials identical to admin session (admin@gmail.com, Admin, FreightIQ Command)
       const customerUser: UserProfile = {
-        id: 'usr-default',
-        email: LOGGED_IN_CUSTOMER_EMAIL,
-        full_name: LOGGED_IN_CUSTOMER_NAME,
-        company: LOGGED_IN_CUSTOMER_COMPANY,
+        id: 'usr-admin-customer-mode',
+        email: 'admin@gmail.com',
+        full_name: 'Admin',
+        company: 'FreightIQ Command',
         phone: '+91 98201 55194',
         gstin: '27AABCV1234F1Z5',
         corridor: 'NH-48 (Bengaluru - Mumbai JNPT)',
         depot: 'JNPT Nhava Sheva Terminal 3',
         role: 'CUSTOMER',
-        role_label: 'Verified Customer'
+        role_label: 'Admin (Shipper Portal Mode)'
       };
       setCurrentUser(customerUser);
       try {
@@ -750,7 +782,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       } catch {}
       setActiveRole('customer');
       setActiveTab('customer-shipments');
-      showToast(`Switched to Customer Panel (${LOGGED_IN_CUSTOMER_NAME})`);
+      showToast('Switched to Customer Panel (Session: admin@gmail.com)');
     } else {
       const masterToken = 'freightiq-admin-master-elevation-token';
       setElevationToken(masterToken);
@@ -775,7 +807,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       } catch {}
       setActiveRole('admin');
       setActiveTab('admin-exception-tower');
-      showToast(`Switched to Admin Operations (${ADMIN_USER_NAME})`);
+      showToast('Elevated to Admin Operations Command via Password@123');
     }
   };
 
@@ -1201,6 +1233,29 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
     showToast(`✓ Order ${bookingId} ACCEPTED! Assigned ${emptyDriver.name} on ${emptyDriver.vehicle.unitNumber}.`);
     handleWriteAuditLog('ADMIN_ACCEPT_ORDER', 'ASSIGNMENT', `Admin accepted cargo order ${bookingId} and assigned driver ${emptyDriver.name} (${emptyDriver.vehicle.unitNumber})`);
+
+    // Deduct stock of the booked vehicle in fleet inventory
+    setTruckCatalog((prev) => {
+      let matched = false;
+      return prev.map((t) => {
+        const isMatch = !matched && (
+          t.name.toLowerCase().includes(emptyDriver.vehicle.model.toLowerCase().slice(0, 5)) ||
+          emptyDriver.vehicle.model.toLowerCase().includes(t.name.toLowerCase().slice(0, 5)) ||
+          t.category === 'Heavy Haul'
+        );
+        if (isMatch && (t.inStock || 0) > 0) {
+          matched = true;
+          const newStock = Math.max(0, (t.inStock || 1) - 1);
+          return {
+            ...t,
+            inStock: newStock,
+            outOfStock: newStock === 0,
+            reservationStatus: newStock === 0 ? 'SOLD' : t.reservationStatus
+          };
+        }
+        return t;
+      });
+    });
     try {
       await supabase
         .from('cargo_bookings')
@@ -1269,7 +1324,22 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const handlePaymentSuccess = async (newOrder: PurchasedTruckOrder | null, metadata?: Record<string, any>) => {
     if (newOrder) {
       setAllOrders((prev) => [newOrder, ...prev]);
-      showToast(`✓ Order Confirmed! ${newOrder.truckName} added to fleet inventory.`);
+      // Immediately reduce stock of the vehicle booked
+      setTruckCatalog((prev) =>
+        prev.map((t) => {
+          if (t.id === newOrder.truckId || t.name.toLowerCase() === newOrder.truckName.toLowerCase()) {
+            const newStock = Math.max(0, (t.inStock || 1) - 1);
+            return {
+              ...t,
+              inStock: newStock,
+              outOfStock: newStock === 0,
+              reservationStatus: newStock === 0 ? 'SOLD' : t.reservationStatus
+            };
+          }
+          return t;
+        })
+      );
+      showToast(`✓ Order Confirmed! ${newOrder.truckName} added to fleet inventory (1 unit deducted from showroom stock).`);
       setTimeout(() => {
         setPaymentModalOpen(false);
         setActiveTab(activeRole === 'admin' ? 'admin-all-fleet-orders' : 'customer-fleet');
@@ -1530,7 +1600,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   const handleAddNewTruck = (newTruck: TruckListing) => {
     setTruckCatalog((prev) => [newTruck, ...prev]);
-    showToast(`Registered new commercial rig ${newTruck.name} into catalog`);
+    showToast(`✓ Registered new commercial rig ${newTruck.name} into catalog! Available immediately to customers.`);
+    handleWriteAuditLog('ADMIN_ADD_TRUCK', 'INVENTORY', `Admin registered new rig ${newTruck.name} into commercial fleet catalog with ${newTruck.inStock} units in stock.`);
   };
 
   const handleToggleReservation = (truckId: string, status: 'AVAILABLE' | 'RESERVED' | 'SOLD', customerName?: string) => {
@@ -1542,10 +1613,38 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   // Admin Fleet Orders actions
   const handleApproveOrder = (orderId: string) => {
+    let bookedTruckId = '';
+    let bookedTruckName = '';
     setAllOrders((prev) =>
-      prev.map((o) => (o.orderId === orderId ? { ...o, status: 'IN_TRANSIT_TO_DEPOT' } : o))
+      prev.map((o) => {
+        if (o.orderId === orderId) {
+          bookedTruckId = o.truckId;
+          bookedTruckName = o.truckName;
+          return { ...o, status: 'IN_TRANSIT_TO_DEPOT' };
+        }
+        return o;
+      })
     );
-    showToast(`Pre-delivery inspection approved for order ${orderId}`);
+
+    // Reduce stock of the vehicle booked
+    setTruckCatalog((prev) =>
+      prev.map((t) => {
+        const matches = t.id === bookedTruckId || t.name.toLowerCase() === bookedTruckName.toLowerCase();
+        if (matches) {
+          const newStock = Math.max(0, (t.inStock || 1) - 1);
+          return {
+            ...t,
+            inStock: newStock,
+            outOfStock: newStock === 0,
+            reservationStatus: newStock === 0 ? 'SOLD' : t.reservationStatus
+          };
+        }
+        return t;
+      })
+    );
+
+    showToast(`✓ Order ${orderId} approved! Fleet stock reduced by 1 vehicle.`);
+    handleWriteAuditLog('ADMIN_APPROVE_FLEET_ORDER', 'FLEET', `Admin approved fleet lease order ${orderId} for ${bookedTruckName} (Deducted 1 unit from stock)`);
   };
 
   const handleFulfillOrder = (orderId: string) => {
@@ -1571,6 +1670,12 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           onLoginSuccess={(u: any) => {
             const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase() === 'admin@gmail.com';
             const r: Role = isAdmin ? 'admin' : 'customer';
+            const initRole = isAdmin ? 'admin' : 'customer';
+            setInitialLoginRole(initRole);
+            try {
+              sessionStorage.setItem('freightiq_initial_login_role', initRole);
+              localStorage.setItem('freightiq_initial_login_role', initRole);
+            } catch {}
             if (isAdmin) {
               setElevationToken('freightiq-admin-master-elevation-token');
               try {
@@ -1617,6 +1722,12 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           onLoginSuccess={(u: any) => {
             const isAdmin = u?.role?.toUpperCase() === 'ADMIN' || u?.email?.toLowerCase() === 'admin@gmail.com';
             const r: Role = isAdmin ? 'admin' : 'customer';
+            const initRole = isAdmin ? 'admin' : 'customer';
+            setInitialLoginRole(initRole);
+            try {
+              sessionStorage.setItem('freightiq_initial_login_role', initRole);
+              localStorage.setItem('freightiq_initial_login_role', initRole);
+            } catch {}
             if (isAdmin) {
               setElevationToken('freightiq-admin-master-elevation-token');
               try {
@@ -1674,6 +1785,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
         {/* Floating Glass Sidebar */}
         <Sidebar
           activeRole={activeRole}
+          canSwitchRole={canSwitchRole}
           onOpenRoleSwitcher={() => setRoleSwitcherModalOpen(true)}
           activeTab={activeTab}
           onSelectTab={setActiveTab}
@@ -1693,6 +1805,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             try {
               localStorage.removeItem('freightiq_user');
               localStorage.removeItem('freightiq_token');
+              localStorage.removeItem('freightiq_initial_login_role');
+              sessionStorage.removeItem('freightiq_initial_login_role');
               sessionStorage.removeItem('freightiq_active_role');
               sessionStorage.removeItem('freightiq_active_tab');
               clearElevationToken();
@@ -1755,7 +1869,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                   <span>Profile Settings</span>
                 </button>
 
-                {DEMO_MODE && (
+                {DEMO_MODE && canSwitchRole && (
                   <button
                     onClick={() => setRoleSwitcherModalOpen(true)}
                     className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-[#08193A] hover:bg-[#08193A] hover:text-white border border-black/10 transition-all liquid-btn flex items-center gap-1.5 cursor-pointer shadow-xs"
@@ -1828,6 +1942,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                     onInitiateCheckout={handleInitiateCheckout}
                     purchasedOrders={roleOrders}
                     onViewPurchasedOrders={() => setActiveTab('customer-fleet')}
+                    truckCatalog={truckCatalog}
                   />
                 )}
 
@@ -2035,6 +2150,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
           onClose={() => setRoleSwitcherModalOpen(false)}
           activeRole={activeRole}
           onSelectRole={handleSelectRole}
+          canSwitchRole={canSwitchRole}
         />
       )}
 

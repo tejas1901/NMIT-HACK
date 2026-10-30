@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   CalendarCheck
 } from 'lucide-react';
-import { Consignment, CheckoutItem, PurchasedTruckOrder } from '../types';
+import { Consignment, CheckoutItem, PurchasedTruckOrder, TruckListing } from '../types';
 import { CargoBookingsView } from './CargoBookingsView';
 import { CustomerBookShipmentView } from './CustomerBookShipmentView';
 import { TruckMarketplaceView } from './TruckMarketplaceView';
@@ -37,6 +37,7 @@ interface CustomerUnifiedBookingViewProps {
   onBookingConfirmed: (newConsignment: Consignment) => void;
 
   // Fleet Booking Props
+  truckCatalog?: TruckListing[];
   onInitiateCheckout: (item: CheckoutItem) => void;
   purchasedOrders: PurchasedTruckOrder[];
   onViewPurchasedOrders: () => void;
@@ -58,7 +59,8 @@ export const CustomerUnifiedBookingView: React.FC<CustomerUnifiedBookingViewProp
   onBookingConfirmed,
   onInitiateCheckout,
   purchasedOrders = [],
-  onViewPurchasedOrders
+  onViewPurchasedOrders,
+  truckCatalog
 }) => {
   const [subTab, setSubTab] = useState<BookingSubTab>(initialSubTab);
 
@@ -200,6 +202,7 @@ export const CustomerUnifiedBookingView: React.FC<CustomerUnifiedBookingViewProp
 
         {subTab === 'FLEET' && (
           <TruckMarketplaceView
+            catalog={truckCatalog}
             onInitiateCheckout={onInitiateCheckout}
             purchasedOrders={purchasedOrders}
             onViewPurchasedOrders={onViewPurchasedOrders}
