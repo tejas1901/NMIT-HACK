@@ -1,43 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "app": {
-      "root": ".",
-      "framework": "vite",
-      "installCommand": "npm install --legacy-peer-deps"
-    },
-    "backend-node": {
-      "root": "backend-node",
-      "framework": "express",
-      "entrypoint": "src/server.ts",
-      "installCommand": "npm install --legacy-peer-deps",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "backend-ml",
-          "format": "url",
-          "env": "BACKEND_ML_URL"
-        }
-      ]
-    },
-    "backend-ml": {
-      "root": "backend-ml",
-      "framework": "fastapi",
-      "entrypoint": "main.py"
-    }
-  },
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": {
-        "service": "backend-node"
-      }
-    },
-    {
       "source": "/(.*)",
-      "destination": {
-        "service": "app"
-      }
+      "destination": "/index.html"
     }
   ]
 }

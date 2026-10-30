@@ -887,3 +887,290 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
     severity: 'CRITICAL'
   }
 ];
+
+export const FLEET_DRIVERS: import('../types').FleetDriver[] = [
+  {
+    id: 'DRV-101',
+    name: 'Vikram Malhotra',
+    phone: '+91 98201 55194',
+    licenseNumber: 'KA-05-2018-0098412',
+    rating: 4.9,
+    tripsCompleted: 342,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Hubballi NH-48 Bypass (KM 410)',
+    vehicle: {
+      unitNumber: 'Unit #4021',
+      model: 'Volvo FM420 6x4 Heavy Puller',
+      plateNumber: 'KA-01-MJ-4021',
+      vin: 'YV2RT40C8MA491023',
+      capacityTons: 40,
+      fuelLevelPercent: 74,
+      specs: 'Air Suspension, Telematics CAN-bus, Dual Sleeper Cab, ABS/EBS'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24551',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Mumbai JNPT Port Terminal',
+      cargoDesc: 'Medical Precision Equipment & Surgical Assemblies (14,200 KG)',
+      dispatchedAt: '2026-10-30 04:30 IST',
+      eta: '02h 40m'
+    }
+  },
+  {
+    id: 'DRV-102',
+    name: 'Deepak Verma',
+    phone: '+91 98201 55842',
+    licenseNumber: 'MH-12-2016-0045190',
+    rating: 4.8,
+    tripsCompleted: 289,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Pune Chakan Industrial Hub (KM 840)',
+    vehicle: {
+      unitNumber: 'Unit #8809',
+      model: 'Tata Prima 5530.S Tractor Trailer',
+      plateNumber: 'MH-12-PQ-8809',
+      vin: 'MAT481010N1849102',
+      capacityTons: 55,
+      fuelLevelPercent: 82,
+      specs: 'Cummins ISNe 300 Engine, Euro-6 DEF, Multi-Axle Trailer'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24552',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Mumbai JNPT Port Terminal',
+      cargoDesc: 'Automotive Precision Engine Castings (22,400 KG)',
+      dispatchedAt: '2026-10-30 03:15 IST',
+      eta: '04h 18m'
+    }
+  },
+  {
+    id: 'DRV-103',
+    name: 'Harish Rawat',
+    phone: '+91 94481 22835',
+    licenseNumber: 'KA-04-2019-0112349',
+    rating: 4.95,
+    tripsCompleted: 410,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Khandala Ghat Mountain Pass (KM 910)',
+    vehicle: {
+      unitNumber: 'Unit #1052',
+      model: 'Ashok Leyland 4825 Heavy Duty 10x2',
+      plateNumber: 'KA-04-AB-1052',
+      vin: 'MB1A35F40P8491021',
+      capacityTons: 48,
+      fuelLevelPercent: 61,
+      specs: 'Pusher Lift Axle, i-Gen6 Technology, Rollover Mitigation'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24553',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Mumbai JNPT Port Terminal',
+      cargoDesc: 'Cold-Chain Biologicals & Vaccines (12,800 KG)',
+      dispatchedAt: '2026-10-30 02:45 IST',
+      eta: '01h 15m'
+    }
+  },
+  {
+    id: 'DRV-104',
+    name: 'Manoj Bajpayee',
+    phone: '+91 98192 44921',
+    licenseNumber: 'MH-04-2015-0078120',
+    rating: 4.7,
+    tripsCompleted: 512,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Tumakuru Highway Corridor (KM 70)',
+    vehicle: {
+      unitNumber: 'Unit #3310',
+      model: 'BharatBenz 3528R Multi-Axle Rigid',
+      plateNumber: 'MH-04-CK-3310',
+      vin: 'MBI838D01C9841029',
+      capacityTons: 35,
+      fuelLevelPercent: 88,
+      specs: 'OM 926 Turbocharged Engine, Unitized Hubs, ADAS Speed Limiter'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24554',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Pune Chakan Hub',
+      cargoDesc: 'Telecom Network Server Racks (16,500 KG)',
+      dispatchedAt: '2026-10-30 06:10 IST',
+      eta: '07h 45m'
+    }
+  },
+  {
+    id: 'DRV-105',
+    name: 'Priya Narayanan',
+    phone: '+91 98205 64811',
+    licenseNumber: 'TN-09-2020-0034125',
+    rating: 4.98,
+    tripsCompleted: 215,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Belagavi Industrial Corridor (KM 505)',
+    vehicle: {
+      unitNumber: 'Unit #5540',
+      model: 'Scania R500 V8 Highline',
+      plateNumber: 'TN-09-EF-5540',
+      vin: 'YS2R4X20002148192',
+      capacityTons: 44,
+      fuelLevelPercent: 79,
+      specs: 'Opticruise Transmission, Fleet Telematics Gateway, Disc Brakes'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24555',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Mumbai JNPT Port Terminal',
+      cargoDesc: 'Aerospace Composite Panels (11,500 KG)',
+      dispatchedAt: '2026-10-30 05:00 IST',
+      eta: '03h 55m'
+    }
+  },
+  {
+    id: 'DRV-106',
+    name: 'Rajesh Kulkarni',
+    phone: '+91 94220 52384',
+    licenseNumber: 'MH-14-2017-0091245',
+    rating: 4.85,
+    tripsCompleted: 330,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Navi Mumbai Expressway Approach (KM 960)',
+    vehicle: {
+      unitNumber: 'Unit #7720',
+      model: 'Mahindra Blazo X 49 Cargo Rig',
+      plateNumber: 'MH-14-ZZ-7720',
+      vin: 'MA1TA4F90L8102941',
+      capacityTons: 49,
+      fuelLevelPercent: 54,
+      specs: 'mPOWER 7.2L FuelSmart, Driver Fatigue AI Alert, Tag Axle'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24556',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Mumbai JNPT Port Terminal',
+      cargoDesc: 'Consumer Electronics & Solid State Drives (19,800 KG)',
+      dispatchedAt: '2026-10-30 01:20 IST',
+      eta: '00h 40m'
+    }
+  },
+  {
+    id: 'DRV-107',
+    name: 'Kailash Patil',
+    phone: '+91 98231 66723',
+    licenseNumber: 'MH-09-2018-0056123',
+    rating: 4.75,
+    tripsCompleted: 260,
+    status: 'OUT_FOR_DELIVERY',
+    currentLocation: 'Dharwad Industrial Gate (KM 435)',
+    vehicle: {
+      unitNumber: 'Unit #6621',
+      model: 'Eicher Pro 6048 16-Wheeler Hauler',
+      plateNumber: 'MH-09-LK-6621',
+      vin: 'MC2K55F80M8491044',
+      capacityTons: 48,
+      fuelLevelPercent: 68,
+      specs: 'VHD 5.1L Engine, EMS 3.0, Cruise Control, Live GPS Geofence'
+    },
+    activeAssignment: {
+      orderId: 'CRG-24557',
+      origin: 'Bengaluru Logistics Park',
+      destination: 'Pune Chakan Hub',
+      cargoDesc: 'Industrial Fasteners & Robotics Arms (21,000 KG)',
+      dispatchedAt: '2026-10-30 04:15 IST',
+      eta: '05h 20m'
+    }
+  },
+  {
+    id: 'DRV-108',
+    name: 'Suresh Menon',
+    phone: '+91 94470 88219',
+    licenseNumber: 'KL-07-2016-0041890',
+    rating: 4.92,
+    tripsCompleted: 395,
+    status: 'EMPTY',
+    currentLocation: 'Bengaluru Central Depot — Ready Bay #04',
+    vehicle: {
+      unitNumber: 'Unit #2045',
+      model: 'Volvo FMX 460 Tipper/Container',
+      plateNumber: 'KA-01-AB-2045',
+      vin: 'YV2RT40C8MA498812',
+      capacityTons: 45,
+      fuelLevelPercent: 96,
+      specs: 'Heavy Haul Axles, Electronic Braking System, GPS Telematics, Sleeper'
+    }
+  },
+  {
+    id: 'DRV-109',
+    name: 'Arjun Nambiar',
+    phone: '+91 94462 77102',
+    licenseNumber: 'KA-01-2020-0087411',
+    rating: 4.88,
+    tripsCompleted: 180,
+    status: 'EMPTY',
+    currentLocation: 'Bengaluru Logistics Park — Staging Dock #12',
+    vehicle: {
+      unitNumber: 'Unit #9102',
+      model: 'Tata Signa 4825.TK Multi-Axle',
+      plateNumber: 'KA-01-XY-9102',
+      vin: 'MAT481010N1899120',
+      capacityTons: 48,
+      fuelLevelPercent: 92,
+      specs: 'Cummins 6.7L, Tiltable Sleeper Cab, Anti-Lock Air Brakes'
+    }
+  },
+  {
+    id: 'DRV-110',
+    name: 'Pradeep Nair',
+    phone: '+91 98209 11456',
+    licenseNumber: 'MH-03-2019-0012903',
+    rating: 4.9,
+    tripsCompleted: 245,
+    status: 'EMPTY',
+    currentLocation: 'Pune Chakan ICD Staging Yard — Gate B',
+    vehicle: {
+      unitNumber: 'Unit #7420',
+      model: 'BharatBenz 4028T Heavy Tractor',
+      plateNumber: 'MH-03-TR-7420',
+      vin: 'MBI838D01C9847711',
+      capacityTons: 40,
+      fuelLevelPercent: 88,
+      specs: 'High Torque OM906, Telematics Fleet Connect, Dual Tanks'
+    }
+  },
+  {
+    id: 'DRV-111',
+    name: 'Ganesh Jadhav',
+    phone: '+91 98211 44520',
+    licenseNumber: 'MH-04-2018-0078901',
+    rating: 4.82,
+    tripsCompleted: 310,
+    status: 'EMPTY',
+    currentLocation: 'Mumbai JNPT Yard 4 — Empty Trailer Staging',
+    vehicle: {
+      unitNumber: 'Unit #5180',
+      model: 'Ashok Leyland 4020 Heavy 4x2 Tractor',
+      plateNumber: 'MH-04-GH-5180',
+      vin: 'MB1A35F40P8495522',
+      capacityTons: 40,
+      fuelLevelPercent: 85,
+      specs: 'A-Series CRS Engine with i-Gen6, Heavy Duty Fifth Wheel'
+    }
+  },
+  {
+    id: 'DRV-112',
+    name: 'Anil Deshmukh',
+    phone: '+91 98203 99812',
+    licenseNumber: 'MH-12-2021-0023419',
+    rating: 4.79,
+    tripsCompleted: 140,
+    status: 'EMPTY',
+    currentLocation: 'Hubballi NH-48 Transshipment Hub — Bay #02',
+    vehicle: {
+      unitNumber: 'Unit #6390',
+      model: 'Tata Ultra T.19 High Capacity Box',
+      plateNumber: 'KA-25-MN-6390',
+      vin: 'MAT481010N1841288',
+      capacityTons: 19,
+      fuelLevelPercent: 90,
+      specs: 'Turbotronn 3.3L Engine, Walk-Through Wide Cab, Air Suspension'
+    }
+  }
+];

@@ -38,6 +38,7 @@ export const FEATURE_REGISTRY = {
   'nav.cargo_bookings': { access: 'shared', description: 'Company cargo browser, bookings & approvals' },
   'nav.corridor_simulation': { access: 'shared', description: 'NH-48 simulation & backhaul matching for both Customer and Admin' },
   'nav.admin_all_requests': { access: 'admin', description: 'Consolidated Cargo, Haul & Fleet Booking Requests (Admin Only)' },
+  'nav.drivers': { access: 'admin', description: 'Driver Fleet & Availability Roster (Empty & Out for Delivery)' },
   'nav.xgboost_ml': { access: 'admin', description: 'XGBoost 3.2 model metrics & feature weights' },
   'nav.qpiai_quantum': { access: 'admin', description: 'QpiAI QUBO quantum carrier allocation' },
   'nav.qpiai_pilot': { access: 'admin', description: 'Autonomous pilot telemetry assistant' },

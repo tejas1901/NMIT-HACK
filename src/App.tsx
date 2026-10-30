@@ -14,7 +14,8 @@ import {
   TruckListing,
   AuditLogEntry,
   UserProfile,
-  RiskLevel
+  RiskLevel,
+  FleetDriver
 } from './types';
 import { 
   INITIAL_CONSIGNMENTS, 
@@ -24,7 +25,8 @@ import {
   FREIGHT_EXCEPTIONS, 
   INITIAL_DEV_LOGS,
   INITIAL_HAUL_REQUESTS,
-  INITIAL_AUDIT_LOGS
+  INITIAL_AUDIT_LOGS,
+  FLEET_DRIVERS
 } from './data/mockData';
 import { INITIAL_PURCHASED_ORDERS, TRUCK_CATALOG } from './data/truckCatalogData';
 import { 
@@ -50,6 +52,7 @@ import { RoleSwitcherModal } from './components/RoleSwitcherModal';
 import { ProfileModal } from './components/ProfileModal';
 import { LiveEventTicker } from './components/LiveEventTicker';
 import { AdminBadge } from './components/AdminBadge';
+import { NotificationBar, BookingNotification } from './components/NotificationBar';
 import { fetchLiveWaypoints } from './services/weatherService';
 import { predictDemurrageRisk } from './services/demurrageService';
 import { optimizeCarriers } from './services/quantumService';
@@ -83,6 +86,7 @@ const AdminAllFleetOrdersView = lazy(() => import('./views/AdminAllFleetOrdersVi
 const AdminUsersRolesView = lazy(() => import('./views/AdminUsersRolesView').then(m => ({ default: m.AdminUsersRolesView })));
 const AdminAuditLogView = lazy(() => import('./views/AdminAuditLogView').then(m => ({ default: m.AdminAuditLogView })));
 const AdminYardSlotMapView = lazy(() => import('./views/AdminYardSlotMapView').then(m => ({ default: m.AdminYardSlotMapView })));
+const AdminDriversView = lazy(() => import('./views/AdminDriversView').then(m => ({ default: m.AdminDriversView })));
 const AdminUnifiedRequestsView = lazy(() => import('./views/AdminUnifiedRequestsView').then(m => ({ default: m.AdminUnifiedRequestsView })));
 const AdminGmailConnectorView = lazy(() => import('./views/AdminGmailConnectorView').then(m => ({ default: m.AdminGmailConnectorView })));
 const CustomerUnifiedBookingView = lazy(() => import('./views/CustomerUnifiedBookingView').then(m => ({ default: m.CustomerUnifiedBookingView })));
@@ -112,6 +116,7 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
   const ALL_ADMIN_ROUTES: NavTab[] = [
     'admin-exception-tower',
     'admin-all-requests',
+    'admin-drivers',
     'admin-all-shipments',
     'cargo-bookings',
     'corridor-simulation',
@@ -343,6 +348,42 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     return INITIAL_HAUL_REQUESTS;
   });
 
+  const [fleetDrivers, setFleetDrivers] = useState<FleetDriver[]>(() => {
+    try {
+      const saved = localStorage.getItem('freightiq_fleet_drivers');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return FLEET_DRIVERS;
+  });
+
+  const [bookingNotification, setBookingNotification] = useState<BookingNotification | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('freightiq_active_notif');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return null;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('freightiq_fleet_drivers', JSON.stringify(fleetDrivers));
+      broadcastSyncEvent('SYNC_DRIVERS', fleetDrivers);
+    } catch {}
+  }, [fleetDrivers]);
+
+  useEffect(() => {
+    try {
+      if (bookingNotification) {
+        sessionStorage.setItem('freightiq_active_notif', JSON.stringify(bookingNotification));
+      } else {
+        sessionStorage.removeItem('freightiq_active_notif');
+      }
+    } catch {}
+  }, [bookingNotification]);
+
   useEffect(() => {
     try {
       localStorage.setItem('freightiq_haul_requests', JSON.stringify(haulRequests));
@@ -364,18 +405,36 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
             setHaulRequests(payload);
           } else if (type === 'SYNC_ORDERS' && Array.isArray(payload)) {
             setAllOrders(payload);
+          } else if (type === 'SYNC_DRIVERS' && Array.isArray(payload)) {
+            setFleetDrivers(payload);
           } else if (type === 'NEW_BOOKING_NOTIFY') {
             if (activeRole === 'admin') {
               showToast(`🔔 Real-time: Inbound booking request from ${payload?.shipperCompany || 'Customer'}!`);
             }
           } else if (type === 'ORDER_ACCEPTED_NOTIFY') {
-            if (activeRole === 'customer') {
-              showToast(`✓ Carrier Admin ACCEPTED your order ${payload?.id}! Manifest locked.`);
-            }
+            const notif: BookingNotification = {
+              id: `notif-${Date.now()}`,
+              type: 'ACCEPTED',
+              orderId: payload?.id || 'CRG-24551',
+              driverName: payload?.driverName || 'Vikram Malhotra',
+              driverPhone: payload?.driverPhone || '+91 98201 55194',
+              vehicleUnit: payload?.vehicleUnit || 'Unit #4021',
+              vehicleModel: payload?.vehicleModel || 'Volvo FM420',
+              plateNumber: payload?.plateNumber || 'KA-01-MJ-4021',
+              timestamp: new Date().toLocaleTimeString()
+            };
+            setBookingNotification(notif);
+            showToast(`✓ Order ${payload?.id} ACCEPTED: Driver ${payload?.driverName || 'Vikram Malhotra'} (${payload?.vehicleUnit || 'Unit #4021'}) assigned!`);
           } else if (type === 'ORDER_REJECTED_NOTIFY') {
-            if (activeRole === 'customer') {
-              showToast(`⚠️ Carrier Admin declined order ${payload?.id}.`);
-            }
+            const notif: BookingNotification = {
+              id: `notif-${Date.now()}`,
+              type: 'REJECTED',
+              orderId: payload?.id || 'CRG-24551',
+              reason: payload?.reason || 'Corridor slot at full capacity. Order declined.',
+              timestamp: new Date().toLocaleTimeString()
+            };
+            setBookingNotification(notif);
+            showToast(`Notice: Order ${payload?.id} declined by Fleet Operations.`);
           }
         };
       }
@@ -1069,23 +1128,79 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
 
   // Admin Acceptance of Customer Orders
   const handleAcceptBookingOrder = async (bookingId: string) => {
+    // Pick an empty driver from pool
+    const emptyDriver = fleetDrivers.find((d) => d.status === 'EMPTY') || fleetDrivers[0];
+    
     let targetBooking: Consignment | undefined;
     setAllConsignments((prev) =>
       prev.map((c) => {
         if (c.id === bookingId) {
-          targetBooking = c;
-          return { ...c, status: 'CONFIRMED', eta: 'Tomorrow, 14:00 IST' };
+          targetBooking = { 
+            ...c, 
+            status: 'CONFIRMED', 
+            eta: 'Tomorrow, 14:00 IST',
+            driverName: emptyDriver.name,
+            driverPhone: emptyDriver.phone,
+            driverLicense: emptyDriver.licenseNumber,
+            driverRating: emptyDriver.rating,
+            truckUnitId: emptyDriver.vehicle.unitNumber,
+            vehicleModel: emptyDriver.vehicle.model,
+            vehiclePlate: emptyDriver.vehicle.plateNumber,
+            vehicleVin: emptyDriver.vehicle.vin,
+            vehicleCapacity: `${emptyDriver.vehicle.capacityTons} Metric Tons`
+          };
+          return targetBooking;
         }
         return c;
       })
     );
+
+    // Mark driver as OUT_FOR_DELIVERY
+    const updatedDriver: FleetDriver = {
+      ...emptyDriver,
+      status: 'OUT_FOR_DELIVERY',
+      currentLocation: 'Hubballi NH-48 Bypass (KM 410)',
+      activeAssignment: {
+        orderId: bookingId,
+        origin: targetBooking?.origin || 'Bengaluru Logistics Park',
+        destination: targetBooking?.destination || 'Mumbai JNPT Port Terminal',
+        cargoDesc: `${targetBooking?.department || 'Commercial'} Freight (${targetBooking?.weightLbs || 14200} lbs)`,
+        dispatchedAt: new Date().toLocaleTimeString(),
+        eta: '02h 40m'
+      }
+    };
+    setFleetDrivers((prev) => prev.map((d) => (d.id === emptyDriver.id ? updatedDriver : d)));
+
     const rawId = bookingId.replace('CRG-BK-', '').replace('CRG-', '');
     setHaulRequests((prev) =>
       prev.map((h) => (h.id === `REQ-${rawId}` || h.id.includes(rawId) ? { ...h, status: 'APPROVED' } : h))
     );
-    broadcastSyncEvent('ORDER_ACCEPTED_NOTIFY', { id: bookingId, status: 'CONFIRMED' });
-    showToast(`✓ Order ${bookingId} ACCEPTED! Manifest confirmed and driver notified.`);
-    handleWriteAuditLog('ADMIN_ACCEPT_ORDER', 'ASSIGNMENT', `Admin accepted cargo order ${bookingId} for customer ${targetBooking?.shipperCompany || 'Shipper'}`);
+
+    const notif: BookingNotification = {
+      id: `notif-${Date.now()}`,
+      type: 'ACCEPTED',
+      orderId: bookingId,
+      driverName: emptyDriver.name,
+      driverPhone: emptyDriver.phone,
+      vehicleUnit: emptyDriver.vehicle.unitNumber,
+      vehicleModel: emptyDriver.vehicle.model,
+      plateNumber: emptyDriver.vehicle.plateNumber,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    setBookingNotification(notif);
+
+    broadcastSyncEvent('ORDER_ACCEPTED_NOTIFY', { 
+      id: bookingId, 
+      status: 'CONFIRMED',
+      driverName: emptyDriver.name,
+      driverPhone: emptyDriver.phone,
+      vehicleUnit: emptyDriver.vehicle.unitNumber,
+      vehicleModel: emptyDriver.vehicle.model,
+      plateNumber: emptyDriver.vehicle.plateNumber
+    });
+
+    showToast(`✓ Order ${bookingId} ACCEPTED! Assigned ${emptyDriver.name} on ${emptyDriver.vehicle.unitNumber}.`);
+    handleWriteAuditLog('ADMIN_ACCEPT_ORDER', 'ASSIGNMENT', `Admin accepted cargo order ${bookingId} and assigned driver ${emptyDriver.name} (${emptyDriver.vehicle.unitNumber})`);
     try {
       await supabase
         .from('cargo_bookings')
@@ -1105,8 +1220,22 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     setHaulRequests((prev) =>
       prev.map((h) => (h.id === `REQ-${rawId}` || h.id.includes(rawId) ? { ...h, status: 'REJECTED' } : h))
     );
-    broadcastSyncEvent('ORDER_REJECTED_NOTIFY', { id: bookingId, status: 'REJECTED' });
-    showToast(`Order ${bookingId} declined by Admin.`);
+
+    const notif: BookingNotification = {
+      id: `notif-${Date.now()}`,
+      type: 'REJECTED',
+      orderId: bookingId,
+      reason: 'Freight corridor slot reached maximum vehicle density. Order declined by Fleet Operations.',
+      timestamp: new Date().toLocaleTimeString()
+    };
+    setBookingNotification(notif);
+
+    broadcastSyncEvent('ORDER_REJECTED_NOTIFY', { 
+      id: bookingId, 
+      status: 'REJECTED',
+      reason: 'Freight corridor slot reached maximum vehicle density. Order declined by Fleet Operations.'
+    });
+    showToast(`Order ${bookingId} declined by Fleet Operations.`);
     handleWriteAuditLog('ADMIN_REJECT_ORDER', 'ASSIGNMENT', `Admin declined cargo order ${bookingId}`);
     try {
       await supabase
@@ -1530,6 +1659,16 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
       {/* Background with Ambient Drifting Blobs & Canvas */}
       <LiquidBackground />
 
+      {/* Real-time Global Notification Bar for Accept / Reject */}
+      <NotificationBar
+        notification={bookingNotification}
+        onDismiss={() => setBookingNotification(null)}
+        onViewTracking={(orderId) => {
+          setSelectedConsignmentId(orderId);
+          setActiveTab('customer-tracking');
+        }}
+      />
+
       {/* Primary Dashboard Two-Column Workspace */}
       <div className="flex flex-col md:flex-row flex-1 w-full min-h-screen relative z-10">
         {/* Floating Glass Sidebar */}
@@ -1817,6 +1956,18 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                         onFulfillFleetOrder={handleFulfillOrder}
                         onCancelFleetOrder={handleCancelOrder}
                         onNavigateToGmail={() => setActiveTab('admin-exception-tower')}
+                      />
+                    )}
+
+                    {/* Commercial Drivers Fleet & Availability Roster (Empty & Out for Delivery) */}
+                    {activeTab === 'admin-drivers' && (
+                      <AdminDriversView
+                        drivers={fleetDrivers}
+                        onCallDriver={(d) => handleOpenDriverCall(d.name, d.phone)}
+                        onChatDriver={(d) => handleOpenDriverChat(d.vehicle.unitNumber)}
+                        onAssignDriver={(d) => {
+                          showToast(`Driver ${d.name} (${d.vehicle.unitNumber}) queued for prioritized assignment.`);
+                        }}
                       />
                     )}
 

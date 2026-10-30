@@ -33,6 +33,7 @@ export type NavTab =
   | 'admin-haul-queue'
   | 'admin-truck-inventory'
   | 'admin-all-fleet-orders'
+  | 'admin-drivers'
   // Customer Views
   | 'customer-shipments'
   | 'customer-tracking'
@@ -40,6 +41,34 @@ export type NavTab =
   | 'marketplace'
   | 'customer-fleet'
   | 'customer-unified-booking';
+
+export interface FleetDriver {
+  id: string;
+  name: string;
+  phone: string;
+  licenseNumber: string;
+  rating: number;
+  tripsCompleted: number;
+  status: 'EMPTY' | 'OUT_FOR_DELIVERY';
+  currentLocation: string;
+  vehicle: {
+    unitNumber: string;
+    model: string;
+    plateNumber: string;
+    vin: string;
+    capacityTons: number;
+    fuelLevelPercent: number;
+    specs: string;
+  };
+  activeAssignment?: {
+    orderId: string;
+    origin: string;
+    destination: string;
+    cargoDesc: string;
+    dispatchedAt: string;
+    eta: string;
+  };
+}
 
 export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
 
@@ -61,6 +90,12 @@ export interface Consignment {
   eta: string;
   driverName?: string;
   driverPhone?: string;
+  driverLicense?: string;
+  driverRating?: number;
+  vehicleModel?: string;
+  vehiclePlate?: string;
+  vehicleVin?: string;
+  vehicleCapacity?: string;
   notes?: string;
   customerCompany?: string;
   customerName?: string;

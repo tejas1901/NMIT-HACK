@@ -25,7 +25,8 @@ import {
   Building2,
   Mail,
   Inbox,
-  Layers
+  Layers,
+  UserCheck
 } from 'lucide-react';
 import { NavTab, Role, UserProfile } from '../types';
 import { DEMO_MODE } from '../roles';
@@ -104,6 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     badge?: string | number;
   }> = [
     { id: 'admin-all-requests', label: 'All Booking Requests', icon: Inbox, badge: pendingRequestsCount || 'PENDING' },
+    { id: 'admin-drivers', label: 'Driver Fleet & Roster', icon: UserCheck, badge: 'ROSTER' },
     { id: 'admin-all-shipments', label: 'All Shipments', icon: Package, badge: bookingCount },
     { id: 'corridor-simulation', label: 'Corridor & Simulator', icon: Navigation },
     { id: 'admin-fleet-radar', label: 'Fleet GPS Radar', icon: Radio, badge: 'LIVE' },
