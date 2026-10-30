@@ -112,7 +112,6 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
     'admin-exception-tower',
     'admin-all-requests',
     'admin-all-shipments',
-    'admin-gmail-connector',
     'cargo-bookings',
     'corridor-simulation',
     'xgboost-ml',
@@ -1801,13 +1800,8 @@ export default function App({ user, onSignOut }: UnifiedCockpitProps = {}) {
                         onApproveFleetOrder={handleApproveOrder}
                         onFulfillFleetOrder={handleFulfillOrder}
                         onCancelFleetOrder={handleCancelOrder}
-                        onNavigateToGmail={() => setActiveTab('admin-gmail-connector')}
+                        onNavigateToGmail={() => setActiveTab('admin-exception-tower')}
                       />
-                    )}
-
-                    {/* Live Gmail Connector for admin@gmail.com */}
-                    {activeTab === 'admin-gmail-connector' && (
-                      <AdminGmailConnectorView onTriggerToast={showToast} />
                     )}
 
                     {activeTab === 'xgboost-ml' && <XGBoostModelView />}

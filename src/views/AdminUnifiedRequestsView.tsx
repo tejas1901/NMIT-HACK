@@ -85,7 +85,7 @@ export const AdminUnifiedRequestsView: React.FC<AdminUnifiedRequestsViewProps> =
             className="px-4 py-2 rounded-full text-xs font-bold bg-white/80 hover:bg-white text-[#08193A] border border-white/80 shadow-xs flex items-center gap-2 cursor-pointer transition-all"
           >
             <Inbox className="w-3.5 h-3.5 text-[#1B3A7A]" />
-            <span>Open Gmail Dispatch</span>
+            <span>Exception Control Tower</span>
           </button>
         </div>
       </div>

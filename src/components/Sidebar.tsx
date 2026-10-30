@@ -105,7 +105,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }> = [
     { id: 'admin-all-requests', label: 'All Booking Requests', icon: Inbox, badge: pendingRequestsCount || 'PENDING' },
     { id: 'admin-all-shipments', label: 'All Shipments', icon: Package, badge: bookingCount },
-    { id: 'admin-gmail-connector', label: 'Live Gmail Connector', icon: Mail, badge: 'LIVE' },
     { id: 'corridor-simulation', label: 'Corridor & Simulator', icon: Navigation },
     { id: 'admin-fleet-radar', label: 'Fleet GPS Radar', icon: Radio, badge: 'LIVE' },
     { id: 'admin-truck-inventory', label: 'Truck Fleet Inventory', icon: Truck }
