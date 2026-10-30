@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, 
   ShieldCheck, 
@@ -10,16 +10,175 @@ import {
   Building2, 
   Key, 
   Sparkles,
-  Shield
+  Shield,
+  RefreshCw,
+  UserCheck
 } from 'lucide-react';
 import { UserAccount } from '../types';
 import { AdminBadge } from '../components/AdminBadge';
 import { INITIAL_USERS } from '../data/mockData';
+import { getRegisteredCustomers } from '../services/customerAuth';
+import { supabase } from '../lib/supabase';
+
+// Helper to assemble full user directory merging initial users, local registrations, active session & Supabase cloud
+const compileUserDirectory = async (): Promise<UserAccount[]> => {
+  const registered = getRegisteredCustomers();
+
+  let activeSessionUser: any = null;
+  try {
+    const raw = localStorage.getItem('freightiq_user');
+    if (raw) activeSessionUser = JSON.parse(raw);
+  } catch {}
+
+  let cloudProfiles: any[] = [];
+  try {
+    const { data, error } = await supabase.from('profiles').select('*');
+    if (!error && Array.isArray(data)) {
+      cloudProfiles = data;
+    }
+  } catch (err) {
+    console.warn('Supabase profiles fetch note:', err);
+  }
+
+  const map = new Map<string, UserAccount>();
+
+  // 1. Initial baseline users
+  INITIAL_USERS.forEach((u) => {
+    map.set(u.email.toLowerCase(), u);
+  });
+
+  // 2. Persistent local customer registrations
+  registered.forEach((c) => {
+    const emailKey = c.email.toLowerCase();
+    const isAdmin = c.role?.toLowerCase() === 'admin' || emailKey === 'admin@gmail.com';
+    map.set(emailKey, {
+      id: c.id,
+      name: c.full_name,
+      email: c.email,
+      company: c.company || 'Commercial Shipper Corp',
+      role: isAdmin ? 'admin' : 'customer',
+      title: c.corridor ? `Corridor: ${c.corridor}` : (c.role_label || 'Verified Cargo Shipper'),
+      status: 'ACTIVE',
+      lastLogin: c.created_at 
+        ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' Today' 
+        : 'Just now',
+      accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
+    });
+  });
+
+  // 3. Supabase Cloud Profiles
+  cloudProfiles.forEach((cp) => {
+    if (!cp.email) return;
+    const emailKey = cp.email.toLowerCase();
+    const isAdmin = cp.role?.toLowerCase() === 'admin' || emailKey === 'admin@gmail.com';
+    if (!map.has(emailKey)) {
+      map.set(emailKey, {
+        id: cp.id || `usr-cloud-${emailKey.replace(/[^a-zA-Z0-9]/g, '')}`,
+        name: cp.full_name || emailKey.split('@')[0],
+        email: cp.email,
+        company: cp.company || 'Commercial Freight Client',
+        role: isAdmin ? 'admin' : 'customer',
+        title: isAdmin ? 'Operations Command' : (cp.corridor ? `Corridor: ${cp.corridor}` : 'Verified Cargo Shipper'),
+        status: 'ACTIVE',
+        lastLogin: cp.created_at ? new Date(cp.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' Today' : 'Recently Active',
+        accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
+      });
+    }
+  });
+
+  // 4. Current active session user if signed in as customer
+  if (activeSessionUser?.email) {
+    const emailKey = activeSessionUser.email.toLowerCase();
+    const isAdmin = activeSessionUser.role?.toLowerCase() === 'admin' || emailKey === 'admin@gmail.com';
+    if (!map.has(emailKey)) {
+      map.set(emailKey, {
+        id: activeSessionUser.id || `usr-active-${Date.now()}`,
+        name: activeSessionUser.full_name || emailKey.split('@')[0],
+        email: activeSessionUser.email,
+        company: activeSessionUser.company || 'Commercial Shipper Corp',
+        role: isAdmin ? 'admin' : 'customer',
+        title: isAdmin ? 'Operations Command' : 'Verified Cargo Shipper',
+        status: 'ACTIVE',
+        lastLogin: 'Just now (Active Session)',
+        accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
+      });
+    }
+  }
+
+  return Array.from(map.values());
+};
 
 export const AdminUsersRolesView: React.FC = () => {
-  const [users, setUsers] = useState<UserAccount[]>(INITIAL_USERS);
+  const [users, setUsers] = useState<UserAccount[]>(() => {
+    // Synchronously seed with initial users + any local registrations
+    const registered = getRegisteredCustomers();
+    const map = new Map<string, UserAccount>();
+    INITIAL_USERS.forEach((u) => map.set(u.email.toLowerCase(), u));
+    registered.forEach((c) => {
+      const emailKey = c.email.toLowerCase();
+      const isAdmin = c.role?.toLowerCase() === 'admin' || emailKey === 'admin@gmail.com';
+      map.set(emailKey, {
+        id: c.id,
+        name: c.full_name,
+        email: c.email,
+        company: c.company || 'Commercial Shipper Corp',
+        role: isAdmin ? 'admin' : 'customer',
+        title: c.corridor ? `Corridor: ${c.corridor}` : (c.role_label || 'Verified Cargo Shipper'),
+        status: 'ACTIVE',
+        lastLogin: c.created_at ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' Today' : 'Just now',
+        accessTier: isAdmin ? 'Enterprise Admin (Root)' : 'Tier 1 - Shipper Access'
+      });
+    });
+    return Array.from(map.values());
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<'ALL' | 'admin' | 'customer'>('ALL');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Sync users from local persistent registry, active session and Supabase cloud
+  const refreshUsers = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const updated = await compileUserDirectory();
+      setUsers(updated);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  // Real-time synchronization listeners
+  useEffect(() => {
+    refreshUsers();
+
+    // 1. BroadcastChannel real-time sync across tabs
+    let bc: BroadcastChannel | null = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      bc = new BroadcastChannel('freightiq_realtime_sync');
+      bc.onmessage = (ev) => {
+        if (ev.data?.type === 'SYNC_CUSTOMERS' || ev.data?.type === 'SYNC_USER') {
+          refreshUsers();
+        }
+      };
+    }
+
+    // 2. Storage event listener
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'freightiq_registered_customers' || e.key === 'freightiq_user') {
+        refreshUsers();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 3. Periodic polling interval (every 4 seconds for fresh customer signups)
+    const interval = setInterval(refreshUsers, 4000);
+
+    return () => {
+      if (bc) bc.close();
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, [refreshUsers]);
 
   const filtered = users.filter((u) => {
     const matchesSearch = 
@@ -32,6 +191,9 @@ export const AdminUsersRolesView: React.FC = () => {
     if (selectedRoleFilter !== 'ALL' && u.role !== selectedRoleFilter) return false;
     return true;
   });
+
+  const totalCustomers = users.filter((u) => u.role === 'customer').length;
+  const totalAdmins = users.filter((u) => u.role === 'admin').length;
 
   const permissionsMatrix = [
     { capability: 'View & Track Own Consignments', customer: true, admin: true },
@@ -64,8 +226,56 @@ export const AdminUsersRolesView: React.FC = () => {
             User Accounts & Role Permissions (RBAC)
           </h1>
           <p className="text-xs md:text-sm text-[#5B6B86] mt-1 max-w-3xl">
-            Strict role-based isolation. The Customer panel never renders or receives admin models, while Admin Operations maintains complete visibility and oversight.
+            Real-time multi-tenant directory. Every newly registered customer and authenticated shipper immediately syncs into this administrative view.
           </p>
+        </div>
+
+        {/* Directory Controls & Live Cloud Sync Status */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="px-3 py-1.5 rounded-full text-[11px] font-mono font-semibold bg-white/70 border border-black/5 text-[#08193A] flex items-center gap-2 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
+            <span>Supabase Cloud Sync: Live</span>
+          </div>
+
+          <button
+            onClick={refreshUsers}
+            disabled={isRefreshing}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-60"
+            title="Refresh user directory from persistent store and Supabase database"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Syncing...' : 'Sync Directory'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Directory Bento Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="p-4 rounded-[22px] glass-panel flex flex-col justify-between shadow-2xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#5B6B86]">TOTAL ACCOUNTS</span>
+          <div className="my-1 flex items-baseline gap-2">
+            <span className="font-mono text-3xl font-extrabold text-[#08193A]">{users.length}</span>
+            <span className="text-[11px] font-bold text-[#34D399]">Registered</span>
+          </div>
+          <span className="text-[10px] text-[#5B6B86]">Admins & Shippers Combined</span>
+        </div>
+
+        <div className="p-4 rounded-[22px] glass-panel flex flex-col justify-between border border-[#34D399]/40 bg-gradient-to-br from-white/90 to-[#34D399]/5 shadow-2xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1B3A7A]">VERIFIED SHIPPERS (CUSTOMERS)</span>
+          <div className="my-1 flex items-baseline gap-2">
+            <span className="font-mono text-3xl font-extrabold text-[#1B3A7A]">{totalCustomers}</span>
+            <span className="text-[11px] font-bold text-[#34D399]">Active</span>
+          </div>
+          <span className="text-[10px] text-[#34D399] font-semibold">Self-registered shippers via gateway</span>
+        </div>
+
+        <div className="p-4 rounded-[22px] glass-panel flex flex-col justify-between shadow-2xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#5B6B86]">MASTER ADMINISTRATORS</span>
+          <div className="my-1 flex items-baseline gap-2">
+            <span className="font-mono text-3xl font-extrabold text-[#08193A]">{totalAdmins}</span>
+            <span className="text-[11px] font-bold text-[#1B3A7A]">Root Ops</span>
+          </div>
+          <span className="text-[10px] text-[#5B6B86]">Password@123 Elevated Command</span>
         </div>
       </div>
 
@@ -128,7 +338,14 @@ export const AdminUsersRolesView: React.FC = () => {
                         {user.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       <div>
-                        <p className="font-bold text-[#08193A]">{user.name}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-bold text-[#08193A]">{user.name}</p>
+                          {(user.lastLogin.includes('Today') || user.lastLogin.includes('Just now')) && user.role === 'customer' ? (
+                            <span className="px-1.5 py-0.5 rounded-full text-[8.5px] font-mono font-bold bg-[#34D399]/20 text-[#08193A] border border-[#34D399]/40">
+                              VERIFIED SIGNUP
+                            </span>
+                          ) : null}
+                        </div>
                         <p className="text-[10px] text-[#5B6B86] font-mono">{user.email}</p>
                       </div>
                     </div>
