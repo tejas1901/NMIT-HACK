@@ -36,7 +36,8 @@ import {
   Building2,
   User,
   Phone,
-  ShieldCheck
+  ShieldCheck,
+  SquareParking
 } from 'lucide-react';
 import { 
   BlockerCardItem, 
@@ -114,6 +115,9 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
   // Blocker cards state
   const [cards, setCards] = useState<BlockerCardItem[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [isExtractingSingleDoc, setIsExtractingSingleDoc] = useState(false);
+  const [gatePassIssuedMap, setGatePassIssuedMap] = useState<Record<string, boolean>>({});
 
   // Inbox filtering & search
   const [inboxFilter, setInboxFilter] = useState<'ALL' | 'NEW' | 'PROCESSED' | 'IGNORED'>('ALL');
@@ -626,10 +630,85 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
     }
   };
 
-  // Active Selected Card
+  // Process single document from inbox
+  const handleProcessSingleDoc = async (docId: string) => {
+    const doc = documents.find((d) => d.docId === docId);
+    if (!doc) return;
+
+    setIsExtractingSingleDoc(true);
+    try {
+      const res = await extractBlockers(doc, isBackendDown, confidenceThreshold, currentSimulatedTimeMs);
+      setCards((prev) => mergeBlockerCards(prev, res.cards));
+      setDocuments((prev) =>
+        prev.map((d) => (d.docId === docId ? { ...d, status: res.disposition === 'IGNORE' ? 'Ignored' : 'Processed' } : d))
+      );
+      if (res.cards.length > 0) {
+        setSelectedCardId(res.cards[0].id);
+        if (onTriggerToast) {
+          onTriggerToast(`✓ Blocker extracted for ${res.cards[0].containerId} from document ${docId}!`);
+        }
+        if (onWriteAuditLog) {
+          onWriteAuditLog(
+            'DOC_BLOCKER_EXTRACTED',
+            'TELEMETRY',
+            `AI extracted ${res.cards[0].blockerType} for container ${res.cards[0].containerId} from doc ${docId}`
+          );
+        }
+      } else {
+        if (onTriggerToast) {
+          onTriggerToast(`Document ${docId} analyzed: No blocker detected (${res.disposition}).`);
+        }
+      }
+    } finally {
+      setIsExtractingSingleDoc(false);
+    }
+  };
+
+  // Issue electronic gate release pass (Terminal Yard Action)
+  const handleIssueGatePass = (card: BlockerCardItem) => {
+    setGatePassIssuedMap((prev) => ({ ...prev, [card.containerId]: true }));
+    setCards((prev) =>
+      prev.map((c) =>
+        c.id === card.id
+          ? {
+              ...c,
+              lane: 'RESOLVED',
+              resolvedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              resolveReason: 'Electronic gate release pass issued to driver (RFID pre-cleared)',
+              activityLog: [
+                ...c.activityLog,
+                {
+                  id: `ACT-${Date.now()}-gate`,
+                  timestamp: formattedSimulatedClock,
+                  actor: 'Terminal Gate Dispatch',
+                  action: 'GATE_RELEASE_DISPATCHED',
+                  details: `Electronic Gate Pass issued for ${card.containerId} at Bay B-04. Blocker resolved.`
+                }
+              ]
+            }
+          : c
+      )
+    );
+    if (onTriggerToast) {
+      onTriggerToast(`✓ Electronic Gate Release Pass dispatched for container ${card.containerId}! Authorized at Gate 2.`);
+    }
+    if (onWriteAuditLog) {
+      onWriteAuditLog(
+        'GATE_PASS_ISSUED',
+        'OVERRIDE',
+        `Operator issued electronic gate release pass for ${card.containerId} at JNPT Bay B-04.`
+      );
+    }
+  };
+
+  // Active Selected Card & Selected Document
   const selectedCard = useMemo(() => {
     return cards.find((c) => c.id === selectedCardId) || null;
   }, [cards, selectedCardId]);
+
+  const selectedDoc = useMemo(() => {
+    return documents.find((d) => d.docId === selectedDocId) || null;
+  }, [documents, selectedDocId]);
 
   // Dynamic Metrics & KPIs
   const openBlockers = cards.filter((c) => c.lane === 'ACT_NOW' || c.lane === 'TODAY' || c.lane === 'UPCOMING');
@@ -986,7 +1065,7 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
               </div>
             ) : (
               filteredInbox.map((doc) => {
-                const isSelected = selectedCard?.docId === doc.docId;
+                const isSelected = selectedCard?.docId === doc.docId || selectedDocId === doc.docId;
                 const SourceIcon = 
                   doc.sourceType === 'Email' ? Mail :
                   doc.sourceType === 'Customs notice' ? Shield :
@@ -997,14 +1076,17 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
                   <div
                     key={doc.docId}
                     onClick={() => {
+                      setSelectedDocId(doc.docId);
                       const matchingCard = cards.find((c) => c.docId === doc.docId);
                       if (matchingCard) {
                         setSelectedCardId(matchingCard.id);
+                      } else {
+                        setSelectedCardId(null);
                       }
                     }}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer relative ${
                       isSelected
-                        ? 'bg-white/90 border-[#34D399] shadow-xs'
+                        ? 'bg-white/95 border-[#34D399] shadow-md ring-1 ring-[#34D399]/40'
                         : 'bg-white/50 border-white/80 hover:bg-white/80'
                     }`}
                   >
@@ -1209,16 +1291,6 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleShowInYard(card.containerId);
-                                    }}
-                                    className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-[#1B3A7A] hover:bg-[#1B3A7A]/10 border border-[#1B3A7A]/30 transition-all cursor-pointer flex items-center gap-1"
-                                  >
-                                    <ExternalLink className="w-3 h-3" />
-                                    <span>Show in Yard</span>
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
                                       setReassignModalCard(card);
                                     }}
                                     className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-[#5B6B86] hover:bg-black/5 border border-black/10 transition-all cursor-pointer"
@@ -1356,28 +1428,107 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
                 </button>
               )}
 
-              <button
-                onClick={() => handleShowInYard(selectedCard.containerId)}
-                className="w-full py-2 rounded-full text-xs font-bold bg-[#08193A] text-white hover:bg-[#1B3A7A] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Show in Yard & Gate Map</span>
-              </button>
+              {/* Terminal Yard & Gate Allocation Capsule */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-black/5 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-extrabold text-[#08193A] flex items-center gap-1.5">
+                    <SquareParking className="w-3.5 h-3.5 text-[#1B3A7A]" />
+                    <span>JNPT Terminal 3 · Gate Slot Bay B-04</span>
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${
+                    gatePassIssuedMap[selectedCard.containerId]
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : 'bg-amber-100 text-amber-900 border border-amber-300'
+                  }`}>
+                    {gatePassIssuedMap[selectedCard.containerId] ? 'RELEASED' : 'HOLD AT GATE'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#5B6B86]">
+                  Container <strong>{selectedCard.containerId}</strong> is queued at Inbound Inspection Gate 2. {gatePassIssuedMap[selectedCard.containerId] ? 'RFID pass issued to driver.' : 'Requires electronic gate authorization.'}
+                </p>
+                <button
+                  onClick={() => handleIssueGatePass(selectedCard)}
+                  disabled={gatePassIssuedMap[selectedCard.containerId] || selectedCard.lane === 'RESOLVED'}
+                  className={`w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    gatePassIssuedMap[selectedCard.containerId] || selectedCard.lane === 'RESOLVED'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
+                      : 'bg-[#08193A] text-white hover:bg-[#1B3A7A] shadow-xs'
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
+                  <span>{gatePassIssuedMap[selectedCard.containerId] ? '✓ Gate Release Pass Dispatched' : 'Issue Electronic Gate Pass'}</span>
+                </button>
+              </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => handleMarkDone(selectedCard.id)}
-                  className="py-1.5 rounded-full text-xs font-bold bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7] transition-all cursor-pointer"
+                  disabled={selectedCard.lane === 'RESOLVED'}
+                  className={`py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    selectedCard.lane === 'RESOLVED'
+                      ? 'bg-black/5 text-[#5B6B86] cursor-default'
+                      : 'bg-[#34D399] text-[#08193A] hover:bg-[#6EE7B7]'
+                  }`}
                 >
-                  Mark Done
+                  {selectedCard.lane === 'RESOLVED' ? '✓ Resolved' : 'Mark Done'}
                 </button>
                 <button
                   onClick={() => setFalseAlarmModalCard(selectedCard)}
-                  className="py-1.5 rounded-full text-xs font-bold text-[#F26D6D] border border-[#F26D6D]/40 hover:bg-[#F26D6D]/10 transition-all cursor-pointer"
+                  disabled={selectedCard.lane === 'RESOLVED'}
+                  className={`py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    selectedCard.lane === 'RESOLVED'
+                      ? 'opacity-40 cursor-default'
+                      : 'text-[#F26D6D] border border-[#F26D6D]/40 hover:bg-[#F26D6D]/10'
+                  }`}
                 >
                   Reject False Alarm
                 </button>
               </div>
+            </div>
+          </div>
+        ) : selectedDoc ? (
+          <div className="space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between pb-2 border-b border-black/5">
+              <span className="font-mono text-xs font-bold text-[#08193A] bg-black/5 px-2.5 py-0.5 rounded-lg">
+                {selectedDoc.docId}
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-900 border border-amber-500/30">
+                PENDING EXTRACTION
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-mono text-[#5B6B86] uppercase block font-semibold">
+                DOCUMENT SOURCE
+              </span>
+              <h3 className="text-sm font-extrabold text-[#08193A]">
+                {selectedDoc.subject}
+              </h3>
+              <p className="text-[11px] text-[#5B6B86] mt-0.5">
+                Type: <strong>{selectedDoc.sourceType}</strong> · Received: <strong>{selectedDoc.receivedAt}</strong>
+              </p>
+            </div>
+
+            {/* Raw Source Text */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-black/5 space-y-1.5">
+              <span className="text-[10px] font-bold text-[#5B6B86] uppercase tracking-wider block">
+                RAW INBOUND CONTENT
+              </span>
+              <pre className="text-xs text-[#08193A] whitespace-pre-wrap font-sans leading-relaxed max-h-[320px] overflow-y-auto">
+                {selectedDoc.text}
+              </pre>
+            </div>
+
+            {/* Action button */}
+            <div className="pt-2">
+              <button
+                onClick={() => handleProcessSingleDoc(selectedDoc.docId)}
+                disabled={isExtractingSingleDoc}
+                className="w-full py-2.5 px-4 rounded-full text-xs font-extrabold bg-[#08193A] text-[#A7F3D0] hover:bg-[#1B3A7A] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+              >
+                <Sparkles className={`w-3.5 h-3.5 text-[#34D399] ${isExtractingSingleDoc ? 'animate-spin' : ''}`} />
+                <span>{isExtractingSingleDoc ? 'Extracting with Ollama Llama-3.1...' : '⚡ Extract Blocker from this Document'}</span>
+              </button>
             </div>
           </div>
         ) : (
@@ -1386,8 +1537,8 @@ export const AdminExceptionControlTowerView: React.FC<AdminExceptionControlTower
               <Eye className="w-6 h-6 text-[#1B3A7A]" />
             </div>
             <div>
-              <p className="text-sm font-bold text-[#08193A]">No Blocker Selected</p>
-              <p className="text-xs text-[#5B6B86] mt-1">Select any card on the board to inspect its raw evidence, routing formulas, and cost calculations.</p>
+              <p className="text-sm font-bold text-[#08193A]">No Blocker or Document Selected</p>
+              <p className="text-xs text-[#5B6B86] mt-1">Select any document from the inbox or card on the board to inspect evidence, routing formulas, and perform instant actions.</p>
             </div>
           </div>
         )}
